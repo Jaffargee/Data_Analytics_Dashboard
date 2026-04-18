@@ -157,6 +157,7 @@ export default function CustomersPage() {
             </table>
             {!filtered.length && <EmptyState message="No customers found" />}
           </div>
+          
         </Card>
       </main>
     </div>

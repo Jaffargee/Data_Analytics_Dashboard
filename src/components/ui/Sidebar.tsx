@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, TrendingUp, Package, Users, Truck,
   AlertTriangle, UserCheck, Settings, ChevronRight,
+  Search,
 } from "lucide-react";
 
 const nav = [
@@ -14,6 +15,7 @@ const nav = [
   { label: "Suppliers",   icon: Truck,           path: "/suppliers" },
   { label: "Staff",       icon: UserCheck,       path: "/staff" },
   { label: "Low Stock",   icon: AlertTriangle,   path: "/stock" },
+  { label: "Search Engine",   icon: Search,   path: "/search" },
 ];
 
 export function Sidebar() {
