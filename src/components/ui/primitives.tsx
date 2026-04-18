@@ -5,14 +5,17 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 
 // ── Card ────────────────────────────────────────────────────
 export function Card({
-  children, className, glow = false,
-}: { children: React.ReactNode; className?: string; glow?: boolean }) {
+  children, className, glow = false, style,
+}: { children: React.ReactNode; className?: string; glow?: boolean; style?: React.CSSProperties }) {
   return (
-    <div className={cn(
-      "bg-bg-card border border-bg-border rounded-xl p-5 transition-all duration-300",
-      glow && "card-glow",
-      className
-    )}>
+    <div
+      className={cn(
+        "bg-bg-card border border-bg-border rounded-xl p-5 transition-all duration-300",
+        glow && "card-glow",
+        className
+      )}
+      style={style}
+    >
       {children}
     </div>
   );

@@ -27,8 +27,8 @@ export default function ProductsPage() {
       (i.category ?? "").toLowerCase().includes(search.toLowerCase())
     );
     rows = [...rows].sort((a, b) => {
-      const va = Number((a as Record<string, unknown>)[sortKey] ?? 0);
-      const vb = Number((b as Record<string, unknown>)[sortKey] ?? 0);
+      const va = Number((a as unknown as Record<string, unknown>)[sortKey] ?? 0);
+      const vb = Number((b as unknown as Record<string, unknown>)[sortKey] ?? 0);
       return sortDir === "desc" ? vb - va : va - vb;
     });
     return rows;
