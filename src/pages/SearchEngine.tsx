@@ -3,7 +3,7 @@ import { TopBar } from '@/components/ui/TopBar'
 import { Card, CardHeader, CardTitle, Badge, EmptyState } from '@/components/ui/primitives'
 import { supabase } from '@/lib/supabase'
 import { fmtCurrency, fmt, fmtDate, cn } from '@/lib/utils'
-import { Search, Sparkles, Loader2, ChevronRight, X, Clock, TrendingUp, AlertCircle } from 'lucide-react'
+import { Search, Sparkles, Loader2, ChevronRight, X, Clock, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react'
 import { llm_query } from '@/lib/llm_query'
 
 // ── DB schema sent to Claude as context (not your actual data) ───────────────
@@ -30,7 +30,7 @@ const DB_SCHEMA = `
 `.trim()
 
 // ── Suggested queries shown at rest state ────────────────────────────────────
-const EXAMPLE_QUERIES = [
+const FALLBACK_SUGGESTIONS = [
       { label: 'Top 10 best-selling products',      query: 'Show me the top 10 best-selling products by revenue' },
       { label: 'What did a customer buy?',          query: 'Show all products bought by customer ZIKRULLAHI SHOP with quantities' },
       { label: 'Low stock alert',                   query: 'Which items are running low and need restocking?' },
@@ -61,6 +61,14 @@ interface HistoryItem {
       query: string
       timestamp: Date
 }
+
+interface Suggestion {
+      label: string
+      query: string
+}
+
+type SuggestionsStatus = 'idle' | 'loading' | 'done' | 'error'
+
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatCellValue(key: string, val: unknown): string {
@@ -96,6 +104,37 @@ function isCurrencyCol(key: string): boolean {
       const k = key.toLowerCase()
       return k.includes('revenue') || k.includes('total') || k.includes('price') ||
       k.includes('value') || k.includes('balance') || k.includes('profit') || k.includes('avg')
+}
+// ── AI suggestion generator ──────────────────────────────────────────────────
+async function fetchAISuggestions(): Promise<Suggestion[]> {
+      const systemPrompt = `
+            You are an analytics assistant for a Nigerian POS system.
+            Generate 8 varied, specific, and useful query suggestions a business owner might want to ask about their sales data.
+            Cover different areas: revenue trends, product performance, customer behaviour, stock levels, staff performance, supplier balances.
+            
+            Respond ONLY with a valid JSON array. No markdown, no explanation. Example format:
+            [
+            { "label": "Short label (max 5 words)", "query": "Full natural language query the user would type" },
+            ...
+            ]
+      `.trim()
+      
+      const resp = await llm_query(
+            'Generate 8 diverse analytics query suggestions for a POS dashboard.',
+            systemPrompt,
+      )
+      
+      if (!resp) throw new Error('Empty response')
+      
+      const clean = resp.replace(/```json|```/g, '').trim()
+      const parsed = JSON.parse(clean) as Suggestion[]
+      
+      // Validate shape — must be array of { label, query }
+      if (!Array.isArray(parsed) || parsed.some(s => !s.label || !s.query)) {
+            throw new Error('Invalid suggestion format')
+      }
+      
+      return parsed
 }
 
 // ── Claude API call ──────────────────────────────────────────────────────────
@@ -188,6 +227,29 @@ async function executeSQL(sql: string): Promise<QueryResult> {
       }
 }
 
+// ── useSuggestions hook ──────────────────────────────────────────────────────
+function useSuggestions() {
+      const [suggestions, setSuggestions]   = useState<Suggestion[]>(FALLBACK_SUGGESTIONS)
+      const [status, setStatus]             = useState<SuggestionsStatus>('idle')
+      
+      const load = useCallback(async () => {
+            setStatus('loading')
+            try {
+                  const ai = await fetchAISuggestions()
+                  setSuggestions(ai)
+                  setStatus('done')
+            } catch {
+                  // Keep showing fallback on error — no disruption to the user
+                  setStatus('error')
+            }
+      }, [])
+      
+      // Auto-load on mount
+      useEffect(() => { load() }, [load])
+      
+      return { suggestions, status, reload: load }
+}
+
 // NOTE: You need this Supabase function for arbitrary SQL execution:
 // CREATE OR REPLACE FUNCTION execute_analytics_query(query_sql TEXT)
 // RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER AS $$
@@ -202,366 +264,398 @@ async function executeSQL(sql: string): Promise<QueryResult> {
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function SearchEngine() {
-const [input, setInput]             = useState('')
-const [aiState, setAiState]         = useState<'idle' | 'thinking' | 'done' | 'error'>('idle')
-const [aiResponse, setAiResponse]   = useState<AIResponse | null>(null)
-const [result, setResult]           = useState<QueryResult | null>(null)
-const [generatedSQL, setGeneratedSQL] = useState<string>('')
-const [execError, setExecError]     = useState<string | null>(null)
-const [history, setHistory]         = useState<HistoryItem[]>([])
-const [showSQL, setShowSQL]         = useState(false)
-const inputRef = useRef<HTMLInputElement>(null)
-const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+      const [input, setInput]             = useState('')
+      const [aiState, setAiState]         = useState<'idle' | 'thinking' | 'done' | 'error'>('idle')
+      const [aiResponse, setAiResponse]   = useState<AIResponse | null>(null)
+      const [result, setResult]           = useState<QueryResult | null>(null)
+      const [generatedSQL, setGeneratedSQL] = useState<string>('')
+      const [execError, setExecError]     = useState<string | null>(null)
+      const [history, setHistory]         = useState<HistoryItem[]>([])
+      const [showSQL, setShowSQL]         = useState(false)
+      const inputRef = useRef<HTMLInputElement>(null)
+      const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-// Focus input on mount
-useEffect(() => { inputRef.current?.focus() }, [])
+      // const { suggestions, status: suggestionsStatus, reload: reloadSuggestions } = useSuggestions()
 
-const runQuery = useCallback(async (queryText: string) => {
-if (!queryText.trim()) return
+      // Focus input on mount
+      useEffect(() => { inputRef.current?.focus() }, [])
 
-setAiState('thinking')
-setResult(null)
-setAiResponse(null)
-setExecError(null)
-setGeneratedSQL('')
+      const runQuery = useCallback(async (queryText: string) => {
+            if (!queryText.trim()) return
 
-// Add to history
-setHistory(prev => [{ query: queryText, timestamp: new Date() }, ...prev.slice(0, 9)])
+            setAiState('thinking')
+            setResult(null)
+            setAiResponse(null)
+            setExecError(null)
+            setGeneratedSQL('')
 
-try {
-const aiRes = await callClaude(queryText)
-setAiResponse(aiRes)
+            // Add to history
+            setHistory(prev => [{ query: queryText, timestamp: new Date() }, ...prev.slice(0, 9)])
 
-if (aiRes.type === 'query' && aiRes.sql) {
-const check = validateSQL(aiRes.sql)
-if (!check.safe) {
-setExecError(check.reason ?? 'Unsafe query blocked')
-setAiState('error')
-return
-}
+            try {
+                  const aiRes = await callClaude(queryText)
+                  setAiResponse(aiRes)
 
-setGeneratedSQL(aiRes.sql)
+                  if (aiRes.type === 'query' && aiRes.sql) {
+                        const check = validateSQL(aiRes.sql)
+                        if (!check.safe) {
+                              setExecError(check.reason ?? 'Unsafe query blocked')
+                              setAiState('error')
+                              return
+                        }
 
-try {
-const queryResult = await executeSQL(aiRes.sql)
-setResult(queryResult)
-setAiState('done')
-} catch (err) {
-setExecError(err instanceof Error ? err.message : 'Query execution failed')
-setAiState('error')
-}
-} else {
-setAiState('done')
-}
-} catch (err) {
-setExecError(err instanceof Error ? err.message : 'AI request failed')
-setAiState('error')
-}
-}, [])
+                        setGeneratedSQL(aiRes.sql)
 
-const handleInput = (value: string) => {
-setInput(value)
-if (debounceRef.current) clearTimeout(debounceRef.current)
-// No auto-submit on type — only on Enter or button click
-}
+                        try {
+                              const queryResult = await executeSQL(aiRes.sql)
+                              setResult(queryResult)
+                              setAiState('done')
+                        } catch (err) {
+                              setExecError(err instanceof Error ? err.message : 'Query execution failed')
+                              setAiState('error')
+                        }
+                  } else {
+                        setAiState('done')
+                  }
 
-const handleSubmit = (e?: React.FormEvent) => {
-e?.preventDefault()
-if (input.trim()) runQuery(input.trim())
-}
+            } catch (err) {
+                  setExecError(err instanceof Error ? err.message : 'AI request failed')
+                  setAiState('error')
+            }
 
-const handleSuggestionClick = (query: string) => {
-setInput(query)
-runQuery(query)
-}
+      }, [])
 
-const handleClear = () => {
-setInput('')
-setAiState('idle')
-setResult(null)
-setAiResponse(null)
-setExecError(null)
-setGeneratedSQL('')
-inputRef.current?.focus()
-}
+      const handleInput = (value: string) => {
+            setInput(value)
+            if (debounceRef.current) clearTimeout(debounceRef.current)
+            // No auto-submit on type — only on Enter or button click
+      }
 
-const isLoading = aiState === 'thinking'
+      const handleSubmit = (e?: React.FormEvent) => {
+            e?.preventDefault()
+            if (input.trim()) runQuery(input.trim())
+      }
 
-return (
-<div className="flex-1 flex flex-col min-h-screen">
-<TopBar title="Search" subtitle="Natural language queries powered by AI" />
+      const handleSuggestionClick = (query: string) => {
+            setInput(query)
+            runQuery(query)
+      }
 
-<main className="flex-1 p-6 space-y-6">
+      const handleClear = () => {
+            setInput('')
+            setAiState('idle')
+            setResult(null)
+            setAiResponse(null)
+            setExecError(null)
+            setGeneratedSQL('')
+            inputRef.current?.focus()
+      }
 
-{/* ── Search form ── */}
-<SearchForm
-input={input}
-isLoading={isLoading}
-inputRef={inputRef}
-onInput={handleInput}
-onSubmit={handleSubmit}
-onClear={handleClear}
-/>
+      const isLoading = aiState === 'thinking'
 
-{/* ── Idle state: examples + history ── */}
-{aiState === 'idle' && (
-<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-{/* Example queries */}
-<div className="xl:col-span-2">
-<p className="text-xs font-body uppercase tracking-widest text-ink-muted mb-3">Try asking</p>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-{EXAMPLE_QUERIES.map((ex) => (
-<button
-key={ex.query}
-onClick={() => handleSuggestionClick(ex.query)}
-className="flex items-center gap-3 p-3 rounded-xl border border-bg-border bg-bg-card hover:border-accent-gold/30 hover:bg-accent-gold/5 text-left transition-all group"
->
-<span className="w-6 h-6 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
-<TrendingUp size={11} className="text-accent-gold" />
-</span>
-<span className="text-xs font-body text-ink-secondary group-hover:text-ink-primary transition-colors">
-{ex.label}
-</span>
-<ChevronRight size={11} className="text-ink-faint ml-auto shrink-0 group-hover:text-accent-gold transition-colors" />
-</button>
-))}
-</div>
-</div>
+      return (
+            <div className="flex-1 flex flex-col min-h-screen">
+                  <TopBar title="Search" subtitle="Natural language queries powered by AI" />
 
-{/* History */}
-{history.length > 0 && (
-<div>
-<p className="text-xs font-body uppercase tracking-widest text-ink-muted mb-3">Recent searches</p>
-<div className="space-y-1">
-{history.slice(0, 6).map((h, i) => (
-<button
-key={i}
-onClick={() => handleSuggestionClick(h.query)}
-className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-bg-hover text-left transition-colors group"
->
-<Clock size={11} className="text-ink-faint shrink-0" />
-<span className="text-xs font-body text-ink-muted group-hover:text-ink-secondary transition-colors truncate">
-{h.query}
-</span>
-</button>
-))}
-</div>
-</div>
-)}
-</div>
-)}
+                  <main className="flex-1 p-6 space-y-6">
 
-{/* ── Loading state ── */}
-{isLoading && (
-<Card>
-<div className="flex items-center gap-3 py-4">
-<div className="w-8 h-8 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
-<Sparkles size={14} className="text-accent-gold animate-pulse" />
-</div>
-<div>
-<p className="text-sm font-body text-ink-primary">Generating SQL query…</p>
-<p className="text-xs text-ink-muted font-body">Claude is analyzing your question against the schema</p>
-</div>
-<Loader2 size={16} className="text-accent-gold animate-spin ml-auto" />
-</div>
-</Card>
-)}
+                  {/* ── Search form ── */}
+                  <SearchForm
+                        input={input}
+                        isLoading={isLoading}
+                        inputRef={inputRef}
+                        onInput={handleInput}
+                        onSubmit={handleSubmit}
+                        onClear={handleClear}
+                  />
 
-{/* ── AI suggestions (ambiguous query) ── */}
-{!isLoading && aiResponse?.type === 'suggestions' && (
-<Card>
-<CardHeader>
-<CardTitle>Did you mean…</CardTitle>
-<Badge variant="gold">Clarify</Badge>
-</CardHeader>
-<div className="space-y-2">
-{aiResponse.suggestions?.map((s, i) => (
-<button
-key={i}
-onClick={() => handleSuggestionClick(s.query)}
-className="w-full flex items-center gap-3 p-3 rounded-xl border border-bg-border hover:border-accent-gold/30 hover:bg-accent-gold/5 text-left transition-all group"
->
-<span className="w-6 h-6 rounded-lg bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center shrink-0 text-accent-purple font-mono text-xs">
-{i + 1}
-</span>
-<span className="text-sm font-body text-ink-secondary group-hover:text-ink-primary transition-colors">
-{s.query}
-</span>
-<ChevronRight size={13} className="text-ink-faint ml-auto shrink-0 group-hover:text-accent-gold transition-colors" />
-</button>
-))}
-</div>
-</Card>
-)}
+                  {/* ── Idle state: examples + history ── */}
+                  {aiState === 'idle' && (
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                              {/* Example queries */}
+                              <div className="xl:col-span-2">
+                                    <p className="text-xs font-body uppercase tracking-widest text-ink-muted mb-3">Try asking</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                          {
+                                          FALLBACK_SUGGESTIONS.length === 0 ? (
+                                                <div className="flex items-center gap-3 py-4">
+                                                      <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
+                                                      <span className='text-ink-muted font-body text-sm tracking-widest'>Generating Suggestions</span>
+                                                </div>
+                                          )
+                                          :
+                                          FALLBACK_SUGGESTIONS.map((ex) => (
+                                                <button key={ex.query} onClick={() => handleSuggestionClick(ex.query)} className="flex items-center gap-3 p-3 rounded-xl border border-bg-border bg-bg-card hover:border-accent-gold/30 hover:bg-accent-gold/5 text-left transition-all group">
+                                                      <span className="w-6 h-6 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
+                                                            <TrendingUp size={11} className="text-accent-gold" />
+                                                      </span>
+                                                      <span className="text-xs font-body text-ink-secondary group-hover:text-ink-primary transition-colors">
+                                                            {ex.label}
+                                                      </span>
+                                                      <ChevronRight size={11} className="text-ink-faint ml-auto shrink-0 group-hover:text-accent-gold transition-colors" />
+                                                </button>
+                                          ))}
+                                    </div>
+                              </div>
 
-{/* ── Error state ── */}
-{(aiState === 'error' || aiResponse?.type === 'error') && (
-<Card>
-<div className="flex items-start gap-3 py-2">
-<div className="w-8 h-8 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-center justify-center shrink-0">
-<AlertCircle size={14} className="text-accent-red" />
-</div>
-<div>
-<p className="text-sm font-body text-accent-red font-medium">Query failed</p>
-<p className="text-xs text-ink-muted font-body mt-0.5">
-{execError ?? aiResponse?.error ?? 'An unknown error occurred'}
-</p>
-{generatedSQL && (
-<p className="text-xs text-ink-faint font-mono mt-2 bg-bg-hover rounded px-2 py-1 border border-bg-border">
-{generatedSQL}
-</p>
-)}
-</div>
-</div>
-</Card>
-)}
+                              {/* <div className="xl:col-span-2">
+                                    <SuggestionsPanel
+                                          suggestions={suggestions}
+                                          status={suggestionsStatus}
+                                          onSelect={handleSuggestionClick}
+                                          onReload={reloadSuggestions}
+                                    />
+                              </div> */}
 
-{/* ── Results ── */}
-{aiState === 'done' && result && (
-<>
-{/* Query metadata bar */}
-<div className="flex items-center justify-between flex-wrap gap-2">
-<div className="flex items-center gap-3">
-<div className="flex items-center gap-2">
-<span className="w-1.5 h-1.5 rounded-full bg-accent-teal" />
-<span className="text-xs font-body text-ink-muted">
-{fmt(result.rowCount)} {result.rowCount === 1 ? 'result' : 'results'}
-<span className="text-ink-faint"> · {result.executionMs}ms</span>
-</span>
-</div>
-{aiResponse?.explanation && (
-<span className="text-xs font-body text-ink-secondary hidden sm:block">
-— {aiResponse.explanation}
-</span>
-)}
-</div>
-<button
-onClick={() => setShowSQL(!showSQL)}
-className="text-xs font-mono text-ink-muted hover:text-accent-gold transition-colors border border-bg-border rounded-lg px-2.5 py-1 hover:border-accent-gold/30"
->
-{showSQL ? 'Hide SQL' : 'View SQL'}
-</button>
-</div>
+                              {/* History */}
+                              {history.length > 0 && (
+                                    <div>
+                                          <p className="text-xs font-body uppercase tracking-widest text-ink-muted mb-3">Recent searches</p>
+                                          <div className="space-y-1">
+                                                {history.slice(0, 6).map((h, i) => (
+                                                      <button key={i} onClick={() => handleSuggestionClick(h.query)} className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-bg-hover text-left transition-colors group">
+                                                            <Clock size={11} className="text-ink-faint shrink-0" />
+                                                            <span className="text-xs font-body text-ink-muted group-hover:text-ink-secondary transition-colors truncate">
+                                                                  {h.query}
+                                                            </span>
+                                                      </button>
+                                                ))}
+                                          </div>
+                                    </div>
+                              )}
+                        </div>
+                  )}
 
-{/* Generated SQL */}
-{showSQL && generatedSQL && (
-<Card>
-<CardHeader>
-<CardTitle>Generated SQL</CardTitle>
-<Badge variant="teal">Read-only · validated</Badge>
-</CardHeader>
-<pre className="text-xs font-mono text-ink-secondary bg-bg-hover rounded-lg p-4 overflow-x-auto border border-bg-border leading-relaxed whitespace-pre-wrap">
-{generatedSQL}
-</pre>
-</Card>
-)}
+                  {/* ── Loading state ── */}
+                  {isLoading && (
+                  <Card>
+                        <div className="flex items-center gap-3 py-4">
+                              <div className="w-8 h-8 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
+                                    <Sparkles size={14} className="text-accent-gold animate-pulse" />
+                              </div>
+                              <div>
+                                    <p className="text-sm font-body text-ink-primary">Generating SQL query…</p>
+                                    <p className="text-xs text-ink-muted font-body">Claude is analyzing your question against the schema</p>
+                              </div>
+                              <Loader2 size={16} className="text-accent-gold animate-spin ml-auto" />
+                        </div>
+                  </Card>
+                  )}
 
-{/* Results table */}
-<Card>
-<div className="overflow-x-auto">
-<table className="w-full">
-<thead>
-<tr className="border-b border-bg-border">
-{result.columns.map((col) => (
-<th key={col} className="text-left pb-3 pr-4 text-xs font-body uppercase tracking-wider text-ink-muted whitespace-nowrap">
-{col.replace(/_/g, ' ')}
-</th>
-))}
-</tr>
-</thead>
-<tbody>
-{result.rows.map((row, i) => (
-<tr key={i} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors">
-{result.columns.map((col) => {
-const val = row[col]
-const currency = isCurrencyCol(col)
-const isFirst = col === result.columns[0]
-return (
-<td key={col} className="py-2.5 pr-4 whitespace-nowrap">
-<span className={cn(
-'text-xs font-mono',
-currency ? 'text-accent-gold font-medium' : '',
-isFirst ? 'text-ink-primary font-body' : 'text-ink-secondary',
-)}>
-{formatCellValue(col, val)}
-</span>
-</td>
-)
-})}
-</tr>
-))}
-</tbody>
-</table>
-{result.rows.length === 0 && <EmptyState message="No results found for this query" />}
-</div>
-</Card>
-</>
-)}
+                  {/* ── AI suggestions (ambiguous query) ── */}
+                  {!isLoading && aiResponse?.type === 'suggestions' && (
+                        <Card>
+                              <CardHeader>
+                                    <CardTitle>Did you mean…</CardTitle>
+                                    <Badge variant="gold">Clarify</Badge>
+                              </CardHeader>
+                              <div className="space-y-2">
+                                    {aiResponse.suggestions?.map((s, i) => (
+                                          <button key={i} onClick={() => handleSuggestionClick(s.query)} className="w-full flex items-center gap-3 p-3 rounded-xl border border-bg-border hover:border-accent-gold/30 hover:bg-accent-gold/5 text-left transition-all group">
+                                                <span className="w-6 h-6 rounded-lg bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center shrink-0 text-accent-purple font-mono text-xs">
+                                                      {i + 1}
+                                                </span>
+                                                <span className="text-sm font-body text-ink-secondary group-hover:text-ink-primary transition-colors">
+                                                      {s.query}
+                                                </span>
+                                                <ChevronRight size={13} className="text-ink-faint ml-auto shrink-0 group-hover:text-accent-gold transition-colors" />
+                                          </button>
+                                    ))}
+                              </div>
+                        </Card>
+                  )}
 
-</main>
-</div>
-)
+                  {/* ── Error state ── */}
+                  {(aiState === 'error' || aiResponse?.type === 'error') && (
+                  <Card>
+                        <div className="flex items-start gap-3 py-2">
+                              <div className="w-8 h-8 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-center justify-center shrink-0">
+                                    <AlertCircle size={14} className="text-accent-red" />
+                              </div>
+                              <div>
+                                    <p className="text-sm font-body text-accent-red font-medium">Query failed</p>
+                                    <p className="text-xs text-ink-muted font-body mt-0.5">
+                                          {execError ?? aiResponse?.error ?? 'An unknown error occurred'}
+                                    </p>
+                                    {generatedSQL && (
+                                          <p className="text-xs text-ink-faint font-mono mt-2 bg-bg-hover rounded px-2 py-1 border border-bg-border">
+                                                {generatedSQL}
+                                          </p>
+                                    )}
+                              </div>
+                        </div>
+                  </Card>
+                  )}
+
+                  {/* ── Results ── */}
+                  {aiState === 'done' && result && (
+                        <>
+                              {/* Query metadata bar */}
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-3">
+                                          <div className="flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-accent-teal" />
+                                                <span className="text-xs font-body text-ink-muted">
+                                                      {fmt(result.rowCount)} {result.rowCount === 1 ? 'result' : 'results'}
+                                                      <span className="text-ink-faint"> · {result.executionMs}ms</span>
+                                                </span>
+                                          </div>
+                                          {aiResponse?.explanation && (
+                                                <span className="text-xs font-body text-ink-secondary hidden sm:block">
+                                                — {aiResponse.explanation}
+                                                </span>
+                                          )}
+                                    </div>
+                                    <button onClick={() => setShowSQL(!showSQL)} className="text-xs font-mono text-ink-muted hover:text-accent-gold transition-colors border border-bg-border rounded-lg px-2.5 py-1 hover:border-accent-gold/30" >
+                                          {showSQL ? 'Hide SQL' : 'View SQL'}
+                                    </button>
+                              </div>
+
+                              {/* Generated SQL */}
+                              {showSQL && generatedSQL && (
+                              <Card>
+                                    <CardHeader>
+                                          <CardTitle>Generated SQL</CardTitle>
+                                          <Badge variant="teal">Read-only · validated</Badge>
+                                    </CardHeader>
+                                    <pre className="text-xs font-mono text-ink-secondary bg-bg-hover rounded-lg p-4 overflow-x-auto border border-bg-border leading-relaxed whitespace-pre-wrap">
+                                          {generatedSQL}
+                                    </pre>
+                              </Card>
+                              )}
+
+                              {/* Results table */}
+                              <Card>
+                                    <div className="overflow-x-auto">
+                                          <table className="w-full">
+                                                <thead>
+                                                      <tr className="border-b border-bg-border">
+                                                            {result.columns.map((col) => (
+                                                                  <th key={col} className="text-left pb-3 pr-4 text-xs font-body uppercase tracking-wider text-ink-muted whitespace-nowrap">
+                                                                        {col.replace(/_/g, ' ')}
+                                                                  </th>
+                                                            ))}
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      {result.rows.map((row, i) => (
+                                                            <tr key={i} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors">
+                                                            {result.columns.map((col) => {
+                                                                  const val = row[col]
+                                                                  const currency = isCurrencyCol(col)
+                                                                  const isFirst = col === result.columns[0]
+                                                                  return (
+                                                                        <td key={col} className="py-2.5 pr-4 whitespace-nowrap">
+                                                                              <span className={cn('text-xs font-mono', currency ? 'text-accent-gold font-medium' : '', isFirst ? 'text-ink-primary font-body' : 'text-ink-secondary')}>
+                                                                                    {formatCellValue(col, val)}
+                                                                              </span>
+                                                                        </td>
+                                                                  )
+                                                            })}
+                                                            </tr>
+                                                      ))}
+                                                </tbody>
+                                          </table>
+                                          {result.rows.length === 0 && <EmptyState message="No results found for this query" />}
+                                    </div>
+                              </Card>
+                        </>
+                  )}
+
+                  </main>
+            </div>
+      )
 }
 
 // ── Search form sub-component ────────────────────────────────────────────────
-function SearchForm({
-input, isLoading, inputRef, onInput, onSubmit, onClear,
-}: {
-input: string
-isLoading: boolean
-inputRef: React.RefObject<HTMLInputElement>
-onInput: (v: string) => void
-onSubmit: (e?: React.FormEvent) => void
-onClear: () => void
-}) {
-return (
-<div className="flex flex-col items-center gap-4">
-<div className="text-center">
-<h1 className="font-display text-4xl font-bold uppercase tracking-tight text-gradient-gold">
-Search Engine
-</h1>
-<p className="text-ink-muted text-sm font-body mt-1">
-Ask anything about your sales data in plain English
-</p>
-</div>
+function SearchForm({input, isLoading, inputRef, onInput, onSubmit, onClear,}: { input: string, isLoading: boolean, inputRef: React.RefObject<HTMLInputElement>, onInput: (v: string) => void, onSubmit: (e?: React.FormEvent) => void, onClear: () => void }) {
+      return (
+      <div className="flex flex-col items-center gap-4">
+            <div className="text-center">
+                  <h1 className="font-display text-4xl font-bold uppercase tracking-tight text-gradient-gold">
+                        Search Engine
+                  </h1>
+                  <p className="text-ink-muted text-sm font-body mt-1">
+                        Ask anything about your sales data in plain English
+                  </p>
+            </div>
 
-<form
-onSubmit={onSubmit}
-className="w-full max-w-2xl"
->
-<div className="flex items-center gap-3 bg-bg-card border border-accent-gold/30 rounded-2xl px-4 py-3 focus-within:border-accent-gold/60 transition-all shadow-lg">
-{isLoading
-? <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
-: <Search size={18} className="text-accent-gold shrink-0" />
+            <form onSubmit={onSubmit} className="w-full max-w-2xl">
+                  <div className="flex items-center gap-3 bg-bg-card border border-accent-gold/30 rounded-2xl px-4 py-3 focus-within:border-accent-gold/60 transition-all shadow-lg">
+                        {isLoading
+                              ? <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
+                              : <Search size={18} className="text-accent-gold shrink-0" />
+                        }
+                        <input
+                              ref={inputRef}
+                              type="text"
+                              value={input}
+                              onChange={(e) => onInput(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSubmit()}
+                              placeholder="e.g. what did Ali buy last month, top selling items by profit…"
+                              className="flex-1 bg-transparent text-base font-body text-ink-primary placeholder:text-ink-faint outline-none"
+                              disabled={isLoading}
+                        />
+                        {input && !isLoading && (
+                              <button type="button" onClick={onClear} className="text-ink-faint hover:text-ink-secondary transition-colors">
+                                    <X size={15} />
+                              </button>
+                        )}
+                        <button type="submit" disabled={!input.trim() || isLoading} className="px-4 py-2 rounded-xl bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                              {isLoading ? 'Thinking…' : 'Search ↵'}
+                        </button>
+                  </div>
+            </form>
+      </div>
+      )
 }
-<input
-ref={inputRef}
-type="text"
-value={input}
-onChange={(e) => onInput(e.target.value)}
-onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSubmit()}
-placeholder="e.g. what did Ali buy last month, top selling items by profit…"
-className="flex-1 bg-transparent text-base font-body text-ink-primary placeholder:text-ink-faint outline-none"
-disabled={isLoading}
-/>
-{input && !isLoading && (
-<button
-type="button"
-onClick={onClear}
-className="text-ink-faint hover:text-ink-secondary transition-colors"
->
-<X size={15} />
-</button>
-)}
-<button
-type="submit"
-disabled={!input.trim() || isLoading}
-className="px-4 py-2 rounded-xl bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
->
-{isLoading ? 'Thinking…' : 'Search ↵'}
-</button>
-</div>
-</form>
-</div>
-)
+
+// ── Suggestions panel ────────────────────────────────────────────────────────
+function SuggestionsPanel({ suggestions, status, onSelect, onReload }: { suggestions: Suggestion[], status: SuggestionsStatus, onSelect: (query: string) => void, onReload: () => void }) {
+      return (
+            <div>
+                  <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-body uppercase tracking-widest text-ink-muted">Try asking</p>
+                        <button
+                              onClick={onReload}
+                              disabled={status === 'loading'}
+                              className="flex items-center gap-1.5 text-xs font-body text-ink-muted hover:text-accent-gold transition-colors disabled:opacity-40"
+                        >
+                              <RefreshCw size={11} className={status === 'loading' ? 'animate-spin' : ''} />
+                              {status === 'loading' ? 'Generating…' : 'Refresh'}
+                        </button>
+                  </div>
+            
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {/* Skeleton placeholders while AI is loading (only on first load, fallbacks show instantly) */}
+                        {status === 'loading' && suggestions === FALLBACK_SUGGESTIONS
+                        ? Array.from({ length: 8 }).map((_, i) => (
+                              <div key={i} className="h-[52px] rounded-xl border border-bg-border bg-bg-card animate-pulse" />
+                        ))
+                        : suggestions.map((ex) => (
+                              <button
+                                    key={ex.query}
+                                    onClick={() => onSelect(ex.query)}
+                                    className="flex items-center gap-3 p-3 rounded-xl border border-bg-border bg-bg-card hover:border-accent-gold/30 hover:bg-accent-gold/5 text-left transition-all group"
+                              >
+                                    <span className="w-6 h-6 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
+                                          <TrendingUp size={11} className="text-accent-gold" />
+                                    </span>
+                                    <span className="text-xs font-body text-ink-secondary group-hover:text-ink-primary transition-colors line-clamp-2">
+                                          {ex.label}
+                                    </span>
+                                    <ChevronRight size={11} className="text-ink-faint ml-auto shrink-0 group-hover:text-accent-gold transition-colors" />
+                              </button>
+                              ))
+                  }
+                  </div>
+            
+                  {status === 'error' && (
+                  <p className="text-[11px] font-body text-ink-faint mt-2">
+                        Showing default suggestions — AI generation failed.{' '}
+                        <button onClick={onReload} className="text-accent-gold hover:underline">Try again</button>
+                  </p>
+                  )}
+            </div>
+      )
 }
