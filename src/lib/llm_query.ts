@@ -5,7 +5,7 @@ const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY as stri
 
 export async function llm_query(query: string, systemInstruction?: string): Promise<string | undefined> {
       const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
+            model: "gemini-2.5-flash",
             contents: query,
             config: {
                   systemInstruction: systemInstruction
