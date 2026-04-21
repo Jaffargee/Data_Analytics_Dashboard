@@ -5,6 +5,7 @@ import {
   LayoutDashboard, TrendingUp, Package, Users, Truck,
   AlertTriangle, UserCheck, Settings, ChevronRight,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 const nav = [
@@ -16,6 +17,7 @@ const nav = [
   { label: "Staff",       icon: UserCheck,       path: "/staff" },
   { label: "Low Stock",   icon: AlertTriangle,   path: "/stock" },
   { label: "Search Engine",   icon: Search,   path: "/search" },
+  { label: "AI Data Analytics Chat",   icon: Sparkles,   path: "/chat" },
 ];
 
 export function Sidebar() {
