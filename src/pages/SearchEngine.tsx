@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { fmtCurrency, fmt, fmtDate, cn } from '@/lib/utils'
 import { Search, Sparkles, Loader2, ChevronRight, X, Clock, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react'
 import { llm_query } from '@/lib/llm_query'
+import { crb_llm_query } from '@/lib/crb_llm_query'
 
 // ── DB schema sent to Claude as context (not your actual data) ───────────────
 const DB_SCHEMA = `
