@@ -23,7 +23,7 @@ const nav = [
 export function Sidebar() {
   const location = useLocation();
   return (
-    <aside className="w-56 flex-shrink-0 bg-bg-panel border-r border-bg-border flex flex-col h-screen sticky top-0">
+    <aside className="w-58 flex-shrink-0 bg-bg-panel border-r border-bg-border flex flex-col h-screen sticky top-0">
       {/* Brand */}
       <div className="px-5 py-5 border-b border-bg-border">
         <div className="flex items-center gap-2.5">
