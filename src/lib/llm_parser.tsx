@@ -2,7 +2,7 @@
 
 export interface ParsedToken {
       type: TokenType;
-      content: string;
+      content: string | ParsedToken[];
       language?: string; // for code blocks
       url?: string; // for links
       level?: number; // for headings (1-6)
@@ -310,146 +310,146 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
 * Find the closing marker for inline formatting
 */
 function findClosingMarker(text: string, startIndex: number, marker: string): number {
-let index = startIndex;
-while (index < text.length) {
-if (text.slice(index, index + marker.length) === marker) {
-// Make sure it's not escaped
-if (index === 0 || text[index - 1] !== '\\') {
-return index;
-}
-}
-index++;
-}
-return -1;
+      let index = startIndex;
+      while (index < text.length) {
+            if (text.slice(index, index + marker.length) === marker) {
+                  // Make sure it's not escaped
+                  if (index === 0 || text[index - 1] !== '\\') {
+                        return index;
+                  }
+            }
+            index++;
+      }
+      return -1;
 }
 
 /**
 * Sanitize text content
 */
 function sanitizeText(text: string, opts: ParseOptions): string {
-if (!opts.sanitize) return text;
+      if (!opts.sanitize) return text;
 
-// Basic sanitization - remove potential XSS
-return text
-.replace(/&/g, '&amp;')
-.replace(/</g, '&lt;')
-.replace(/>/g, '&gt;')
-.replace(/"/g, '&quot;')
-.replace(/'/g, '&#039;');
+      // Basic sanitization - remove potential XSS
+      return text
+      // .replace(/&/g, '&amp;')
+      // .replace(/</g, '&lt;')
+      // .replace(/>/g, '&gt;')
+      // .replace(/"/g, '&quot;')
+      // .replace(/'/g, '&#039;');
 }
 
 /**
 * Convert parsed tokens to plain text (for copying, searching, etc.)
 */
 export function tokensToPlainText(tokens: ParsedToken[]): string {
-return tokens.map(token => {
-switch (token.type) {
-case 'code-block':
-return token.content;
-case 'inline-code':
-return token.content;
-case 'link':
-return token.content;
-case 'heading':
-return token.content;
-case 'paragraph':
-return token.content;
-case 'list-item':
-case 'ordered-list-item':
-return token.items?.map(item => tokensToPlainText(item)).join('\n') || '';
-case 'blockquote':
-return token.content;
-case 'bold':
-case 'italic':
-case 'strikethrough':
-return Array.isArray(token.content) 
-? tokensToPlainText(token.content) 
-: token.content;
-case 'line-break':
-return '\n';
-case 'horizontal-rule':
-return '\n---\n';
-default:
-return token.content;
-}
-}).join('');
+      return tokens.map(token => {
+            switch (token.type) {
+                  case 'code-block':
+                        return token.content;
+                  case 'inline-code':
+                        return token.content;
+                  case 'link':
+                        return token.content;
+                  case 'heading':
+                        return token.content;
+                  case 'paragraph':
+                        return token.content;
+                  case 'list-item':
+                  case 'ordered-list-item':
+                        return token.items?.map(item => tokensToPlainText(item)).join('\n') || '';
+                  case 'blockquote':
+                        return token.content;
+                  case 'bold':
+                  case 'italic':
+                  case 'strikethrough':
+                        return Array.isArray(token.content) 
+                        ? tokensToPlainText(token.content) 
+                        : token.content;
+                  case 'line-break':
+                        return '\n';
+                  case 'horizontal-rule':
+                        return '\n---\n';
+                  default:
+                        return token.content;
+            }
+      }).join('');
 }
 
 /**
 * Convert parsed tokens to HTML (for rendering in web views)
 */
 export function tokensToHTML(tokens: ParsedToken[]): string {
-return tokens.map(token => {
-switch (token.type) {
-case 'text':
-return token.content;
+      return tokens.map(token => {
+      switch (token.type) {
+            case 'text':
+                  return token.content;
 
-case 'bold':
-const boldContent = Array.isArray(token.content) 
-? tokensToHTML(token.content) 
-: token.content;
-return `<strong>${boldContent}</strong>`;
+            case 'bold':
+                  const boldContent = Array.isArray(token.content) 
+                  ? tokensToHTML(token.content) 
+                  : token.content;
+                  return `<strong>${boldContent}</strong>`;
 
-case 'italic':
-const italicContent = Array.isArray(token.content) 
-? tokensToHTML(token.content) 
-: token.content;
-return `<em>${italicContent}</em>`;
+                  case 'italic':
+                  const italicContent = Array.isArray(token.content) 
+                  ? tokensToHTML(token.content) 
+                  : token.content;
+                  return `<em>${italicContent}</em>`;
 
-case 'strikethrough':
-return `<del>${token.content}</del>`;
+            case 'strikethrough':
+                  return `<del>${token.content}</del>`;
 
-case 'inline-code':
-return `<code>${token.content}</code>`;
+            case 'inline-code':
+                  return `<code>${token.content}</code>`;
 
-case 'code-block':
-const language = token.language ? ` class="language-${token.language}"` : '';
-return `<pre><code${language}>${token.content}</code></pre>`;
+            case 'code-block':
+                  const language = token.language ? ` class="language-${token.language}"` : '';
+                  return `<pre><code${language}>${token.content}</code></pre>`;
 
-case 'link':
-return `<a href="${token.url}" target="_blank" rel="noopener noreferrer">${token.content}</a>`;
+            case 'link':
+                  return `<a href="${token.url}" target="_blank" rel="noopener noreferrer">${token.content}</a>`;
 
-case 'heading':
-const level = token.level || 2;
-const headingContent = Array.isArray(token.content) 
-? tokensToHTML(token.content) 
-: token.content;
-return `<h${level}>${headingContent}</h${level}>`;
+            case 'heading':
+                  const level = token.level || 2;
+                  const headingContent = Array.isArray(token.content) 
+                  ? tokensToHTML(token.content) 
+                  : token.content;
+                  return `<h${level}>${headingContent}</h${level}>`;
 
-case 'paragraph':
-const paraContent = Array.isArray(token.content) 
-? tokensToHTML(token.content) 
-: token.content;
-return `<p>${paraContent}</p>`;
+            case 'paragraph':
+                  const paraContent = Array.isArray(token.content) 
+                  ? tokensToHTML(token.content) 
+                  : token.content;
+                  return `<p>${paraContent}</p>`;
 
-case 'list-item':
-const listItems = token.items?.map(item => 
-`<li>${tokensToHTML(item)}</li>`
-).join('') || '';
-return `<ul>${listItems}</ul>`;
+            case 'list-item':
+                  const listItems = token.items?.map(item => 
+                  `<li>${tokensToHTML(item)}</li>`
+                  ).join('') || '';
+                  return `<ul>${listItems}</ul>`;
 
-case 'ordered-list-item':
-const orderedItems = token.items?.map(item => 
-`<li>${tokensToHTML(item)}</li>`
-).join('') || '';
-return `<ol>${orderedItems}</ol>`;
+            case 'ordered-list-item':
+                  const orderedItems = token.items?.map(item => 
+                  `<li>${tokensToHTML(item)}</li>`
+                  ).join('') || '';
+                  return `<ol>${orderedItems}</ol>`;
 
-case 'blockquote':
-const quoteContent = Array.isArray(token.content) 
-? tokensToHTML(token.content) 
-: token.content;
-return `<blockquote>${quoteContent}</blockquote>`;
+            case 'blockquote':
+                  const quoteContent = Array.isArray(token.content) 
+                  ? tokensToHTML(token.content) 
+                  : token.content;
+                  return `<blockquote>${quoteContent}</blockquote>`;
 
-case 'horizontal-rule':
-return '<hr />';
+            case 'horizontal-rule':
+                  return '<hr />';
 
-case 'line-break':
-return '<br />';
+            case 'line-break':
+                  return '<br />';
 
-default:
-return token.content;
-}
-}).join('');
+            default:
+            return token.content;
+      }
+      }).join('');
 }
 
 /**
@@ -457,101 +457,95 @@ return token.content;
 * (Import this in your React components)
 */
 export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): React.ReactNode[] {
-return tokens.map((token, index) => {
-const key = `${keyPrefix}-${index}`;
+      return tokens.map((token, index) => {
+            const key = `${keyPrefix}-${index}`;
 
-switch (token.type) {
-case 'text':
-return <span key={key}>{token.content}</span>;
+            switch (token.type) {
+                  case 'text':
+                        return <span key={key}>{token.content as string}</span>;
 
-case 'bold':
-return <strong key={key}>{renderTokens(token.content as ParsedToken[], key)}</strong>;
+                  case 'bold':
+                        return <strong key={key}>{renderTokens(token.content as ParsedToken[], key)}</strong>;
 
-case 'italic':
-return <em key={key}>{renderTokens(token.content as ParsedToken[], key)}</em>;
+                  case 'italic':
+                        return <em key={key}>{renderTokens(token.content as ParsedToken[], key)}</em>;
 
-case 'strikethrough':
-return <del key={key}>{token.content}</del>;
+                  case 'strikethrough':
+                        return <del key={key}>{token.content as string}</del>;
 
-case 'inline-code':
-return <code key={key} className="inline-code">{token.content}</code>;
+                  case 'inline-code':
+                        return <code key={key} className="inline-code">{token.content as string}</code>;
 
-case 'code-block':
-return (
-<pre key={key} className="code-block">
-<code className={token.language ? `language-${token.language}` : ''}>
-{token.content}
-</code>
-</pre>
-);
+                  case 'code-block':
+                        return (
+                              <pre key={key} className="code-block">
+                                    <code className={token.language ? `language-${token.language}` : ''}>
+                                          {token.content as string}
+                                    </code>
+                              </pre>
+                        );
 
-case 'link':
-return (
-<a 
-key={key} 
-href={token.url} 
-target="_blank" 
-rel="noopener noreferrer"
-className="text-accent-gold hover:underline"
->
-{token.content}
-</a>
-);
+                  case 'link':
+                        return (
+                              <a key={key} href={token.url} target="_blank" rel="noopener noreferrer"className="text-accent-gold hover:underline">
+                                    {token.content as string}
+                              </a>
+                        );
 
-case 'heading':
-const HeadingTag = `h${token.level || 2}` as keyof JSX.IntrinsicElements;
-return (
-<HeadingTag key={key} className={`heading-${token.level}`}>
-{renderTokens(token.content as ParsedToken[], key)}
-</HeadingTag>
-);
+                  case 'heading':
+                        const HeadingTag = `h${token.level || 2}` as keyof JSX.IntrinsicElements;
+                        return (
+                              <HeadingTag key={key} className={`heading-${token.level}`}>
+                                    {renderTokens(token.content as ParsedToken[], key)}
+                              </HeadingTag>
+                        );
 
-case 'paragraph':
-return (
-<p key={key} className="mb-4">
-{renderTokens(token.content as ParsedToken[], key)}
-</p>
-);
+                  case 'paragraph':
+                        return (
+                              <p key={key} className="mb-4">
+                                    {renderTokens(token.content as ParsedToken[], key)}
+                              </p>
+                        );
 
-case 'list-item':
-return (
-<ul key={key} className="list-disc pl-6 mb-4">
-{token.items?.map((item, itemIndex) => (
-<li key={`${key}-item-${itemIndex}`}>
-{renderTokens(item, `${key}-item-${itemIndex}`)}
-</li>
-))}
-</ul>
-);
+                  case 'list-item':
+                        return (
+                              <ul key={key} className="list-disc pl-6 mb-4">
+                                    {token.items?.map((item, itemIndex) => (
+                                          <li key={`${key}-item-${itemIndex}`}>
+                                                {renderTokens(item, `${key}-item-${itemIndex}`)}
+                                          </li>
+                                    ))}
+                              </ul>
+                        );
 
-case 'ordered-list-item':
-return (
-<ol key={key} className="list-decimal pl-6 mb-4">
-{token.items?.map((item, itemIndex) => (
-<li key={`${key}-item-${itemIndex}`}>
-{renderTokens(item, `${key}-item-${itemIndex}`)}
-</li>
-))}
-</ol>
-);
+                  case 'ordered-list-item':
+                        return (
+                              <ol key={key} className="list-decimal pl-6 mb-4">
+                                    {token.items?.map((item, itemIndex) => (
+                                          <li key={`${key}-item-${itemIndex}`}>
+                                                {renderTokens(item, `${key}-item-${itemIndex}`)}
+                                          </li>
+                                    ))}
+                              </ol>
+                        );
 
-case 'blockquote':
-return (
-<blockquote key={key} className="border-l-4 border-accent-gold pl-4 italic">
-{renderTokens(token.content as ParsedToken[], key)}
-</blockquote>
-);
+                  case 'blockquote':
+                        return (
+                              <blockquote key={key} className="border-l-4 border-accent-gold pl-4 italic">
+                                    {renderTokens(token.content as ParsedToken[], key)}
+                              </blockquote>
+                        );
 
-case 'horizontal-rule':
-return <hr key={key} className="my-6 border-accent-gold/30" />;
+                  case 'horizontal-rule':
+                        return <hr key={key} className="my-6 border-accent-gold/30" />;
 
-case 'line-break':
-return <br key={key} />;
+                  case 'line-break':
+                        return <br key={key} />;
 
-default:
-return null;
-}
-});
+                  default:
+                        return null;
+            }
+      });
 }
 
 // Usage example:
