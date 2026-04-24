@@ -35,3 +35,5 @@ export interface QueryResult {
       rowCount: number
       executionMs: number
 }
+
+export type Report = Record<string, any>

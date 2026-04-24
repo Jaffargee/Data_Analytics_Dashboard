@@ -6,6 +6,7 @@ import { useTopCustomers } from "@/lib/hooks";
 import { fmtCurrency, fmt, fmtDate } from "@/lib/utils";
 import { Search, Users, ShoppingBag, Award, Clock } from "lucide-react";
 import * as Avatar from "@radix-ui/react-avatar";
+import { Link } from "react-router-dom";
 
 function initials(name: string) {
   return name.split(" ").slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase();
@@ -119,7 +120,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.slice(0, 50).map((c, i) => (
+                {filtered.map((c, i) => (
                   <tr key={c.pos_customer_id} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors group">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2.5">
@@ -129,7 +130,11 @@ export default function CustomersPage() {
                           </Avatar.Fallback>
                         </Avatar.Root>
                         <div>
-                          <p className="text-xs font-body text-ink-primary group-hover:text-accent-gold transition-colors">{c.customer_name}</p>
+                          <p className="text-xs font-body text-ink-primary group-hover:text-accent-gold transition-colors">
+                            <Link to={`/customers/customer/${c.pos_customer_id}?ctm_name=${c.customer_name}`}>
+                              {c.customer_name}
+                            </Link>
+                          </p>
                           <p className="text-[10px] text-ink-faint font-mono">#{c.pos_customer_id}</p>
                         </div>
                       </div>

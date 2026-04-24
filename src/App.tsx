@@ -10,6 +10,8 @@ import StaffPage     from "@/pages/Staff";
 import StockPage     from "@/pages/LowStock";
 import SearchEngine from "./pages/SearchEngine";
 import AIDataAnalyticsChat from "./pages/AIDataAnalyticsChat";
+import Customer from "./pages/Customer/Customer";
+import CustomerSales from "./pages/Customer/Sales";
 
 function NotFound() {
   return (
@@ -35,6 +37,8 @@ export default function App() {
           <Route path="/stock"     element={<StockPage />}     />
           <Route path="/search"     element={<SearchEngine />}     />
           <Route path="/chat"     element={<AIDataAnalyticsChat />}     />
+          <Route path="/customers/customer/:id"     element={<Customer />}     />
+          <Route path="/customers/customer/:id/sales/:id"     element={<CustomerSales />}     />
           <Route path="*"          element={<NotFound />}      />
         </Routes>
       </div>

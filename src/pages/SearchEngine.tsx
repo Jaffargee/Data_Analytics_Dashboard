@@ -139,7 +139,7 @@ async function fetchAISuggestions(): Promise<Suggestion[]> {
 }
 
 // ── Claude API call ──────────────────────────────────────────────────────────
-async function callClaude(userQuery: string): Promise<AIResponse> {
+async function callClaude(model: string, userQuery: string): Promise<AIResponse> {
       
       const systemPrompt = `
             You are a SQL assistant for a Nigerian Point-of-Sale analytics dashboard. 
@@ -180,7 +180,7 @@ async function callClaude(userQuery: string): Promise<AIResponse> {
             DATABASE SCHEMA:
       ${DB_SCHEMA}`
 
-      const text = await llm_query(userQuery, systemPrompt)
+      const text = await llm_query(model, userQuery, systemPrompt)
 
       try {
             const clean = text?.replace(/```json|```/g, '').trim()
@@ -275,6 +275,7 @@ export default function SearchEngine() {
       const [showSQL, setShowSQL]         = useState(false)
       const inputRef = useRef<HTMLInputElement>(null)
       const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+      const [model, setModel] = useState('gemini-2.5-flash')
 
       // const { suggestions, status: suggestionsStatus, reload: reloadSuggestions } = useSuggestions()
 
@@ -294,7 +295,7 @@ export default function SearchEngine() {
             setHistory(prev => [{ query: queryText, timestamp: new Date() }, ...prev.slice(0, 9)])
 
             try {
-                  const aiRes = await callClaude(queryText)
+                  const aiRes = await callClaude(model, queryText)
                   setAiResponse(aiRes)
 
                   if (aiRes.type === 'query' && aiRes.sql) {
@@ -324,7 +325,7 @@ export default function SearchEngine() {
                   setAiState('error')
             }
 
-      }, [])
+      }, [model])
 
       const handleInput = (value: string) => {
             setInput(value)
@@ -368,6 +369,8 @@ export default function SearchEngine() {
                         onInput={handleInput}
                         onSubmit={handleSubmit}
                         onClear={handleClear}
+                        model={model}
+                        onModelChange={setModel}
                   />
 
                   {/* ── Idle state: examples + history ── */}
@@ -429,18 +432,18 @@ export default function SearchEngine() {
 
                   {/* ── Loading state ── */}
                   {isLoading && (
-                  <Card>
-                        <div className="flex items-center gap-3 py-4">
-                              <div className="w-8 h-8 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
-                                    <Sparkles size={14} className="text-accent-gold animate-pulse" />
+                        <Card>
+                              <div className="flex items-center gap-3 py-4">
+                                    <div className="w-8 h-8 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
+                                          <Sparkles size={14} className="text-accent-gold animate-pulse" />
+                                    </div>
+                                    <div>
+                                          <p className="text-sm font-body text-ink-primary">Generating SQL query…</p>
+                                          <p className="text-xs text-ink-muted font-body">Claude is analyzing your question against the schema</p>
+                                    </div>
+                                    <Loader2 size={16} className="text-accent-gold animate-spin ml-auto" />
                               </div>
-                              <div>
-                                    <p className="text-sm font-body text-ink-primary">Generating SQL query…</p>
-                                    <p className="text-xs text-ink-muted font-body">Claude is analyzing your question against the schema</p>
-                              </div>
-                              <Loader2 size={16} className="text-accent-gold animate-spin ml-auto" />
-                        </div>
-                  </Card>
+                        </Card>
                   )}
 
                   {/* ── AI suggestions (ambiguous query) ── */}
@@ -468,24 +471,24 @@ export default function SearchEngine() {
 
                   {/* ── Error state ── */}
                   {(aiState === 'error' || aiResponse?.type === 'error') && (
-                  <Card>
-                        <div className="flex items-start gap-3 py-2">
-                              <div className="w-8 h-8 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-center justify-center shrink-0">
-                                    <AlertCircle size={14} className="text-accent-red" />
-                              </div>
-                              <div>
-                                    <p className="text-sm font-body text-accent-red font-medium">Query failed</p>
-                                    <p className="text-xs text-ink-muted font-body mt-0.5">
-                                          {execError ?? aiResponse?.error ?? 'An unknown error occurred'}
-                                    </p>
-                                    {generatedSQL && (
-                                          <p className="text-xs text-ink-faint font-mono mt-2 bg-bg-hover rounded px-2 py-1 border border-bg-border">
-                                                {generatedSQL}
+                        <Card>
+                              <div className="flex items-start gap-3 py-2">
+                                    <div className="w-8 h-8 rounded-lg bg-accent-red/10 border border-accent-red/20 flex items-center justify-center shrink-0">
+                                          <AlertCircle size={14} className="text-accent-red" />
+                                    </div>
+                                    <div>
+                                          <p className="text-sm font-body text-accent-red font-medium">Query failed - Model: {model}</p>
+                                          <p className="text-xs text-ink-muted font-body mt-0.5">
+                                                {execError ?? aiResponse?.error ?? 'An unknown error occurred'}
                                           </p>
-                                    )}
+                                          {generatedSQL && (
+                                                <p className="text-xs text-ink-faint font-mono mt-2 bg-bg-hover rounded px-2 py-1 border border-bg-border">
+                                                      {generatedSQL}
+                                                </p>
+                                          )}
+                                    </div>
                               </div>
-                        </div>
-                  </Card>
+                        </Card>
                   )}
 
                   {/* ── Results ── */}
@@ -514,15 +517,15 @@ export default function SearchEngine() {
 
                               {/* Generated SQL */}
                               {showSQL && generatedSQL && (
-                              <Card>
-                                    <CardHeader>
-                                          <CardTitle>Generated SQL</CardTitle>
-                                          <Badge variant="teal">Read-only · validated</Badge>
-                                    </CardHeader>
-                                    <pre className="text-xs font-mono text-ink-secondary bg-bg-hover rounded-lg p-4 overflow-x-auto border border-bg-border leading-relaxed whitespace-pre-wrap">
-                                          {generatedSQL}
-                                    </pre>
-                              </Card>
+                                    <Card>
+                                          <CardHeader>
+                                                <CardTitle>Generated SQL</CardTitle>
+                                                <Badge variant="teal">Read-only · validated</Badge>
+                                          </CardHeader>
+                                          <pre className="text-xs font-mono text-ink-secondary bg-bg-hover rounded-lg p-4 overflow-x-auto border border-bg-border leading-relaxed whitespace-pre-wrap">
+                                                {generatedSQL}
+                                          </pre>
+                                    </Card>
                               )}
 
                               {/* Results table */}
@@ -569,7 +572,18 @@ export default function SearchEngine() {
 }
 
 // ── Search form sub-component ────────────────────────────────────────────────
-function SearchForm({input, isLoading, inputRef, onInput, onSubmit, onClear,}: { input: string, isLoading: boolean, inputRef: React.RefObject<HTMLInputElement>, onInput: (v: string) => void, onSubmit: (e?: React.FormEvent) => void, onClear: () => void }) {
+function SearchForm({input, model, isLoading, inputRef, onInput, onSubmit, onClear, onModelChange}: { input: string, model: string,  isLoading: boolean, inputRef: React.RefObject<HTMLInputElement>, onInput: (v: string) => void, onSubmit: (e?: React.FormEvent) => void, onClear: () => void, onModelChange: (model: string) => void }) {
+      
+      const GEMINI_MODELS = [
+            {value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash'},
+            {value: 'gemini-3-flash', label: 'Gemini 3 Flash'},
+            {value: 'gemini-3-pro', label: 'Gemini 3 Pro'},
+            {value: 'gemini-2-flash', label: 'Gemini 2 Flash'},
+            {value: 'gemini-2-flash-lite', label: 'Gemini 2 Flash Lite'},
+            {value: 'gemini-2.5-flash-tts', label: 'Gemini 2.5 Flash TTS'},
+            {value: 'gemini-2.5-pro-tts', label: 'Gemini 2.5 Pro TTS'},
+      ]
+
       return (
       <div className="flex flex-col items-center gap-4">
             <div className="text-center">
@@ -581,7 +595,7 @@ function SearchForm({input, isLoading, inputRef, onInput, onSubmit, onClear,}: {
                   </p>
             </div>
 
-            <form onSubmit={onSubmit} className="w-full max-w-2xl">
+            <form onSubmit={onSubmit} className="w-full max-w-3xl">
                   <div className="flex items-center gap-3 bg-bg-card border border-accent-gold/30 rounded-2xl px-4 py-3 focus-within:border-accent-gold/60 transition-all shadow-lg">
                         {isLoading
                               ? <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
@@ -605,8 +619,19 @@ function SearchForm({input, isLoading, inputRef, onInput, onSubmit, onClear,}: {
                         <button type="submit" disabled={!input.trim() || isLoading} className="px-4 py-2 rounded-xl bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
                               {isLoading ? 'Thinking…' : 'Search ↵'}
                         </button>
+                        <select value={model} onChange={(e) => { onModelChange(e.target.value) }} className='border border-accent-gold/30 px-4 py-2 rounded-2xl bg-accent-gold/50 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all'>
+                              {
+                                    GEMINI_MODELS.map((model) => (
+                                          <option key={model.value} value={model.value}>
+                                                {model.label}
+                                          </option>
+                                    ))
+                              }
+                        </select>
                   </div>
             </form>
+
+
       </div>
       )
 }
