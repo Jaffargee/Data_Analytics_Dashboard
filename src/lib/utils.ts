@@ -9,8 +9,11 @@ export function fmtCurrency(n: number): string {
   return "₦" + fmt(n, 0);
 }
 
-export function fmtPercent(n: number): string {
-  return n.toFixed(1) + "%";
+export function fmtPercent(value?: number | null) {
+      if (value === null || value === undefined || isNaN(Number(value))) {
+            return "0%"; // or "--"
+      }
+      return `${Number(value).toFixed(2)}%`;
 }
 
 export function fmtDate(iso: string): string {

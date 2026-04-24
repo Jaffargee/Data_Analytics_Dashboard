@@ -157,7 +157,7 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.slice(0, 50).map((r, i) => {
+                {filtered.map((r, i) => {
                   const margin = Number(r.margin_pct ?? 0);
                   return (
                     <tr key={r.pos_item_id} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors group">
@@ -189,6 +189,7 @@ export default function ProductsPage() {
             </table>
             {!filtered.length && <EmptyState message="No items match your search" />}
           </div>
+
         </Card>
       </main>
     </div>
