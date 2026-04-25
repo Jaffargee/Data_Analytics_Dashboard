@@ -3,7 +3,6 @@ import { QueryResponse } from '@/types'
 import { TopBar } from '@/components/ui/TopBar'
 import { ArrowUp, Loader2, PlusIcon, Square, X } from 'lucide-react'
 import { parseLLMContent, renderTokens } from '@/lib/llm_parser'
-import { llm_query } from '@/lib/llm_query'
 import { gpt_llm_query } from '@/lib/gpt_llm_query'
 import { DATA_ANALYTICS_CHAT_SYSTEM_INSTRUCTION } from '@/constants'
 import { executeSQL } from '@/lib/llm_utils'
@@ -96,7 +95,7 @@ export default function AIDataAnalyticsChat() {
 
     try {
       // ── Pass 1: Natural language → SQL JSON ──────────────────────────────
-      const sqlRaw = await llm_query(query, SQL_GENERATION_INSTRUCTION)
+      const sqlRaw = await gpt_llm_query(query, SQL_GENERATION_INSTRUCTION)
       if (!sqlRaw) throw new Error('No response from AI. Please try again.')
 
       let queryResponse: QueryResponse
@@ -142,10 +141,10 @@ export default function AIDataAnalyticsChat() {
         row_count:   queryResult.rowCount,
         columns:     queryResult.columns,
         // Cap rows sent to Gemini — keeps context window lean and cost low
-        rows:        queryResult.rows.slice(0, 50),
+        rows:        queryResult.rows.slice(0, 100),
       }, null, 2)
 
-      const analysis = await llm_query(payload, ANALYSIS_INSTRUCTION)
+      const analysis = await gpt_llm_query(payload, ANALYSIS_INSTRUCTION)
       if (!analysis) throw new Error('AI failed to analyse the results.')
 
       replaceLast(makeAssistantMessage(analysis))
@@ -218,7 +217,7 @@ function AssistantBubble({ content }: { content: React.ReactNode[] }) {
     <div className="flex justify-start pt-3">
       {/* Prose styling for all markdown output from the AI */}
       <div className="w-full text-sm font-body text-ink-primary leading-7
-        [&_strong]:font-semibold [&_strong]:text-ink-primary
+        [&b]:font-semibold [&b]:text-ink-primary
         [&_em]:italic [&_em]:text-ink-secondary
         [&_h1]:font-display [&_h1]:text-lg  [&_h1]:font-bold    [&_h1]:mt-5 [&_h1]:mb-2
         [&_h2]:font-display [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-4 [&_h2]:mb-2

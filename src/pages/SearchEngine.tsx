@@ -4,8 +4,7 @@ import { Card, CardHeader, CardTitle, Badge, EmptyState } from '@/components/ui/
 import { supabase } from '@/lib/supabase'
 import { fmtCurrency, fmt, fmtDate, cn } from '@/lib/utils'
 import { Search, Sparkles, Loader2, ChevronRight, X, Clock, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react'
-import { llm_query } from '@/lib/llm_query'
-import { crb_llm_query } from '@/lib/crb_llm_query'
+import { gpt_llm_query } from '@/lib/gpt_llm_query'
 
 // ── DB schema sent to Claude as context (not your actual data) ───────────────
 const DB_SCHEMA = `
@@ -120,7 +119,7 @@ async function fetchAISuggestions(): Promise<Suggestion[]> {
             ]
       `.trim()
       
-      const resp = await llm_query(
+      const resp = await gpt_llm_query(
             'Generate 8 diverse analytics query suggestions for a POS dashboard.',
             systemPrompt,
       )
@@ -139,7 +138,7 @@ async function fetchAISuggestions(): Promise<Suggestion[]> {
 }
 
 // ── Claude API call ──────────────────────────────────────────────────────────
-async function callClaude(model: string, userQuery: string): Promise<AIResponse> {
+async function callClaude(userQuery: string): Promise<AIResponse> {
       
       const systemPrompt = `
             You are a SQL assistant for a Nigerian Point-of-Sale analytics dashboard. 
@@ -180,7 +179,7 @@ async function callClaude(model: string, userQuery: string): Promise<AIResponse>
             DATABASE SCHEMA:
       ${DB_SCHEMA}`
 
-      const text = await llm_query(model, userQuery, systemPrompt)
+      const text = await gpt_llm_query(userQuery, systemPrompt)
 
       try {
             const clean = text?.replace(/```json|```/g, '').trim()
@@ -295,7 +294,7 @@ export default function SearchEngine() {
             setHistory(prev => [{ query: queryText, timestamp: new Date() }, ...prev.slice(0, 9)])
 
             try {
-                  const aiRes = await callClaude(model, queryText)
+                  const aiRes = await callClaude(queryText)
                   setAiResponse(aiRes)
 
                   if (aiRes.type === 'query' && aiRes.sql) {
@@ -573,17 +572,6 @@ export default function SearchEngine() {
 
 // ── Search form sub-component ────────────────────────────────────────────────
 function SearchForm({input, model, isLoading, inputRef, onInput, onSubmit, onClear, onModelChange}: { input: string, model: string,  isLoading: boolean, inputRef: React.RefObject<HTMLInputElement>, onInput: (v: string) => void, onSubmit: (e?: React.FormEvent) => void, onClear: () => void, onModelChange: (model: string) => void }) {
-      
-      const GEMINI_MODELS = [
-            {value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash'},
-            {value: 'gemini-3-flash', label: 'Gemini 3 Flash'},
-            {value: 'gemini-3-pro', label: 'Gemini 3 Pro'},
-            {value: 'gemini-2-flash', label: 'Gemini 2 Flash'},
-            {value: 'gemini-2-flash-lite', label: 'Gemini 2 Flash Lite'},
-            {value: 'gemini-2.5-flash-tts', label: 'Gemini 2.5 Flash TTS'},
-            {value: 'gemini-2.5-pro-tts', label: 'Gemini 2.5 Pro TTS'},
-      ]
-
       return (
       <div className="flex flex-col items-center gap-4">
             <div className="text-center">
@@ -595,8 +583,8 @@ function SearchForm({input, model, isLoading, inputRef, onInput, onSubmit, onCle
                   </p>
             </div>
 
-            <form onSubmit={onSubmit} className="w-full max-w-3xl">
-                  <div className="flex items-center gap-3 bg-bg-card border border-accent-gold/30 rounded-2xl px-4 py-3 focus-within:border-accent-gold/60 transition-all shadow-lg">
+            <form onSubmit={onSubmit} className="w-full max-w-2xl">
+                  <div className="flex items-center gap-3 bg-bg-card border border-accent-gold/30 rounded-full px-4 py-3 focus-within:border-accent-gold/60 transition-all shadow-md shadow-accent-gold/10">
                         {isLoading
                               ? <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
                               : <Search size={18} className="text-accent-gold shrink-0" />
@@ -616,18 +604,9 @@ function SearchForm({input, model, isLoading, inputRef, onInput, onSubmit, onCle
                                     <X size={15} />
                               </button>
                         )}
-                        <button type="submit" disabled={!input.trim() || isLoading} className="px-4 py-2 rounded-xl bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                        <button type="submit" disabled={!input.trim() || isLoading} className="px-4 py-2 rounded-full bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
                               {isLoading ? 'Thinking…' : 'Search ↵'}
                         </button>
-                        <select value={model} onChange={(e) => { onModelChange(e.target.value) }} className='border border-accent-gold/30 px-4 py-2 rounded-2xl bg-accent-gold/50 text-accent-gold text-xs font-mono font-medium hover:bg-accent-gold/25 transition-all'>
-                              {
-                                    GEMINI_MODELS.map((model) => (
-                                          <option key={model.value} value={model.value}>
-                                                {model.label}
-                                          </option>
-                                    ))
-                              }
-                        </select>
                   </div>
             </form>
 

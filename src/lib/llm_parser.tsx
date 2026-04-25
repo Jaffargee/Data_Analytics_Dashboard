@@ -388,7 +388,7 @@ export function tokensToHTML(tokens: ParsedToken[]): string {
                   const boldContent = Array.isArray(token.content) 
                   ? tokensToHTML(token.content) 
                   : token.content;
-                  return `<strong>${boldContent}</strong>`;
+                  return `<b>${boldContent}</b>`;
 
                   case 'italic':
                   const italicContent = Array.isArray(token.content) 
@@ -465,7 +465,7 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
                         return <span key={key}>{token.content as string}</span>;
 
                   case 'bold':
-                        return <strong key={key}>{renderTokens(token.content as ParsedToken[], key)}</strong>;
+                        return <b key={key}>{renderTokens(token.content as ParsedToken[], key)}</b>;
 
                   case 'italic':
                         return <em key={key}>{renderTokens(token.content as ParsedToken[], key)}</em>;
