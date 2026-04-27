@@ -6,6 +6,9 @@ export function fmt(n: number, decimals = 0): string {
 }
 
 export function fmtCurrency(n: number): string {
+  if (n === null || n === undefined || isNaN(Number(n))) {
+        return "₦0"; // or "--"
+  }
   return "₦" + fmt(n, 0);
 }
 
