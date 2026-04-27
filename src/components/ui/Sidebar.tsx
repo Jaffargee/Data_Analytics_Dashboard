@@ -6,11 +6,13 @@ import {
   AlertTriangle, UserCheck, Settings, ChevronRight,
   Search,
   Sparkles,
+  Clipboard,
 } from "lucide-react";
 
 const nav = [
   { label: "Overview",    icon: LayoutDashboard, path: "/" },
   { label: "Revenue",     icon: TrendingUp,      path: "/revenue" },
+  { label: "Report Generator",  icon: Clipboard,      path: "/report" },
   { label: "Products",    icon: Package,         path: "/products" },
   { label: "Customers",   icon: Users,           path: "/customers" },
   { label: "Suppliers",   icon: Truck,           path: "/suppliers" },
