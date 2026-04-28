@@ -14,7 +14,7 @@ const DB_SCHEMA = `
       - customers(id uuid, pos_customer_id int PK, first_name text, last_name text, email text, phone_number text, company_name text, balance numeric, credit_limit numeric, created_at timestamptz)
       - suppliers(id uuid, pos_supplier_id int PK, company_name text, phone_number text, email text, balance numeric)
       - items(id uuid, pos_item_id int PK, item_name text, category text, supplier_id int FK→suppliers.pos_supplier_id, cost_price numeric, selling_price numeric, quantity numeric, reorder_level numeric, is_service bool, inactive bool)
-      - sales(id uuid, pos_sale_id bigint PK, pos_customer_id int FK→customers.pos_customer_id, salesperson text, customer_name text, invoice_total numeric, items_sold bigint, items_returned bigint, invoice_datetime timestamptz)
+      - sales(id uuid, pos_sale_id bigint UNIQUE, pos_customer_id int FK→customers.pos_customer_id, salesperson text, customer_name text, comment text, is_anonymous_customer boolean, invoice_total numeric, items_net bigint, items_sold bigint, items_returned bigint, invoice_datetime timestamptz, scraped_at timestamptz)
       - sale_items(id uuid, pos_sale_id bigint FK→sales.pos_sale_id, pos_item_id int FK→items.pos_item_id, name text, quantity bigint, unit_price numeric, total numeric)
       - accounts(id uuid, bank_name text, name text, account_no text, balance numeric)
 

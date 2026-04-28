@@ -12,7 +12,7 @@ const DONUT_COLORS = ["#f5c842", "#2dd4bf", "#a78bfa", "#f87171", "#fb923c", "#3
 type SortKey = "total_revenue" | "total_qty_sold" | "margin_pct" | "times_sold" | "gross_profit";
 
 export default function ProductsPage() {
-  const items = useBestSelling(100);
+  const items = useBestSelling(200);
   const cats  = useCategoryPerf();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("total_revenue");

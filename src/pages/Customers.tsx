@@ -17,7 +17,7 @@ const TIER_COLORS: Record<number, "gold" | "teal" | "purple" | "muted"> = {
 };
 
 export default function CustomersPage() {
-  const customers = useTopCustomers(100);
+  const customers = useTopCustomers(200);
   const [search, setSearch] = useState("");
 
   const all = customers.data ?? [];
