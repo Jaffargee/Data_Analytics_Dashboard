@@ -25,7 +25,7 @@ function smooth(points: [number, number][]): string {
 }
 
 export function LineChart({
-  data, height = 200, color = "#2dd4bf",
+  data, height = 250, color = "#2dd4bf",
   formatValue = (v) => v.toLocaleString(), className,
 }: LineChartProps) {
   const [hovered, setHovered] = useState<number | null>(null);
@@ -35,8 +35,12 @@ export function LineChart({
   const min = Math.min(...data.map((d) => d.value), 0);
   const range = max - min || 1;
 
+  const minWidth = 600
+  const perPoint = 60 // spacing per label
+
   const padL = 54, padR = 12, padT = 20, padB = 32;
-  const W = 600, H = height;
+  const W = Math.max(minWidth, data.length * perPoint)
+  const H = height;
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
 
@@ -104,12 +108,39 @@ export function LineChart({
                 <>
                   <line x1={x} x2={x} y1={padT} y2={padT + plotH}
                     stroke={color} strokeWidth={1} strokeOpacity={0.3} strokeDasharray="3 3" />
-                  <rect x={x - 50} y={y - 32} width={100} height={24} rx={4}
+
+
+                  {/* <rect x={x - 50} y={y - 32} width={100} height={24} rx={4}
                     fill="#18181b" stroke={color} strokeWidth={1} strokeOpacity={0.5} />
                   <text x={x} y={y - 16} textAnchor="middle"
                     fill={color} fontSize={11} fontFamily="JetBrains Mono" fontWeight={500}>
                     {formatValue(data[i].value)}
-                  </text>
+                  </text> */}
+
+                   {/* Dynamic tooltip position - moves above or below based on available space */}
+                  {y - 32 < padT ? (
+                    // Show below the point if there's no space above
+                    <>
+                      <rect x={x - 50} y={y + 8} width={100} height={24} rx={4}
+                        fill="#18181b" stroke={color} strokeWidth={1} strokeOpacity={0.5} />
+                      <text x={x} y={y + 24} textAnchor="middle"
+                        fill={color} fontSize={11} fontFamily="JetBrains Mono" fontWeight={500}>
+                        {formatValue(data[i].value)}
+                      </text>
+                    </>
+                  ) : (
+                    // Show above the point (original position)
+                    <>
+                      <rect x={x - 50} y={y - 32} width={100} height={24} rx={4}
+                        fill="#18181b" stroke={color} strokeWidth={1} strokeOpacity={0.5} />
+                      <text x={x} y={y - 16} textAnchor="middle"
+                        fill={color} fontSize={11} fontFamily="JetBrains Mono" fontWeight={500}>
+                        {formatValue(data[i].value)}
+                      </text>
+                    </>
+                  )}
+
+
                 </>
               )}
 

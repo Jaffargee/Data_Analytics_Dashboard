@@ -62,7 +62,7 @@ export function DonutChart({
 
         {/* Center text */}
         <text x={cx} y={cy - 8} textAnchor="middle" fill="#a1a1aa" fontSize={11} fontFamily="JetBrains Mono">
-          {hov ? hov.label.substring(0, 12) : "Total"}
+          {hov && hov?.label ? hov.label.substring(0, 12) : "Total"}
         </text>
         <text x={cx} y={cy + 12} textAnchor="middle" fill={hov?.color ?? "#f5c842"} fontSize={14}
           fontFamily="JetBrains Mono" fontWeight={600}>
@@ -91,6 +91,7 @@ export function DonutChart({
           </div>
         ))}
       </div>
+
     </div>
   );
 }
