@@ -1,4 +1,38 @@
 
+export const accounts_summary_report = (_date: string = new Date().toJSON().split('T')[0]) => {
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(_date)) {
+            throw new Error('Invalid date format. Expected YYYY-MM-DD');
+      }
+      return (`
+            SELECT
+                  p.account as bank_name, 
+                  ROUND(SUM(p.amount), 2) as total,
+                  DATE(s.invoice_datetime) as date
+            FROM payments as p
+            JOIN sales as s
+            ON p.pos_sale_id = s.pos_sale_id
+            WHERE s.salesperson = 'BB' AND DATE(s.invoice_datetime) = '${_date}'
+            GROUP BY p.account, DATE(s.invoice_datetime)
+            ORDER BY DATE(s.invoice_datetime) DESC
+      `.trim())
+} 
+
+export const todays_sales_report = (_date: string = new Date().toJSON().split('T')[0]) => {
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(_date)) {
+            throw new Error('Invalid date format. Expected YYYY-MM-DD');
+      }
+      return (`
+            SELECT *
+            FROM sales
+            WHERE sales.salesperson = 'BB' AND DATE(sales.invoice_datetime) = '${_date}'
+            ORDER BY DATE(sales.invoice_datetime) DESC
+      `.trim())
+} 
+
 // ── DB schema sent to Claude as context (not your actual data) ───────────────
 export const DB_SCHEMA = `
       PostgreSQL schema for a Point-of-Sale system. All monetary values are in NGN (₦).
@@ -7,10 +41,11 @@ export const DB_SCHEMA = `
       - customers(id uuid, pos_customer_id int PK, first_name text, last_name text, email text, phone_number text, company_name text, balance numeric, credit_limit numeric, created_at timestamptz)
       - suppliers(id uuid, pos_supplier_id int PK, company_name text, phone_number text, email text, balance numeric)
       - items(id uuid, pos_item_id int PK, item_name text, category text, supplier_id int FK→suppliers.pos_supplier_id, cost_price numeric, selling_price numeric, quantity numeric, reorder_level numeric, is_service bool, inactive bool)
-      - sales(id uuid, pos_sale_id bigint PK, pos_customer_id int FK→customers.pos_customer_id, salesperson text, customer_name text, invoice_total numeric, items_sold bigint, items_returned bigint, invoice_datetime timestamptz)
+      - sales(id uuid, pos_sale_id bigint UNIQUE, pos_customer_id int FK→customers.pos_customer_id, salesperson text, customer_name text, comment text, is_anonymous_customer boolean, invoice_total numeric, items_net bigint, items_sold bigint, items_returned bigint, invoice_datetime timestamptz, scraped_at timestamptz)
       - sale_items(id uuid, pos_sale_id bigint FK→sales.pos_sale_id, pos_item_id int FK→items.pos_item_id, name text, quantity bigint, unit_price numeric, total numeric)
-      - accounts(id uuid, bank_name text, name text, account_no text, balance numeric)
-
+      - accounts(id uuid, bank_name text, name text, account_no text, balance numeric) -- BANK_NAMES - ARE 'MONIEPOINT MFB', 'ACCESS BANK', 'CASH PAYMENT', 'STANBIC IBTC BANK'
+      - payments ( id uuid not null default gen_random_uuid (), pos_sale_id bigint not null, account_id uuid not null, account text not null, amount numeric not null, constraint payments_pkey primary key (id), constraint payments_account_id_fkey foreign KEY (account_id) references accounts (id) on update CASCADE on delete CASCADE) 
+      
       Analytical views (prefer these for aggregated queries):
       - v_revenue_daily(sale_date date, num_sales bigint, revenue numeric, items_sold bigint)
       - v_revenue_monthly(month text, num_sales bigint, revenue numeric, avg_sale numeric, items_sold bigint)
@@ -83,3 +118,15 @@ export const DATA_ANALYTICS_CHAT_SYSTEM_INSTRUCTION = `
 
       DATABASE SCHEMA:
 ${DB_SCHEMA}`
+
+// ── Suggested queries shown at rest state ────────────────────────────────────
+export const FALLBACK_SUGGESTIONS = [
+      { label: 'Top 10 best-selling products',      query: 'Show me the top 10 best-selling products by revenue' },
+      { label: 'What did a customer buy?',          query: 'Show all products bought by customer ZIKRULLAHI SHOP with quantities' },
+      { label: 'Low stock alert',                   query: 'Which items are running low and need restocking?' },
+      { label: 'Revenue this month',                query: 'Total revenue this month broken down by day' },
+      { label: 'Most profitable categories',        query: 'Which product categories have the highest profit margin?' },
+      { label: 'Supplier outstanding balances',     query: 'Show all suppliers and how much we owe them' },
+      { label: 'Salesperson performance',           query: 'Compare salesperson performance by revenue and number of sales' },
+      { label: 'Customer purchase frequency',       query: 'Show customers ranked by number of purchases and lifetime value' },
+]
