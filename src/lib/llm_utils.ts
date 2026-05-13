@@ -1,30 +1,32 @@
-import { QueryResult } from "@/types"
-import { supabase } from "./supabase"
+import { QueryResult } from '@/types';
+import { supabase } from './supabase';
 
 export async function executeSQL(sql: string): Promise<QueryResult> {
-      const start = performance.now()
+      const start = performance.now();
 
       // Use Supabase's built-in query approach — runs against your DB directly
-      const { data, error } = await supabase.rpc('execute_analytics_query', { query_sql: sql })
+      const { data, error } = await supabase.rpc('execute_analytics_query', {
+            query_sql: sql,
+      });
 
       if (error) {
             // Fallback: try to parse the SQL and use table/view API
-            throw new Error(error.message)
+            throw new Error(error.message);
       }
 
-      const rows = (data as Record<string, unknown>[]) ?? []
-      const columns = rows.length > 0 ? Object.keys(rows[0]) : []
+      const rows = (data as Record<string, unknown>[]) ?? [];
+      const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
 
       return {
             columns,
             rows,
             rowCount: rows.length,
             executionMs: Math.round(performance.now() - start),
-      }
+      };
 }
 
 export const customer_product_query = (customer_id: number) => {
-      return (`
+      return `
       SELECT json_build_object(
             'summary', (
                   SELECT json_build_object(
@@ -69,6 +71,5 @@ export const customer_product_query = (customer_id: number) => {
                         WHERE s.pos_customer_id = ${customer_id}
                   ) t
             )
-      ) AS result;`.trim()     
-)
-}
+      ) AS result;`.trim();
+};
