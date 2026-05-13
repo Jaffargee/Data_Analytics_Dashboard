@@ -1,0 +1,71 @@
+          {/* D3 SVG */}
+          <svg ref={svgRef} className="absolute inset-0 w-full h-full">
+            <defs>
+              <filter id="mapglow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="mapglow2" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            {paths.map(({ name, d, centroid }) => {
+              const intel = INTEL[normalizeName(name)] || INTEL[name];
+              if (!intel) return null;
+              if (filter !== "ALL" && intel.alertLevel !== filter) return null;
+
+              const isHov = hovered === intel.id || hovered === name;
+              const isSel = selected === intel.id || selected === name;
+              const al    = ALERT[intel.alertLevel];
+              const fill  = getMetricColor(name);
+              const active = isHov || isSel;
+
+              return (
+                <g key={name}>
+                  {/* Shadow/glow layer for selected */}
+                  {active && (
+                    <path d={d} fill={al.color} opacity={0.15} style={{ filter:"url(#mapglow2)" }}/>
+                  )}
+                  {/* Main state shape */}
+                  <path
+                    d={d}
+                    fill={fill}
+                    stroke={active ? al.color : "#d4a01755"}
+                    strokeWidth={active ? 1.6 : 0.5}
+                    style={{ cursor:"pointer", filter: active?"url(#mapglow)":"none", transition:"stroke 0.12s,stroke-width 0.12s" }}
+                    onMouseEnter={e => {
+                      setHovered(intel.id);
+                      const pr = wrapRef.current!.getBoundingClientRect();
+                      setTooltip({ x:e.clientX-pr.left, y:e.clientY-pr.top });
+                    }}
+                    onMouseMove={e => {
+                      const pr = wrapRef.current!.getBoundingClientRect();
+                      setTooltip({ x:e.clientX-pr.left, y:e.clientY-pr.top });
+                    }}
+                    onMouseLeave={() => { setHovered(null); setTooltip(null); }}
+                    onClick={() => setSelected(intel.id)}
+                  />
+                  {/* Alert indicator dot */}
+                  {centroid[0] && !isNaN(centroid[0]) && (
+                    <circle cx={centroid[0]} cy={centroid[1]}
+                      r={active ? 4 : intel.alertLevel==="CRITICAL" ? 3 : 2}
+                      fill={al.color} opacity={active?1:0.85}
+                      style={{ filter:`drop-shadow(0 0 ${active?5:3}px ${al.color})`, pointerEvents:"none",
+                        animation: intel.alertLevel==="CRITICAL"?"critPulse 1.4s ease-in-out infinite":"none"
+                      }}/>
+                  )}
+                  {/* State name label when active */}
+                  {active && centroid[0] && !isNaN(centroid[0]) && (
+                    <text x={centroid[0]} y={centroid[1]+13}
+                      textAnchor="middle" fontSize="7.5" fill="#fbbf24"
+                      fontFamily="'Courier New',monospace" fontWeight="bold" letterSpacing="1"
+                      style={{ filter:"url(#mapglow)", pointerEvents:"none" }}>
+                      {name.toUpperCase()}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>

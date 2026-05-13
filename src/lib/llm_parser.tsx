@@ -40,7 +40,10 @@ const DEFAULT_OPTIONS: ParseOptions = {
 /**
  * Main parser function - converts LLM markdown-style text into structured tokens
  */
-export function parseLLMContent(content: string, options: ParseOptions = {}): ParsedToken[] {
+export function parseLLMContent(
+      content: string,
+      options: ParseOptions = {}
+): ParsedToken[] {
       const opts = { ...DEFAULT_OPTIONS, ...options };
       const tokens: ParsedToken[] = [];
       const lines = content.split('\n');
@@ -55,7 +58,6 @@ export function parseLLMContent(content: string, options: ParseOptions = {}): Pa
 
             // Handle code blocks
             if (line.startsWith('```')) {
-
                   if (!inCodeBlock) {
                         // Start of code block
                         inCodeBlock = true;
@@ -77,118 +79,124 @@ export function parseLLMContent(content: string, options: ParseOptions = {}): Pa
                   continue;
             }
 
-      if (inCodeBlock) {
-            codeBlockContent += (codeBlockContent ? '\n' : '') + line;
-            i++;
-            continue;
-      }
+            if (inCodeBlock) {
+                  codeBlockContent += (codeBlockContent ? '\n' : '') + line;
+                  i++;
+                  continue;
+            }
 
-      // Handle horizontal rule
-      if (/^[-*_]{3,}$/.test(line.trim())) {
-            tokens.push({ type: 'horizontal-rule', content: '' });
-            i++;
-            continue;
-      }
+            // Handle horizontal rule
+            if (/^[-*_]{3,}$/.test(line.trim())) {
+                  tokens.push({ type: 'horizontal-rule', content: '' });
+                  i++;
+                  continue;
+            }
 
-      // Handle headings
-      const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-      if (headingMatch) {
-            tokens.push({
-                  type: 'heading',
-                  content: parseInlineContent(headingMatch[2], opts),
-                  level: headingMatch[1].length,
-            });
-            i++;
-            continue;
-      }
+            // Handle headings
+            const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+            if (headingMatch) {
+                  tokens.push({
+                        type: 'heading',
+                        content: parseInlineContent(headingMatch[2], opts),
+                        level: headingMatch[1].length,
+                  });
+                  i++;
+                  continue;
+            }
 
-      // Handle blockquotes
-      if (line.startsWith('>')) {
-            const quoteContent = line.slice(1).trim();
-            tokens.push({
-                  type: 'blockquote',
-                  content: parseInlineContent(quoteContent, opts),
-            });
-            i++;
-            continue;
-      }
+            // Handle blockquotes
+            if (line.startsWith('>')) {
+                  const quoteContent = line.slice(1).trim();
+                  tokens.push({
+                        type: 'blockquote',
+                        content: parseInlineContent(quoteContent, opts),
+                  });
+                  i++;
+                  continue;
+            }
 
-      // Handle unordered list items
-      const unorderedListMatch = line.match(/^[\s]*[-*+]\s+(.+)$/);
-      if (unorderedListMatch) {
-      const listItems: ParsedToken[][] = [];
-      while (i < lines.length) {
-      const listLine = lines[i];
-      const listMatch = listLine.match(/^[\s]*[-*+]\s+(.+)$/);
-      if (!listMatch) break;
-      listItems.push(parseInlineContent(listMatch[1], opts));
-      i++;
-      }
-      tokens.push({
-      type: 'list-item',
-      content: '',
-      items: listItems,
-      });
-      continue;
-      }
+            // Handle unordered list items
+            const unorderedListMatch = line.match(/^[\s]*[-*+]\s+(.+)$/);
+            if (unorderedListMatch) {
+                  const listItems: ParsedToken[][] = [];
+                  while (i < lines.length) {
+                        const listLine = lines[i];
+                        const listMatch = listLine.match(/^[\s]*[-*+]\s+(.+)$/);
+                        if (!listMatch) break;
+                        listItems.push(parseInlineContent(listMatch[1], opts));
+                        i++;
+                  }
+                  tokens.push({
+                        type: 'list-item',
+                        content: '',
+                        items: listItems,
+                  });
+                  continue;
+            }
 
-      // Handle ordered list items
-      const orderedListMatch = line.match(/^[\s]*\d+\.\s+(.+)$/);
-      if (orderedListMatch) {
-      const listItems: ParsedToken[][] = [];
-      while (i < lines.length) {
-      const listLine = lines[i];
-      const listMatch = listLine.match(/^[\s]*\d+\.\s+(.+)$/);
-      if (!listMatch) break;
-      listItems.push(parseInlineContent(listMatch[1], opts));
-      i++;
-      }
-      tokens.push({
-      type: 'ordered-list-item',
-      content: '',
-      items: listItems,
-      });
-      continue;
-      }
+            // Handle ordered list items
+            const orderedListMatch = line.match(/^[\s]*\d+\.\s+(.+)$/);
+            if (orderedListMatch) {
+                  const listItems: ParsedToken[][] = [];
+                  while (i < lines.length) {
+                        const listLine = lines[i];
+                        const listMatch = listLine.match(/^[\s]*\d+\.\s+(.+)$/);
+                        if (!listMatch) break;
+                        listItems.push(parseInlineContent(listMatch[1], opts));
+                        i++;
+                  }
+                  tokens.push({
+                        type: 'ordered-list-item',
+                        content: '',
+                        items: listItems,
+                  });
+                  continue;
+            }
 
-      // Handle empty lines (paragraph breaks)
-      if (line.trim() === '') {
-      if (tokens.length > 0 && tokens[tokens.length - 1].type !== 'paragraph') {
-      // Only add line break if not already a block element
-      tokens.push({ type: 'line-break', content: '' });
-      }
-      i++;
-      continue;
-      }
+            // Handle empty lines (paragraph breaks)
+            if (line.trim() === '') {
+                  if (
+                        tokens.length > 0 &&
+                        tokens[tokens.length - 1].type !== 'paragraph'
+                  ) {
+                        // Only add line break if not already a block element
+                        tokens.push({ type: 'line-break', content: '' });
+                  }
+                  i++;
+                  continue;
+            }
 
-      // Handle regular paragraphs (group consecutive non-empty, non-special lines)
-      let paragraphLines: string[] = [];
-      while (i < lines.length && lines[i].trim() !== '' && 
-      !lines[i].startsWith('```') && 
-      !lines[i].startsWith('>') &&
-      !lines[i].match(/^#{1,6}\s+/) &&
-      !lines[i].match(/^[-*+]\s+/) &&
-      !lines[i].match(/^\d+\.\s+/) &&
-      !/^[-*_]{3,}$/.test(lines[i].trim())) {
-      paragraphLines.push(lines[i]);
-      i++;
-      }
+            // Handle regular paragraphs (group consecutive non-empty, non-special lines)
+            let paragraphLines: string[] = [];
+            while (
+                  i < lines.length &&
+                  lines[i].trim() !== '' &&
+                  !lines[i].startsWith('```') &&
+                  !lines[i].startsWith('>') &&
+                  !lines[i].match(/^#{1,6}\s+/) &&
+                  !lines[i].match(/^[-*+]\s+/) &&
+                  !lines[i].match(/^\d+\.\s+/) &&
+                  !/^[-*_]{3,}$/.test(lines[i].trim())
+            ) {
+                  paragraphLines.push(lines[i]);
+                  i++;
+            }
 
-      if (paragraphLines.length > 0) {
-      const paragraphContent = paragraphLines.join(' ').trim();
-      tokens.push({
-      type: 'paragraph',
-      content: parseInlineContent(paragraphContent, opts),
-      });
-      }
+            if (paragraphLines.length > 0) {
+                  const paragraphContent = paragraphLines.join(' ').trim();
+                  tokens.push({
+                        type: 'paragraph',
+                        content: parseInlineContent(paragraphContent, opts),
+                  });
+            }
       }
 
       return tokens;
 }
 
 /**
-* Parse inline formatting within a text string
-*/
+ * Parse inline formatting within a text string
+ */
 function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
       const tokens: ParsedToken[] = [];
       let currentIndex = 0;
@@ -205,42 +213,74 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
             if (matchStart > currentIndex) {
                   const textBefore = text.slice(currentIndex, matchStart);
                   if (textBefore) {
-                        tokens.push({ type: 'text', content: sanitizeText(textBefore, opts) });
+                        tokens.push({
+                              type: 'text',
+                              content: sanitizeText(textBefore, opts),
+                        });
                   }
             }
 
             // Parse the matched format
             if (matchText === '***' || matchText === '___') {
                   // Bold + Italic
-                  const endIndex = findClosingMarker(text, matchStart + 3, matchText);
+                  const endIndex = findClosingMarker(
+                        text,
+                        matchStart + 3,
+                        matchText
+                  );
                   if (endIndex !== -1) {
-                        const innerContent = text.slice(matchStart + 3, endIndex);
+                        const innerContent = text.slice(
+                              matchStart + 3,
+                              endIndex
+                        );
                         tokens.push({
                               type: 'bold',
-                              content: [{ type: 'italic', content: sanitizeText(innerContent, opts) }],
+                              content: [
+                                    {
+                                          type: 'italic',
+                                          content: sanitizeText(
+                                                innerContent,
+                                                opts
+                                          ),
+                                    },
+                              ],
                         });
                         inlineRegex.lastIndex = endIndex + 3;
                         currentIndex = endIndex + 3;
                         continue;
                   }
             } else if (matchText === '**' || matchText === '__') {
-            // Bold
-            const endIndex = findClosingMarker(text, matchStart + 2, matchText);
-            if (endIndex !== -1) {
-                  const innerContent = text.slice(matchStart + 2, endIndex);
-                  tokens.push({
-                        type: 'bold',
-                        content: parseInlineContent(innerContent, opts),
-                  });
-                  inlineRegex.lastIndex = endIndex + 2;
-                  currentIndex = endIndex + 2;
-                  continue;
-            }
+                  // Bold
+                  const endIndex = findClosingMarker(
+                        text,
+                        matchStart + 2,
+                        matchText
+                  );
+                  if (endIndex !== -1) {
+                        const innerContent = text.slice(
+                              matchStart + 2,
+                              endIndex
+                        );
+                        tokens.push({
+                              type: 'bold',
+                              content: parseInlineContent(innerContent, opts),
+                        });
+                        inlineRegex.lastIndex = endIndex + 2;
+                        currentIndex = endIndex + 2;
+                        continue;
+                  }
             } else if (matchText === '*' || matchText === '_') {
                   // Italic
-                  const endIndex = findClosingMarker(text, matchStart + 1, matchText);
+                  const endIndex = findClosingMarker(
+                        text,
+                        matchStart + 1,
+                        matchText
+                  );
                   if (endIndex !== -1) {
-                        const innerContent = text.slice(matchStart + 1, endIndex);
+                        const innerContent = text.slice(
+                              matchStart + 1,
+                              endIndex
+                        );
                         tokens.push({
                               type: 'italic',
                               content: parseInlineContent(innerContent, opts),
@@ -251,9 +291,16 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
                   }
             } else if (matchText === '~~') {
                   // Strikethrough
-                  const endIndex = findClosingMarker(text, matchStart + 2, '~~');
+                  const endIndex = findClosingMarker(
+                        text,
+                        matchStart + 2,
+                        '~~'
+                  );
                   if (endIndex !== -1) {
-                        const innerContent = text.slice(matchStart + 2, endIndex);
+                        const innerContent = text.slice(
+                              matchStart + 2,
+                              endIndex
+                        );
                         tokens.push({
                               type: 'strikethrough',
                               content: sanitizeText(innerContent, opts),
@@ -266,7 +313,10 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
                   // Inline code
                   const endIndex = findClosingMarker(text, matchStart + 1, '`');
                   if (endIndex !== -1) {
-                        const innerContent = text.slice(matchStart + 1, endIndex);
+                        const innerContent = text.slice(
+                              matchStart + 1,
+                              endIndex
+                        );
                         tokens.push({
                               type: 'inline-code',
                               content: sanitizeText(innerContent, opts),
@@ -279,14 +329,14 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
                   // Links [text](url)
                   const linkMatch = matchText.match(/^\[(.*?)\]\((.*?)\)$/);
                   if (linkMatch) {
-                  tokens.push({
-                        type: 'link',
-                        content: sanitizeText(linkMatch[1], opts),
-                        url: linkMatch[2],
-                  });
-                  currentIndex = matchStart + matchText.length;
-                  inlineRegex.lastIndex = currentIndex;
-                  continue;
+                        tokens.push({
+                              type: 'link',
+                              content: sanitizeText(linkMatch[1], opts),
+                              url: linkMatch[2],
+                        });
+                        currentIndex = matchStart + matchText.length;
+                        inlineRegex.lastIndex = currentIndex;
+                        continue;
                   }
             }
 
@@ -299,7 +349,10 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
       if (currentIndex < text.length) {
             const remainingText = text.slice(currentIndex);
             if (remainingText) {
-                  tokens.push({ type: 'text', content: sanitizeText(remainingText, opts) });
+                  tokens.push({
+                        type: 'text',
+                        content: sanitizeText(remainingText, opts),
+                  });
             }
       }
 
@@ -307,9 +360,13 @@ function parseInlineContent(text: string, opts: ParseOptions): ParsedToken[] {
 }
 
 /**
-* Find the closing marker for inline formatting
-*/
-function findClosingMarker(text: string, startIndex: number, marker: string): number {
+ * Find the closing marker for inline formatting
+ */
+function findClosingMarker(
+      text: string,
+      startIndex: number,
+      marker: string
+): number {
       let index = startIndex;
       while (index < text.length) {
             if (text.slice(index, index + marker.length) === marker) {
@@ -324,13 +381,13 @@ function findClosingMarker(text: string, startIndex: number, marker: string): nu
 }
 
 /**
-* Sanitize text content
-*/
+ * Sanitize text content
+ */
 function sanitizeText(text: string, opts: ParseOptions): string {
       if (!opts.sanitize) return text;
 
       // Basic sanitization - remove potential XSS
-      return text
+      return text;
       // .replace(/&/g, '&amp;')
       // .replace(/</g, '&lt;')
       // .replace(/>/g, '&gt;')
@@ -339,124 +396,149 @@ function sanitizeText(text: string, opts: ParseOptions): string {
 }
 
 /**
-* Convert parsed tokens to plain text (for copying, searching, etc.)
-*/
+ * Convert parsed tokens to plain text (for copying, searching, etc.)
+ */
 export function tokensToPlainText(tokens: ParsedToken[]): string {
-      return tokens.map(token => {
-            switch (token.type) {
-                  case 'code-block':
-                        return token.content;
-                  case 'inline-code':
-                        return token.content;
-                  case 'link':
-                        return token.content;
-                  case 'heading':
-                        return token.content;
-                  case 'paragraph':
-                        return token.content;
-                  case 'list-item':
-                  case 'ordered-list-item':
-                        return token.items?.map(item => tokensToPlainText(item)).join('\n') || '';
-                  case 'blockquote':
-                        return token.content;
-                  case 'bold':
-                  case 'italic':
-                  case 'strikethrough':
-                        return Array.isArray(token.content) 
-                        ? tokensToPlainText(token.content) 
-                        : token.content;
-                  case 'line-break':
-                        return '\n';
-                  case 'horizontal-rule':
-                        return '\n---\n';
-                  default:
-                        return token.content;
-            }
-      }).join('');
+      return tokens
+            .map((token) => {
+                  switch (token.type) {
+                        case 'code-block':
+                              return token.content;
+                        case 'inline-code':
+                              return token.content;
+                        case 'link':
+                              return token.content;
+                        case 'heading':
+                              return token.content;
+                        case 'paragraph':
+                              return token.content;
+                        case 'list-item':
+                        case 'ordered-list-item':
+                              return (
+                                    token.items
+                                          ?.map((item) =>
+                                                tokensToPlainText(item)
+                                          )
+                                          .join('\n') || ''
+                              );
+                        case 'blockquote':
+                              return token.content;
+                        case 'bold':
+                        case 'italic':
+                        case 'strikethrough':
+                              return Array.isArray(token.content)
+                                    ? tokensToPlainText(token.content)
+                                    : token.content;
+                        case 'line-break':
+                              return '\n';
+                        case 'horizontal-rule':
+                              return '\n---\n';
+                        default:
+                              return token.content;
+                  }
+            })
+            .join('');
 }
 
 /**
-* Convert parsed tokens to HTML (for rendering in web views)
-*/
+ * Convert parsed tokens to HTML (for rendering in web views)
+ */
 export function tokensToHTML(tokens: ParsedToken[]): string {
-      return tokens.map(token => {
-      switch (token.type) {
-            case 'text':
-                  return token.content;
+      return tokens
+            .map((token) => {
+                  switch (token.type) {
+                        case 'text':
+                              return token.content;
 
-            case 'bold':
-                  const boldContent = Array.isArray(token.content) 
-                  ? tokensToHTML(token.content) 
-                  : token.content;
-                  return `<b>${boldContent}</b>`;
+                        case 'bold':
+                              const boldContent = Array.isArray(token.content)
+                                    ? tokensToHTML(token.content)
+                                    : token.content;
+                              return `<b>${boldContent}</b>`;
 
-                  case 'italic':
-                  const italicContent = Array.isArray(token.content) 
-                  ? tokensToHTML(token.content) 
-                  : token.content;
-                  return `<em>${italicContent}</em>`;
+                        case 'italic':
+                              const italicContent = Array.isArray(token.content)
+                                    ? tokensToHTML(token.content)
+                                    : token.content;
+                              return `<em>${italicContent}</em>`;
 
-            case 'strikethrough':
-                  return `<del>${token.content}</del>`;
+                        case 'strikethrough':
+                              return `<del>${token.content}</del>`;
 
-            case 'inline-code':
-                  return `<code>${token.content}</code>`;
+                        case 'inline-code':
+                              return `<code>${token.content}</code>`;
 
-            case 'code-block':
-                  const language = token.language ? ` class="language-${token.language}"` : '';
-                  return `<pre><code${language}>${token.content}</code></pre>`;
+                        case 'code-block':
+                              const language = token.language
+                                    ? ` class="language-${token.language}"`
+                                    : '';
+                              return `<pre><code${language}>${token.content}</code></pre>`;
 
-            case 'link':
-                  return `<a href="${token.url}" target="_blank" rel="noopener noreferrer">${token.content}</a>`;
+                        case 'link':
+                              return `<a href="${token.url}" target="_blank" rel="noopener noreferrer">${token.content}</a>`;
 
-            case 'heading':
-                  const level = token.level || 2;
-                  const headingContent = Array.isArray(token.content) 
-                  ? tokensToHTML(token.content) 
-                  : token.content;
-                  return `<h${level}>${headingContent}</h${level}>`;
+                        case 'heading':
+                              const level = token.level || 2;
+                              const headingContent = Array.isArray(
+                                    token.content
+                              )
+                                    ? tokensToHTML(token.content)
+                                    : token.content;
+                              return `<h${level}>${headingContent}</h${level}>`;
 
-            case 'paragraph':
-                  const paraContent = Array.isArray(token.content) 
-                  ? tokensToHTML(token.content) 
-                  : token.content;
-                  return `<p>${paraContent}</p>`;
+                        case 'paragraph':
+                              const paraContent = Array.isArray(token.content)
+                                    ? tokensToHTML(token.content)
+                                    : token.content;
+                              return `<p>${paraContent}</p>`;
 
-            case 'list-item':
-                  const listItems = token.items?.map(item => 
-                  `<li>${tokensToHTML(item)}</li>`
-                  ).join('') || '';
-                  return `<ul>${listItems}</ul>`;
+                        case 'list-item':
+                              const listItems =
+                                    token.items
+                                          ?.map(
+                                                (item) =>
+                                                      `<li>${tokensToHTML(item)}</li>`
+                                          )
+                                          .join('') || '';
+                              return `<ul>${listItems}</ul>`;
 
-            case 'ordered-list-item':
-                  const orderedItems = token.items?.map(item => 
-                  `<li>${tokensToHTML(item)}</li>`
-                  ).join('') || '';
-                  return `<ol>${orderedItems}</ol>`;
+                        case 'ordered-list-item':
+                              const orderedItems =
+                                    token.items
+                                          ?.map(
+                                                (item) =>
+                                                      `<li>${tokensToHTML(item)}</li>`
+                                          )
+                                          .join('') || '';
+                              return `<ol>${orderedItems}</ol>`;
 
-            case 'blockquote':
-                  const quoteContent = Array.isArray(token.content) 
-                  ? tokensToHTML(token.content) 
-                  : token.content;
-                  return `<blockquote>${quoteContent}</blockquote>`;
+                        case 'blockquote':
+                              const quoteContent = Array.isArray(token.content)
+                                    ? tokensToHTML(token.content)
+                                    : token.content;
+                              return `<blockquote>${quoteContent}</blockquote>`;
 
-            case 'horizontal-rule':
-                  return '<hr />';
+                        case 'horizontal-rule':
+                              return '<hr />';
 
-            case 'line-break':
-                  return '<br />';
+                        case 'line-break':
+                              return '<br />';
 
-            default:
-            return token.content;
-      }
-      }).join('');
+                        default:
+                              return token.content;
+                  }
+            })
+            .join('');
 }
 
 /**
-* React component helper - convert tokens to React nodes
-* (Import this in your React components)
-*/
-export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): React.ReactNode[] {
+ * React component helper - convert tokens to React nodes
+ * (Import this in your React components)
+ */
+export function renderTokens(
+      tokens: ParsedToken[],
+      keyPrefix: string = ''
+): React.ReactNode[] {
       return tokens.map((token, index) => {
             const key = `${keyPrefix}-${index}`;
 
@@ -465,21 +547,45 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
                         return <span key={key}>{token.content as string}</span>;
 
                   case 'bold':
-                        return <b key={key}>{renderTokens(token.content as ParsedToken[], key)}</b>;
+                        return (
+                              <b key={key}>
+                                    {renderTokens(
+                                          token.content as ParsedToken[],
+                                          key
+                                    )}
+                              </b>
+                        );
 
                   case 'italic':
-                        return <em key={key}>{renderTokens(token.content as ParsedToken[], key)}</em>;
+                        return (
+                              <em key={key}>
+                                    {renderTokens(
+                                          token.content as ParsedToken[],
+                                          key
+                                    )}
+                              </em>
+                        );
 
                   case 'strikethrough':
                         return <del key={key}>{token.content as string}</del>;
 
                   case 'inline-code':
-                        return <code key={key} className="inline-code">{token.content as string}</code>;
+                        return (
+                              <code key={key} className="inline-code">
+                                    {token.content as string}
+                              </code>
+                        );
 
                   case 'code-block':
                         return (
                               <pre key={key} className="code-block">
-                                    <code className={token.language ? `language-${token.language}` : ''}>
+                                    <code
+                                          className={
+                                                token.language
+                                                      ? `language-${token.language}`
+                                                      : ''
+                                          }
+                                    >
                                           {token.content as string}
                                     </code>
                               </pre>
@@ -487,23 +593,39 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
 
                   case 'link':
                         return (
-                              <a key={key} href={token.url} target="_blank" rel="noopener noreferrer"className="text-accent-gold hover:underline">
+                              <a
+                                    key={key}
+                                    href={token.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-accent-gold hover:underline"
+                              >
                                     {token.content as string}
                               </a>
                         );
 
                   case 'heading':
-                        const HeadingTag = `h${token.level || 2}` as keyof JSX.IntrinsicElements;
+                        const HeadingTag =
+                              `h${token.level || 2}` as keyof JSX.IntrinsicElements;
                         return (
-                              <HeadingTag key={key} className={`heading-${token.level}`}>
-                                    {renderTokens(token.content as ParsedToken[], key)}
+                              <HeadingTag
+                                    key={key}
+                                    className={`heading-${token.level}`}
+                              >
+                                    {renderTokens(
+                                          token.content as ParsedToken[],
+                                          key
+                                    )}
                               </HeadingTag>
                         );
 
                   case 'paragraph':
                         return (
                               <p key={key} className="mb-4">
-                                    {renderTokens(token.content as ParsedToken[], key)}
+                                    {renderTokens(
+                                          token.content as ParsedToken[],
+                                          key
+                                    )}
                               </p>
                         );
 
@@ -512,7 +634,10 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
                               <ul key={key} className="list-disc pl-6 mb-4">
                                     {token.items?.map((item, itemIndex) => (
                                           <li key={`${key}-item-${itemIndex}`}>
-                                                {renderTokens(item, `${key}-item-${itemIndex}`)}
+                                                {renderTokens(
+                                                      item,
+                                                      `${key}-item-${itemIndex}`
+                                                )}
                                           </li>
                                     ))}
                               </ul>
@@ -523,7 +648,10 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
                               <ol key={key} className="list-decimal pl-6 mb-4">
                                     {token.items?.map((item, itemIndex) => (
                                           <li key={`${key}-item-${itemIndex}`}>
-                                                {renderTokens(item, `${key}-item-${itemIndex}`)}
+                                                {renderTokens(
+                                                      item,
+                                                      `${key}-item-${itemIndex}`
+                                                )}
                                           </li>
                                     ))}
                               </ol>
@@ -531,13 +659,24 @@ export function renderTokens(tokens: ParsedToken[], keyPrefix: string = ''): Rea
 
                   case 'blockquote':
                         return (
-                              <blockquote key={key} className="border-l-4 border-accent-gold pl-4 italic">
-                                    {renderTokens(token.content as ParsedToken[], key)}
+                              <blockquote
+                                    key={key}
+                                    className="border-l-4 border-accent-gold pl-4 italic"
+                              >
+                                    {renderTokens(
+                                          token.content as ParsedToken[],
+                                          key
+                                    )}
                               </blockquote>
                         );
 
                   case 'horizontal-rule':
-                        return <hr key={key} className="my-6 border-accent-gold/30" />;
+                        return (
+                              <hr
+                                    key={key}
+                                    className="my-6 border-accent-gold/30"
+                              />
+                        );
 
                   case 'line-break':
                         return <br key={key} />;
