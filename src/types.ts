@@ -1,3 +1,5 @@
+export type Report = Record<any, any>
+
 // ── Enums ─────────────────────────────────────────────────────────────────────
 export type CustomerCategory =
       | 'WHSL1'
