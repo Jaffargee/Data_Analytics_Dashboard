@@ -291,3 +291,215 @@ grant execute on function public.fn_period_time_intelligence(date,date)        t
 grant execute on function public.fn_period_top_customers(date,date,int)        to anon, authenticated;
 grant execute on function public.fn_period_daily_breakdown(date,date)          to anon, authenticated;
 grant execute on function public.fn_period_comparison(date,date,date,date)     to anon, authenticated;
+
+
+
+
+
+
+
+
+
+
+
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ==========================================================================================================================================================
+-- ============================================================
+-- DELIVERY TRACKING SCHEMA
+-- Run in Supabase SQL Editor
+-- ============================================================
+
+-- ── Enums ────────────────────────────────────────────────────
+create type public.delivery_status as enum (
+	'PENDING',
+	'CONFIRMED',
+	'PACKED',
+	'DISPATCHED',
+	'IN_TRANSIT',
+	'OUT_FOR_DELIVERY',
+	'DELIVERED',
+	'FAILED',
+	'RETURNED',
+	'CANCELLED'
+);
+
+create type public.delivery_method as enum (
+	'PICKUP',
+	'LOCAL_DELIVERY',
+	'COURIER',
+	'BUS_TRANSPORT',
+	'AGENT'
+);
+
+create type public.delivery_priority as enum (
+	'STANDARD',
+	'EXPRESS',
+	'URGENT'
+);
+
+-- ── Main deliveries table ─────────────────────────────────────
+create table public.deliveries (
+	id                  uuid not null default gen_random_uuid(),
+	tracking_no         text not null,
+
+	-- Customer link (nullable — could be walk-in)
+	customer_id         uuid null,
+	customer_name       text not null,
+	customer_phone      text null,
+
+	-- Sale link (optional — delivery from a specific sale)
+	pos_sale_id         bigint null,
+
+	-- Delivery details
+	method              public.delivery_method    not null default 'LOCAL_DELIVERY',
+	priority            public.delivery_priority  not null default 'STANDARD',
+	status              public.delivery_status    not null default 'PENDING',
+
+	-- Destination
+	destination_label   text null,
+	destination_line_1  text null,
+	destination_line_2  text null,
+	destination_city    text not null,
+	destination_state   text not null,
+	destination_country text not null default 'Nigeria',
+
+	-- Logistics
+	assigned_to         text null,          -- staff / rider name
+	courier_name        text null,          -- third-party courier
+	courier_tracking    text null,          -- courier's own tracking number
+	vehicle_info        text null,          -- bike plate, car, bus no.
+
+	-- Package
+	package_description text null,
+	package_weight      numeric(8,2) null,  -- kg
+	package_count       integer not null default 1,
+
+	-- Financial
+	delivery_fee        numeric(15,2) not null default 0,
+	is_paid             boolean not null default false,
+	cod_amount          numeric(15,2) null,  -- cash on delivery amount
+
+	-- Timeline
+	scheduled_date      date null,
+	scheduled_time      time null,
+	dispatched_at       timestamp with time zone null,
+	delivered_at        timestamp with time zone null,
+	estimated_arrival   timestamp with time zone null,
+
+	-- Notes
+	notes               text null,
+	failure_reason      text null,
+
+	-- Metadata
+	created_at          timestamp with time zone not null default now(),
+	updated_at          timestamp with time zone not null default now(),
+
+	constraint deliveries_pkey primary key (id),
+	constraint deliveries_tracking_no_key unique (tracking_no),
+	constraint deliveries_customer_id_fkey
+		foreign key (customer_id) references public.customers (id) on delete set null,
+	constraint deliveries_pos_sale_id_fkey
+		foreign key (pos_sale_id) references public.sales (pos_sale_id) on delete set null
+) tablespace pg_default;
+
+-- ── Status history / audit log ───────────────────────────────
+create table public.delivery_status_history (
+	id            uuid not null default gen_random_uuid(),
+	delivery_id   uuid not null,
+	status        public.delivery_status not null,
+	note          text null,
+	changed_by    text null,
+	changed_at    timestamp with time zone not null default now(),
+	constraint delivery_status_history_pkey primary key (id),
+	constraint delivery_status_history_delivery_id_fkey
+		foreign key (delivery_id) references public.deliveries (id) on delete cascade
+) tablespace pg_default;
+
+-- ── Delivery items (what's inside the package) ───────────────
+create table public.delivery_items (
+	id          uuid not null default gen_random_uuid(),
+	delivery_id uuid not null,
+	item_name   text not null,
+	quantity    integer not null default 1,
+	notes       text null,
+	constraint delivery_items_pkey primary key (id),
+	constraint delivery_items_delivery_id_fkey
+		foreign key (delivery_id) references public.deliveries (id) on delete cascade
+) tablespace pg_default;
+
+-- ── Indexes ───────────────────────────────────────────────────
+create index if not exists idx_deliveries_status       on public.deliveries (status);
+create index if not exists idx_deliveries_customer     on public.deliveries (customer_id);
+create index if not exists idx_deliveries_created      on public.deliveries (created_at desc);
+create index if not exists idx_deliveries_scheduled    on public.deliveries (scheduled_date);
+create index if not exists idx_deliveries_tracking     on public.deliveries (tracking_no);
+create index if not exists idx_dsh_delivery            on public.delivery_status_history (delivery_id, changed_at desc);
+
+-- ── Auto-update updated_at ────────────────────────────────────
+create trigger trg_deliveries_updated_at
+	before update on public.deliveries
+	for each row execute function set_updated_at();
+
+-- ── Auto-log status changes ───────────────────────────────────
+create or replace function public.log_delivery_status_change()
+returns trigger language plpgsql as $$
+begin
+	if old.status is distinct from new.status then
+		insert into public.delivery_status_history (delivery_id, status, changed_by)
+		values (new.id, new.status, current_user);
+	end if;
+	return new;
+end;
+$$;
+
+create trigger trg_delivery_status_log
+	after update on public.deliveries
+	for each row execute function public.log_delivery_status_change();
+
+-- ── Tracking number generator ─────────────────────────────────
+create or replace function public.generate_tracking_no()
+returns text language plpgsql as $$
+declare
+	prefix text := 'TGD';   -- Tahir General Delivery
+	seq    text;
+begin
+	seq := to_char(nextval('delivery_seq'), 'FM00000');
+	return prefix || '-' || to_char(now(), 'YYMM') || '-' || seq;
+end;
+$$;
+
+create sequence if not exists public.delivery_seq start 1;
+
+-- ── Analytical view ───────────────────────────────────────────
+create or replace view public.v_delivery_summary as
+select
+	status,
+	count(*)                                    as total,
+	sum(delivery_fee)                           as total_fees,
+	count(*) filter (where is_paid)             as paid_count,
+	avg(extract(epoch from (delivered_at - dispatched_at)) / 3600)
+	                                            as avg_delivery_hours,
+	count(*) filter (where priority = 'URGENT') as urgent_count
+from public.deliveries
+group by status
+order by status;
+
+-- ── Grants ───────────────────────────────────────────────────
+grant select, insert, update, delete on public.deliveries             to authenticated;
+grant select, insert, update, delete on public.delivery_status_history to authenticated;
+grant select, insert, update, delete on public.delivery_items         to authenticated;
+grant select on public.v_delivery_summary                             to authenticated, anon;
+grant execute on function public.generate_tracking_no()               to authenticated;

@@ -17,6 +17,7 @@ import NigeriaIntelMap from './pages/Map';
 import Customer from './pages/Customers/Customer';
 import CustomerSales from './pages/Customers/Sales';
 import Profile from './pages/Customers/Profile';
+import DeliveryFormPage from './pages/Delivery';
 // import WhatsAppTracker    from "@/pages/WhatsAppPostTracker";
 
 function NotFound() {
@@ -90,6 +91,7 @@ export default function App() {
                               />
                               <Route path="/staff" element={<StaffPage />} />
                               <Route path="/stock" element={<StockPage />} />
+                              <Route path="/delivery" element={<DeliveryFormPage />} />
 
                               {/* AI & Tools */}
                               <Route
