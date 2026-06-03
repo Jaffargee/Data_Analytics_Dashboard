@@ -391,7 +391,7 @@ export default function CustomersPage() {
                                                                               ) => {
                                                                                     e.stopPropagation();
                                                                                     navigate(
-                                                                                          `/customers/customer/profile/${c.id}/`
+                                                                                          `/customers/customer/profile/${c.id}?id=${c.id}&pos_cid=${c.pos_customer_id}`
                                                                                     );
                                                                               }}
                                                                               className="md:opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg border border-bg-border text-ink-muted hover:text-accent-gold hover:border-accent-gold/30 text-[10px] font-mono transition-all"

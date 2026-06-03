@@ -1,3 +1,5 @@
+export type Report = Record<any, any>;
+
 // ── Enums ─────────────────────────────────────────────────────────────────────
 export type CustomerCategory =
       | 'WHSL1'
@@ -226,4 +228,5 @@ export interface QueryResult {
       rows: Record<string, unknown>[];
       rowCount: number;
       executionMs: number;
+      chartData
 }

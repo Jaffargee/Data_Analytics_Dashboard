@@ -18,6 +18,7 @@ import {
       Plus,
       Menu,
       X,
+      TruckIcon,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
@@ -51,6 +52,12 @@ const nav = [
                   { label: 'Search', icon: Search, path: '/search' },
                   { label: 'AI Analyst', icon: MessageCircle, path: '/chat' },
                   { label: 'WA Posts', icon: MessageSquare, path: '/posts' },
+            ],
+      },
+      {
+            group: 'Others',
+            items: [
+                  { label: 'Delivery', icon: TruckIcon, path: '/delivery' },
             ],
       },
 ];
