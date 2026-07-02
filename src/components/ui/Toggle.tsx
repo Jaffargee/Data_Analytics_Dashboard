@@ -1,49 +1,58 @@
-import React from 'react';
+import React from "react";
 import { cn } from '@/lib/utils';
+
+export interface ToggleProps {
+      checked: boolean;
+      onChange: (value: boolean) => void;
+      label: string;
+      description?: string;
+      disabled?: boolean;
+}
 
 export default function Toggle({
       checked,
       onChange,
       label,
       description,
-}: {
-      checked: boolean;
-      onChange: (v: boolean) => void;
-      label: string;
-      description?: string;
-}) {
+      disabled,
+}: ToggleProps) {
       return (
-            <button
-                  type="button"
-                  onClick={() => onChange(!checked)}
-                  className="flex items-center justify-between w-full p-3 rounded-xl border border-bg-border bg-bg-hover hover:border-accent-gold/20 transition-all group"
-            >
-                  <div className="text-left">
-                        <p className="text-sm font-body text-ink-primary">
+            <div className="flex items-center justify-between w-full gap-4">
+                  {/* Label area — not part of the interactive target */}
+                  <div className="text-left min-w-0">
+                        <p className="text-[14px] font-body text-ink-primary leading-snug">
                               {label}
                         </p>
                         {description && (
-                              <p className="text-xs text-ink-muted font-body mt-0.5">
+                              <p className="text-[12px] text-ink-muted font-body mt-[2px] leading-snug">
                                     {description}
                               </p>
                         )}
                   </div>
-                  <div
+
+                  {/* Toggle pill — sole interactive element */}
+                  <button
+                        type="button"
+                        role="switch"
+                        aria-checked={checked}
+                        disabled={disabled}
+                        onClick={() => onChange(!checked)}
                         className={cn(
-                              'relative w-10 h-5.5 rounded-full transition-all duration-200 flex-shrink-0 ml-4',
-                              'h-[22px]',
+                              "relative flex-shrink-0 w-[40px] h-[22px] rounded-full transition-colors duration-200 outline-none",
+                              "focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                               checked
-                                    ? 'bg-accent-gold'
-                                    : 'bg-bg-muted border border-bg-border'
+                                    ? "bg-accent-gold"
+                                    : "bg-bg-muted border border-bg-border",
+                              disabled && "opacity-40 cursor-not-allowed"
                         )}
                   >
-                        <div
+                        <span
                               className={cn(
-                                    'absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200',
-                                    checked ? 'left-[22px]' : 'left-[3px]'
+                                    "absolute top-[3px] w-[16px] h-[16px] rounded-full bg-white shadow-sm transition-all duration-200",
+                                    checked ? "left-[21px]" : "left-[3px]"
                               )}
                         />
-                  </div>
-            </button>
+                  </button>
+            </div>
       );
 }

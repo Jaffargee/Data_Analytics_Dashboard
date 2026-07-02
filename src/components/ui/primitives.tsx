@@ -39,7 +39,7 @@ export function CardHeader({
       return (
             <div
                   className={cn(
-                        'flex items-center justify-between mb-5',
+                        'flex items-center justify-between mb-5 gap-2',
                         className
                   )}
             >

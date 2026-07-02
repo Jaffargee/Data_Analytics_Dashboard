@@ -14,7 +14,6 @@ import { BarChart } from '@/components/charts/BarChart';
 import { useTopCustomers } from '@/lib/hooks';
 import { fmtCurrency, fmt, fmtDate } from '@/lib/utils';
 import {
-      Search,
       Users,
       ShoppingBag,
       Award,
@@ -24,6 +23,8 @@ import {
       User,
 } from 'lucide-react';
 import * as Avatar from '@radix-ui/react-avatar';
+import SearchInput from "@/components/ui/SearchInput"
+import Button from "@/components/ui/Button"
 
 function initials(name: string) {
       return name
@@ -213,33 +214,23 @@ export default function CustomersPage() {
                         {/* Customer table */}
                         <Card>
                               <CardHeader>
-                                    <CardTitle>All Customers</CardTitle>
-                                    <div className="flex items-center gap-2">
-                                          <div className="relative">
-                                                <Search
-                                                      size={13}
-                                                      className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
-                                                />
-                                                <input
-                                                      value={search}
-                                                      onChange={(e) =>
-                                                            setSearch(
-                                                                  e.target.value
-                                                            )
-                                                      }
-                                                      placeholder="Search customers…"
-                                                      className="bg-bg-hover border border-bg-border rounded-lg pl-8 pr-3 py-1.5 text-xs font-body text-ink-primary placeholder:text-ink-faint outline-none focus:border-accent-gold/40 w-52 transition-colors"
-                                                />
-                                          </div>
-                                          <button
-                                                onClick={() =>
-                                                      navigate('/customers/new')
-                                                }
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-xs font-mono hover:bg-accent-gold/25 transition-all"
-                                          >
-                                                <Plus size={12} />
-                                                New
-                                          </button>
+                                    <div className='flex-1'>
+                                          <CardTitle>All Customers</CardTitle>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                          <SearchInput placeholder="Search customers…" className="h-[40px]" value={search} onChange={(v: string) => setSearch(v)} />
+                                          <Button className="h-[40px]" onClick={() => navigate('/customers/new')} >
+                                                <div className="flex flex-row items-center w-full relative justify-center whitespace-nowrap flex-nowrap gap-2">
+                                                      <div>
+                                                            <span>
+                                                                  <Plus size={24} />
+                                                            </span>
+                                                      </div>
+                                                      <div>
+                                                            <span className='leading-6'>New Customer</span>
+                                                      </div>
+                                                </div>
+                                          </Button>
                                     </div>
                               </CardHeader>
 

@@ -12,13 +12,14 @@ import StaffPage from '@/pages/Staff';
 import StockPage from '@/pages/LowStock';
 import SearchEnginePage from '@/pages/SearchEngine';
 import AIAnalyticsChat from '@/pages/AIDataAnalyticsChat';
-import ReportGenerator from '@/pages/ReportGenerator';
+import Reports from '@/pages/Reports';
 import NigeriaIntelMap from './pages/Map';
 import Customer from './pages/Customers/Customer';
 import CustomerSales from './pages/Customers/Sales';
 import Profile from './pages/Customers/Profile';
 import DeliveryFormPage from './pages/Delivery';
 // import WhatsAppTracker    from "@/pages/WhatsAppPostTracker";
+import { FluentProvider, teamsDarkTheme, } from '@fluentui/react-components';
 
 function NotFound() {
       return (
@@ -33,87 +34,89 @@ function NotFound() {
 
 export default function App() {
       return (
-            <div className="flex min-h-screen bg-bg-base">
-                  <Sidebar />
-                  <div className="flex-1 flex flex-col min-w-0">
-                        <Routes>
-                              {/* Dashboard */}
-                              <Route path="/" element={<OverviewPage />} />
-                              <Route
-                                    path="/revenue"
-                                    element={<RevenuePage />}
-                              />
+            <FluentProvider theme={teamsDarkTheme}>
+                  <div className="flex min-h-screen bg-bg-base">
+                        <Sidebar />
+                        <div className="flex-1 flex flex-col min-w-0">
+                              <Routes>
+                                    {/* Dashboard */}
+                                    <Route path="/" element={<OverviewPage />} />
+                                    <Route
+                                          path="/revenue"
+                                          element={<RevenuePage />}
+                                    />
 
-                              {/* Products */}
-                              <Route
-                                    path="/products"
-                                    element={<ProductsPage />}
-                              />
-                              <Route
-                                    path="/products/new"
-                                    element={<ProductFormPage />}
-                              />
-                              <Route
-                                    path="/products/:id/edit"
-                                    element={<ProductFormPage />}
-                              />
+                                    {/* Products */}
+                                    <Route
+                                          path="/products"
+                                          element={<ProductsPage />}
+                                    />
+                                    <Route
+                                          path="/products/new"
+                                          element={<ProductFormPage />}
+                                    />
+                                    <Route
+                                          path="/products/:id/edit"
+                                          element={<ProductFormPage />}
+                                    />
 
-                              {/* Customers */}
-                              <Route
-                                    path="/customers"
-                                    element={<CustomersPage />}
-                              />
-                              <Route
-                                    path="/customers/customer/profile/:id"
-                                    element={<Profile />}
-                              />
-                              <Route
-                                    path="/customers/customer/:id/sales/:p_id"
-                                    element={<CustomerSales />}
-                              />
-                              <Route
-                                    path="/customers/customer/:id"
-                                    element={<Customer />}
-                              />
-                              <Route
-                                    path="/customers/new"
-                                    element={<CustomerFormPage />}
-                              />
-                              <Route
-                                    path="/customers/:id/edit"
-                                    element={<CustomerFormPage />}
-                              />
+                                    {/* Customers */}
+                                    <Route
+                                          path="/customers"
+                                          element={<CustomersPage />}
+                                    />
+                                    <Route
+                                          path="/customers/customer/profile/:id"
+                                          element={<Profile />}
+                                    />
+                                    <Route
+                                          path="/customers/customer/:id/sales/:p_id"
+                                          element={<CustomerSales />}
+                                    />
+                                    <Route
+                                          path="/customers/customer/:id"
+                                          element={<Customer />}
+                                    />
+                                    <Route
+                                          path="/customers/new"
+                                          element={<CustomerFormPage />}
+                                    />
+                                    <Route
+                                          path="/customers/:id/edit"
+                                          element={<CustomerFormPage />}
+                                    />
 
-                              {/* Other sections */}
-                              <Route
-                                    path="/suppliers"
-                                    element={<SuppliersPage />}
-                              />
-                              <Route path="/staff" element={<StaffPage />} />
-                              <Route path="/stock" element={<StockPage />} />
-                              <Route path="/delivery" element={<DeliveryFormPage />} />
+                                    {/* Other sections */}
+                                    <Route
+                                          path="/suppliers"
+                                          element={<SuppliersPage />}
+                                    />
+                                    <Route path="/staff" element={<StaffPage />} />
+                                    <Route path="/stock" element={<StockPage />} />
+                                    <Route path="/delivery" element={<DeliveryFormPage />} />
 
-                              {/* AI & Tools */}
-                              <Route
-                                    path="/search"
-                                    element={<SearchEnginePage />}
-                              />
-                              <Route
-                                    path="/chat"
-                                    element={<AIAnalyticsChat />}
-                              />
-                              <Route
-                                    path="/reports"
-                                    element={<ReportGenerator />}
-                              />
-                              <Route
-                                    path="/map"
-                                    element={<NigeriaIntelMap />}
-                              />
+                                    {/* AI & Tools */}
+                                    <Route
+                                          path="/search"
+                                          element={<SearchEnginePage />}
+                                    />
+                                    <Route
+                                          path="/chat"
+                                          element={<AIAnalyticsChat />}
+                                    />
+                                    <Route
+                                          path="/reports"
+                                          element={<Reports />}
+                                    />
+                                    <Route
+                                          path="/map"
+                                          element={<NigeriaIntelMap />}
+                                    />
 
-                              <Route path="*" element={<NotFound />} />
-                        </Routes>
+                                    <Route path="*" element={<NotFound />} />
+                              </Routes>
+                        </div>
                   </div>
-            </div>
+            </FluentProvider>
       );
 }

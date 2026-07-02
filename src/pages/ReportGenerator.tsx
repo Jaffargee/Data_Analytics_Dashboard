@@ -24,7 +24,6 @@ import {
       formatCellValue,
 } from '@/lib/utils';
 import {
-      Calendar,
       TrendingUp,
       Package,
       Users,
@@ -46,7 +45,9 @@ import { executeSQL } from '@/lib/llm_utils';
 import { accounts_summary_report, todays_sales_report } from '@/constants';
 import { QueryResult } from '@/types';
 import { ChartDialog } from '@/components/ui/ChartDialog';
-
+import Button from "@/components/ui/Button"
+import Input from "@/components/ui/Input"
+import { CalendarRegular as Calendar } from '@fluentui/react-icons'
 // ── Types ────────────────────────────────────────────────────────────────────
 interface PeriodSummary {
       metric: string;
@@ -414,44 +415,30 @@ export default function ReportGenerator() {
                                           <span>Summary Report</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                          <Calendar
-                                                size={13}
-                                                className="text-ink-muted"
-                                          />
-                                          <label className="text-xs text-ink-muted font-body">
-                                                Date
-                                          </label>
-                                          <input
-                                                type="date"
-                                                value={reportDate}
-                                                onChange={(e) =>
-                                                      setReportDate(
-                                                            e.target.value
-                                                      )
-                                                }
-                                                className="bg-bg-hover border border-bg-border rounded-lg px-3 py-1.5 text-xs font-mono text-ink-primary outline-none focus:border-accent-gold/50 transition-colors"
-                                          />
+                                          <Input type="date" suffix={<Calendar fontSize={24} />} value={reportDate} onChange={(v: any) => setReportDate(v)} />
                                     </div>
                                     <div>
-                                          <button
-                                                onClick={() =>
-                                                      generateDReport('summary')
-                                                }
-                                                disabled={loading2}
-                                                className="flex items-center gap-2 px-5 py-2 bg-accent-gold/15 border border-accent-gold/30 rounded-xl text-accent-gold text-sm font-mono font-medium hover:bg-accent-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                          >
-                                                {loading2 ? (
-                                                      <Loader2
-                                                            size={14}
-                                                            className="animate-spin"
-                                                      />
-                                                ) : (
-                                                      <RefreshCw size={14} />
-                                                )}
-                                                {loading2
-                                                      ? 'Generating…'
-                                                      : 'Generate Summary Report'}
-                                          </button>
+                                          <Button className="h-[42px]" onClick={() => generateDReport('summary') }>
+                                                <div className="flex flex-row items-center justify-center gap-2 w-full relative h-full">
+                                                      <div>
+                                                            <span>
+                                                                {loading2 ? (
+                                                                        <Loader2
+                                                                              size={14}
+                                                                              className="animate-spin"
+                                                                        />
+                                                                  ) : (
+                                                                        <RefreshCw size={14} />
+                                                                  )}  
+                                                            </span>
+                                                      </div>
+                                                      <div>
+                                                            <span>
+                                                                  {loading2 ? 'Generating…' : 'Generate Summary Report'}
+                                                            </span>
+                                                      </div>
+                                                </div>
+                                          </Button>
                                     </div>
                               </div>
 

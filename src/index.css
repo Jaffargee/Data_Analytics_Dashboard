@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+
+:root {
+      /* This maps the loaded Roboto font directly to all Material tokens */
+      --md-ref-typeface-brand: 'Roboto', sans-serif;
+      --md-ref-typeface-plain: 'Roboto', sans-serif;
+}
+
+
 @layer base {
       * {
             box-sizing: border-box;

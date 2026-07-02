@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.64.1",
+    "@fluentui/react-components": "^9.74.1",
+    "@fluentui/react-icons": "^2.0.330",
     "@google/genai": "^1.50.1",
+    "@material/web": "^2.4.1",
     "@openrouter/sdk": "^0.12.21",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
