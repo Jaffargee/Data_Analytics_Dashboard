@@ -68,7 +68,7 @@ export interface TextareaProps {
 
 
 // Shared token for consistent field height across Input, Select, Combobox, Button
-export const FIELD_HEIGHT = "h-[42px]";
+export const FIELD_HEIGHT = "h-[48px]";
 export const FIELD_TEXT = "text-[16px] tracking-[0.5px]";
 export const LABEL_FLOATED = "top-[0px] -translate-y-1/2 text-[12px] bg-black px-[4px] tracking-[0.4px]";
 export const LABEL_RESTING = "top-1/2 -translate-y-1/2 text-[16px] tracking-[0.5px]";

@@ -19,6 +19,7 @@ import {
       Trash2,
       PlusIcon,
       DollarSign,
+      CheckCircle,
 } from 'lucide-react';
 import { Field, Input, Textarea, Toggle } from '@/components/ui';
 import { ctm_addr_label, ctm_category, ctm_status_lvl } from '@/constants';
@@ -29,7 +30,18 @@ import {
       CustomerForm,
       CustomerAccount,
 } from '@/types';
-import { Select } from '../../components/ui/';
+
+// ── Local form shape extends the base CustomerForm from @/types ───────────────
+// CTMForm covers: first_name, last_name, email, company_*, category,
+// status_level, is_active, balance, credit_limit, taxable,
+// non_tax_certificate_number, default_invoice_terms, disable_loyalty,
+// points, auto_email_receipt, always_sms_receipt,
+// message_to_show_when_adding_customer_to_sale,
+// comments, internal_notes, addresses[], accounts[]
+//
+// We extend it with fields that exist in the DB but not yet in CTMForm,
+// plus contacts[] which we manage in the UI even though it maps to a
+// future customer_contacts table.
 
 const DEFAULT_ADDRESS: Address = {
       label: 'Home',
@@ -267,7 +279,20 @@ function ContactFields({
 
                         <div className="grid grid-cols-3 gap-3">
                               <Field label="Type">
-                                    <Select onChange={(v: string) => patch('type', v as ContactType)} value={contact.type} options={[{ label: 'Phone', value: 'phone' }, { label: 'Email', value: 'email' }]} />
+                                    <select
+                                          value={contact.type}
+                                          onChange={(e) =>
+                                                patch(
+                                                      'type',
+                                                      e.target
+                                                            .value as ContactType
+                                                )
+                                          }
+                                          className="w-full bg-bg-card border border-bg-border rounded-xl px-3 py-2.5 text-sm font-body text-ink-primary outline-none focus:border-accent-gold/50 transition-all"
+                                    >
+                                          <option value="phone">Phone</option>
+                                          <option value="email">Email</option>
+                                    </select>
                               </Field>
                               <div className="col-span-2">
                                     <Field
@@ -279,7 +304,7 @@ function ContactFields({
                                     >
                                           <Input
                                                 value={contact.value}
-                                                onChange_={(v: string) =>
+                                                onChange_={(v) =>
                                                       patch('value', v)
                                                 }
                                                 type={
@@ -340,20 +365,37 @@ function AddressFields({
                   )}
 
                   <Field label="Label">
-                        <Select onChange={(v: string) => patch('label', v as Address['label'])} value={address.label} options={ctm_addr_label} />
+                        <select
+                              value={address.label}
+                              onChange={(e) =>
+                                    patch(
+                                          'label',
+                                          e.target.value as Address['label']
+                                    )
+                              }
+                              className="w-full bg-bg-card border border-bg-border rounded-xl px-3 py-2.5 text-sm font-body text-ink-primary outline-none focus:border-accent-gold/50 transition-all"
+                        >
+                              {ctm_addr_label.map(
+                                    (a: { id: string; value: string }) => (
+                                          <option key={a.id} value={a.id}>
+                                                {a.value}
+                                          </option>
+                                    )
+                              )}
+                        </select>
                   </Field>
 
                   <Field label="Address Line 1">
                         <Input
                               value={address.line_1}
-                              onChange_={(v: string) => patch('line_1', v)}
+                              onChange_={(v) => patch('line_1', v)}
                               placeholder="Street address, building"
                         />
                   </Field>
                   <Field label="Address Line 2">
                         <Input
                               value={address.line_2}
-                              onChange_={(v: string) => patch('line_2', v)}
+                              onChange_={(v) => patch('line_2', v)}
                               placeholder="Apartment, floor, landmark (optional)"
                         />
                   </Field>
@@ -362,14 +404,14 @@ function AddressFields({
                         <Field label="City">
                               <Input
                                     value={address.city}
-                                    onChange_={(v: string) => patch('city', v)}
+                                    onChange_={(v) => patch('city', v)}
                                     placeholder="e.g. Kano"
                               />
                         </Field>
                         <Field label="State">
                               <Input
                                     value={address.state}
-                                    onChange_={(v: string) => patch('state', v)}
+                                    onChange_={(v) => patch('state', v)}
                                     placeholder="e.g. Kano State"
                               />
                         </Field>
@@ -379,14 +421,14 @@ function AddressFields({
                         <Field label="Postal Code">
                               <Input
                                     value={address.postal_code}
-                                    onChange_={(v: string) => patch('postal_code', v)}
+                                    onChange_={(v) => patch('postal_code', v)}
                                     placeholder="700001"
                               />
                         </Field>
                         <Field label="Country">
                               <Input
                                     value={address.country}
-                                    onChange_={(v: string) => patch('country', v)}
+                                    onChange_={(v) => patch('country', v)}
                                     placeholder="Nigeria"
                               />
                         </Field>
@@ -416,14 +458,14 @@ function AccountFields({
                         <Field label="Bank Name">
                               <Input
                                     value={account.bank_name}
-                                    onChange_={(v: string) => patch('bank_name', v)}
+                                    onChange_={(v) => patch('bank_name', v)}
                                     placeholder="e.g. Access Bank, GTBank"
                               />
                         </Field>
                         <Field label="Account Number">
                               <Input
                                     value={account.account_no}
-                                    onChange_={(v: string) => patch('account_no', v)}
+                                    onChange_={(v) => patch('account_no', v)}
                                     placeholder="0060450000"
                               />
                         </Field>
@@ -431,7 +473,7 @@ function AccountFields({
                   <Field label="Account Name">
                         <Input
                               value={account.account_name}
-                              onChange_={(v: string) => patch('account_name', v)}
+                              onChange_={(v) => patch('account_name', v)}
                               placeholder="Name as it appears on the account"
                         />
                   </Field>
@@ -479,10 +521,50 @@ function Identity({
 
                   <div className="grid grid-cols-2 gap-4">
                         <Field label="Category">
-                              <Select onChange={(v: string) => set('category')(v as CustomerForm['category'])} value={form.category} options={ctm_category} />
+                              <select
+                                    value={form.category}
+                                    onChange={(e) =>
+                                          set('category')(
+                                                e.target
+                                                      .value as CustomerForm['category']
+                                          )
+                                    }
+                                    className="w-full bg-bg-hover border border-bg-border rounded-xl px-3 py-2.5 text-sm font-body text-ink-primary outline-none focus:border-accent-gold/50 transition-all"
+                              >
+                                    {ctm_category.map(
+                                          (c: {
+                                                id: string;
+                                                value: string;
+                                          }) => (
+                                                <option key={c.id} value={c.id}>
+                                                      {c.value}
+                                                </option>
+                                          )
+                                    )}
+                              </select>
                         </Field>
                         <Field label="Status Level">
-                              <Select onChange={(v: string) => set('status_level')(v as CustomerForm['status_level'])} value={form.status_level} options={ctm_status_lvl} />
+                              <select
+                                    value={form.status_level}
+                                    onChange={(e) =>
+                                          set('status_level')(
+                                                e.target
+                                                      .value as CustomerForm['status_level']
+                                          )
+                                    }
+                                    className="w-full bg-bg-hover border border-bg-border rounded-xl px-3 py-2.5 text-sm font-body text-ink-primary outline-none focus:border-accent-gold/50 transition-all"
+                              >
+                                    {ctm_status_lvl.map(
+                                          (l: {
+                                                id: string;
+                                                value: string;
+                                          }) => (
+                                                <option key={l.id} value={l.id}>
+                                                      {l.value}
+                                                </option>
+                                          )
+                                    )}
+                              </select>
                         </Field>
                   </div>
 
@@ -505,7 +587,7 @@ function Contact({
       errors,
 }: SectionProps) {
       const addContact = (type: ContactType) => {
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
                   contacts: [
                         ...prev.contacts,
@@ -521,15 +603,15 @@ function Contact({
       };
 
       const updateContact = (i: number, c: ContactMethod) =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
-                  contacts: prev.contacts.map((x: ContactMethod, idx: number) => (idx === i ? c : x)),
+                  contacts: prev.contacts.map((x, idx) => (idx === i ? c : x)),
             }));
 
       const removeContact = (i: number) =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
-                  contacts: prev.contacts.filter((_: ContactMethod, idx: number) => idx !== i),
+                  contacts: prev.contacts.filter((_, idx) => idx !== i),
             }));
 
       return (
@@ -541,7 +623,7 @@ function Contact({
                   onActivate={() => setActiveSection('contact')}
             >
                   <div className="space-y-3">
-                        {form.contacts.map((c: ContactMethod, i: number) => (
+                        {form.contacts.map((c, i) => (
                               <ContactFields
                                     key={i}
                                     index={i}
@@ -592,9 +674,9 @@ function Addresses({
       setActiveSection,
       form,
       setForm,
-}: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'setForm'>) {
+}: SectionProps) {
       const addAddress = () =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
                   addresses: [
                         ...prev.addresses,
@@ -606,18 +688,18 @@ function Addresses({
             }));
 
       const updateAddress = (i: number, a: Address) =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
-                  addresses: prev.addresses.map((x: Address, idx: number) =>
+                  addresses: prev.addresses.map((x, idx) =>
                         idx === i ? a : x
                   ),
             }));
 
       const removeAddress = (i: number) =>
-            setForm((prev: CustomerForm) => {
-                  const next = prev.addresses.filter((_: Address, idx: number) => idx !== i);
+            setForm((prev) => {
+                  const next = prev.addresses.filter((_, idx) => idx !== i);
                   // Ensure at least one primary remains
-                  if (next.length > 0 && !next.some((a: Address) => a.is_primary)) {
+                  if (next.length > 0 && !next.some((a) => a.is_primary)) {
                         next[0] = { ...next[0], is_primary: true };
                   }
                   return { ...prev, addresses: next };
@@ -632,7 +714,7 @@ function Addresses({
                   onActivate={() => setActiveSection('address')}
             >
                   <div className="space-y-3">
-                        {form.addresses.map((a: Address, i: number) => (
+                        {form.addresses.map((a, i) => (
                               <AddressFields
                                     key={i}
                                     index={i}
@@ -658,23 +740,23 @@ function Accounts({
       setActiveSection,
       form,
       setForm,
-}: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'setForm'>) {
+}: SectionProps) {
       const addAccount = () =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
                   accounts: [...prev.accounts, { ...DEFAULT_ACCOUNT }],
             }));
 
       const updateAccount = (i: number, a: CustomerAccount) =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
-                  accounts: prev.accounts.map((x: CustomerAccount, idx: number) => (idx === i ? a : x)),
+                  accounts: prev.accounts.map((x, idx) => (idx === i ? a : x)),
             }));
 
       const removeAccount = (i: number) =>
-            setForm((prev: CustomerForm) => ({
+            setForm((prev) => ({
                   ...prev,
-                  accounts: prev.accounts.filter((_: CustomerAccount, idx: number) => idx !== i),
+                  accounts: prev.accounts.filter((_, idx) => idx !== i),
             }));
 
       return (
@@ -691,7 +773,7 @@ function Accounts({
                         </p>
                   )}
                   <div className="space-y-3">
-                        {form.accounts.map((a: Address, i: number) => (
+                        {form.accounts.map((a, i) => (
                               <AccountFields
                                     key={i}
                                     account={a}
@@ -707,7 +789,7 @@ function Accounts({
       );
 }
 
-function Company({ activeSection, setActiveSection, form, set }: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'set'>) {
+function Company({ activeSection, setActiveSection, form, set }: SectionProps) {
       return (
             <SectionCard
                   id="company"
@@ -758,7 +840,7 @@ function Financial({
       setActiveSection,
       form,
       set,
-}: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'set'>) {
+}: SectionProps) {
       return (
             <SectionCard
                   id="financial"
@@ -810,11 +892,30 @@ function Financial({
                               />
                         </Field>
                   )}
+
+                  <Field label="Default Invoice Terms">
+                        <select
+                              value={form.default_invoice_terms}
+                              onChange={(e) =>
+                                    set('default_invoice_terms')(e.target.value)
+                              }
+                              className="w-full bg-bg-hover border border-bg-border rounded-xl px-3 py-2.5 text-sm font-body text-ink-primary outline-none focus:border-accent-gold/50 transition-all"
+                        >
+                              <option value="">None</option>
+                              <option value="Due on receipt">
+                                    Due on receipt
+                              </option>
+                              <option value="Net 7">Net 7</option>
+                              <option value="Net 14">Net 14</option>
+                              <option value="Net 30">Net 30</option>
+                              <option value="Net 60">Net 60</option>
+                        </select>
+                  </Field>
             </SectionCard>
       );
 }
 
-function Loyalty({ activeSection, setActiveSection, form, set }: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'set'>) {
+function Loyalty({ activeSection, setActiveSection, form, set }: SectionProps) {
       return (
             <SectionCard
                   id="loyalty"
@@ -825,7 +926,7 @@ function Loyalty({ activeSection, setActiveSection, form, set }: Pick<SectionPro
             >
                   <Toggle
                         checked={!form.disable_loyalty}
-                        onChange={(v: boolean) => set('disable_loyalty')(!v)}
+                        onChange={(v) => set('disable_loyalty')(!v)}
                         label="Loyalty programme enabled"
                         description="Customer earns and redeems loyalty points"
                   />
@@ -859,7 +960,7 @@ function Loyalty({ activeSection, setActiveSection, form, set }: Pick<SectionPro
       );
 }
 
-function Notes({ activeSection, setActiveSection, form, set }: Pick<SectionProps, 'activeSection' | 'setActiveSection' | 'form' | 'set'>) {
+function Notes({ activeSection, setActiveSection, form, set }: SectionProps) {
       return (
             <SectionCard
                   id="notes"
@@ -918,7 +1019,10 @@ export default function CustomerFormPage() {
       const [globalError, setGlobalError] = useState<string | null>(null);
 
       // Typed setter — preserves the actual value type from the form key
-      const set = <K extends keyof CustomerForm>(key: K) => (value: CustomerForm[K]) => setForm((prev: CustomerForm) => ({ ...prev, [key]: value }));
+      const set =
+            <K extends keyof CustomerForm>(key: K) =>
+            (value: CustomerForm[K]) =>
+                  setForm((prev) => ({ ...prev, [key]: value }));
 
       // ── Load existing customer + sub-tables ───────────────────────────────────
       useEffect(() => {
@@ -952,7 +1056,7 @@ export default function CustomerFormPage() {
                   setCustomerId(d.id);
 
                   const loadedAddresses: Address[] = (addrRes.data ?? []).map(
-                        (a: Address) => ({
+                        (a) => ({
                               id: a.id,
                               customer_id: a.customer_id,
                               label: a.label as Address['label'],
@@ -968,7 +1072,7 @@ export default function CustomerFormPage() {
 
                   const loadedAccounts: CustomerAccount[] = (
                         acctRes.data ?? []
-                  ).map((a: CustomerAccount) => ({
+                  ).map((a) => ({
                         id: a.id,
                         customer_id: a.customer_id,
                         account_no: a.account_no ?? '',
@@ -978,12 +1082,12 @@ export default function CustomerFormPage() {
 
                   const loadedContacts: ContactMethod[] = (
                         custCntct.data ?? []
-                  ).map((c: ContactMethod) => ({
+                  ).map((c) => ({
                         id: c.id,
                         customer_id: c.customer_id,
-                        type: c.type as ContactType ?? 'phone',
+                        type: c.type ?? '',
                         value: c.value ?? '',
-                        is_primary: c.is_primary ?? false,
+                        is_primary: c.is_primary ?? '',
                   }));
 
                   setForm({
@@ -1035,7 +1139,7 @@ export default function CustomerFormPage() {
                   errs.email = 'Invalid email address';
 
             // Validate at least line_1 + city + state on every address
-            form.addresses.forEach((a: Address, i: number) => {
+            form.addresses.forEach((a, i) => {
                   if (!a.line_1.trim())
                         errs.first_name =
                               errs.first_name ??
@@ -1043,7 +1147,7 @@ export default function CustomerFormPage() {
             });
 
             // Validate accounts have all three fields
-            form.accounts.forEach((a: CustomerAccount, i: number) => {
+            form.accounts.forEach((a, i) => {
                   if (
                         !a.bank_name.trim() ||
                         !a.account_no.trim() ||

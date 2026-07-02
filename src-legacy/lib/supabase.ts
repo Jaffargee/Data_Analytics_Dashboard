@@ -39,6 +39,8 @@ export interface TopCustomer {
       id: string;
       pos_customer_id: number;
       customer_name: string;
+      phone_number: string;
+      email: string;
       total_purchases: number;
       lifetime_value: number;
       avg_purchase: number;

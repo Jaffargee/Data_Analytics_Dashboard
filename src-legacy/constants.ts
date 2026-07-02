@@ -1,28 +1,26 @@
-import type { Option } from './types/ui/index';
-
-export const ctm_category: Option[] = [
-      { value: 'RGL', label: 'REGULAR' },
-      { value: 'WHSL1', label: 'WHOLESALE 1' },
-      { value: 'WHSL2', label: 'WHOLESALE 2' },
-      { value: 'RIWC', label: 'WALK-IN INDOOR CUSTOMER' },
-      { value: 'SEASONAL', label: 'SEASONAL' },
-      { value: 'VIP', label: 'VIP' },
-      { value: 'STANDARD', label: 'STANDARD' },
+export const ctm_category: { id: string; value: string }[] = [
+      { id: 'RGL', value: 'REGULAR' },
+      { id: 'WHSL1', value: 'WHOLESALE 1' },
+      { id: 'WHSL2', value: 'WHOLESALE 2' },
+      { id: 'RIWC', value: 'WALK-IN INDOOR CUSTOMER' },
+      { id: 'SEASONAL', value: 'SEASONAL' },
+      { id: 'VIP', value: 'VIP' },
+      { id: 'STANDARD', value: 'STANDARD' },
 ];
 
-export const ctm_status_lvl: Option[] = [
-      { label: 'SILVER', value: 'SILVER' },
-      { label: 'GOLD', value: 'GOLD' },
-      { label: 'PLATINUM', value: 'PLATINUM' },
-      { label: 'DIAMOND', value: 'DIAMOND' },
+export const ctm_status_lvl: { id: string; value: string }[] = [
+      { id: 'SILVER', value: 'SILVER' },
+      { id: 'GOLD', value: 'GOLD' },
+      { id: 'PLATINUM', value: 'PLATINUM' },
+      { id: 'DIAMOND', value: 'DIAMOND' },
 ];
 
-export const ctm_addr_label: Option[] = [
-      { label: 'Home', value: 'Home' },
-      { label: 'Work', value: 'Work' },
-      { label: 'Business', value: 'Business' },
-      { label: 'Delivery', value: 'Delivery' },
-      { label: 'Shipping', value: 'Shipping' },
+export const ctm_addr_label: { id: string; value: string }[] = [
+      { id: 'Home', value: 'Home' },
+      { id: 'Work', value: 'Work' },
+      { id: 'Business', value: 'Business' },
+      { id: 'Delivery', value: 'Delivery' },
+      { id: 'Shipping', value: 'Shipping' },
 ];
 
 export const ctm_contact_method: { id: string; value: string }[] = [
