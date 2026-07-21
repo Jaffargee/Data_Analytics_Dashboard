@@ -10,81 +10,36 @@ import { nDaysAgo, today } from '../utils';
 import type { ReportType } from '../constants';
 
 interface DateRangeSelectorProps {
-      fromDate: string;
-      toDate: string;
-      onFromDateChange: (date: string) => void;
-      onToDateChange: (date: string) => void;
-      onGenerate: () => void;
-      loading: boolean;
-      generated: boolean;
       reportDate: string;
+      summaryReportDate: string;
       onReportDateChange: (date: string) => void;
       onGenerateSummary: (type: ReportType) => void;
       summaryLoading: boolean;
+      detailLoading: boolean;
 }
 
 export function DateRangeSelector({
-      fromDate,
-      toDate,
-      onFromDateChange,
-      onToDateChange,
-      onGenerate,
-      loading,
-      generated,
       reportDate,
+      summaryReportDate,
       onReportDateChange,
       onGenerateSummary,
       summaryLoading,
+      detailLoading
 }: DateRangeSelectorProps) {
       return (
             <Card appearance="outline">
                   <CardHeader>
                         <CardTitle>Select Period</CardTitle>
-                        {generated && (
-                              <Badge variant="teal">Report generated</Badge>
-                        )}
                   </CardHeader>
-
-                  <div className="flex flex-wrap items-end gap-4">
-                        {/* Quick presets */}
-                        <div className="flex flex-wrap gap-2">
-                              {PRESETS.map((p) => (
-                                    <button
-                                          key={p.days}
-                                          onClick={() => {
-                                                onFromDateChange(
-                                                      nDaysAgo(p.days)
-                                                );
-                                                onToDateChange(today());
-                                          }}
-                                          className="px-3 py-1.5 text-xs font-mono border border-bg-border rounded-full text-ink-muted hover:text-accent-gold hover:border-accent-gold/30 transition-all"
-                                    >
-                                          {p.label}
-                                    </button>
-                              ))}
-                        </div>
-
-                        {/* Custom date pickers */}
-                        <DatePickerGroup
-                              fromDate={fromDate}
-                              toDate={toDate}
-                              onFromDateChange={onFromDateChange}
-                              onToDateChange={onToDateChange}
-                        />
-
-                        <GenerateButton
-                              onClick={onGenerate}
-                              loading={loading}
-                              disabled={!fromDate || !toDate}
-                        />
-                  </div>
 
                   {/* Summary Reports Section */}
                   <SummaryReportSection
                         reportDate={reportDate}
+                        summaryReportDate={summaryReportDate}
                         onReportDateChange={onReportDateChange}
                         onGenerateSummary={onGenerateSummary}
                         summaryLoading={summaryLoading}
+                        detailLoading={detailLoading}
                   />
             </Card>
       );
@@ -176,14 +131,18 @@ function GenerateButton({
 
 function SummaryReportSection({
       reportDate,
+      summaryReportDate,
       onReportDateChange,
       onGenerateSummary,
       summaryLoading,
+      detailLoading
 }: {
       reportDate: string;
+      summaryReportDate: string;
       onReportDateChange: (date: string) => void;
       onGenerateSummary: (type: ReportType) => void;
       summaryLoading: boolean;
+      detailLoading: boolean;
 }) {
       return (
             <>
@@ -193,6 +152,7 @@ function SummaryReportSection({
                         </div>
                         <div className="flex items-center gap-2">
                               <Input
+                                    radius="full"
                                     type="date"
                                     suffix={<Calendar fontSize={24} />}
                                     value={reportDate}
@@ -201,6 +161,7 @@ function SummaryReportSection({
                         </div>
                         <div>
                               <Button
+                                    radius="full"
                                     variant="accent"
                                     className="h-[42px]"
                                     onClick={() => onGenerateSummary('summary')}
@@ -239,6 +200,7 @@ function SummaryReportSection({
                         </div>
                         <div className="flex items-center gap-2">
                               <Input
+                                    radius="full"
                                     type="date"
                                     suffix={<Calendar fontSize={24} />}
                                     value={reportDate}
@@ -247,12 +209,13 @@ function SummaryReportSection({
                         </div>
                         <div>
                               <Button
+                                    radius="full"
                                     variant="accent"
                                     className="h-[42px]"
                                     onClick={() => onGenerateSummary('sales')}
                                     icon={
                                           <span>
-                                                {summaryLoading ? (
+                                                {detailLoading ? (
                                                       <Loader2
                                                             size={20}
                                                             className="animate-spin"

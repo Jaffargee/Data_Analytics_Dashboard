@@ -7,15 +7,15 @@ import type { ReportType } from '../constants';
 
 interface UseSummaryReportReturn {
       loading: boolean;
+      detailLoading: boolean;
       reportResult: QueryResult | null;
       generateReport: (type: ReportType, date: string) => Promise<void>;
 }
 
 export function useSummaryReport(): UseSummaryReportReturn {
       const [loading, setLoading] = useState(false);
-      const [reportResult, setReportResult] = useState<QueryResult | null>(
-            null
-      );
+      const [detailLoading, setDetailLoading] = useState(false);
+      const [reportResult, setReportResult] = useState<QueryResult | null>(null);
 
       const report_query = {
             summary: accounts_summary_report,
@@ -24,14 +24,12 @@ export function useSummaryReport(): UseSummaryReportReturn {
 
       const generateReport = useCallback(
             async (type: ReportType, date: string) => {
-                  setLoading(true);
+                  type === "summary" ? setLoading(true) : setDetailLoading(true);
                   try {
-                        const result = await executeSQL(
-                              report_query[type](date)
-                        );
+                        const result = await executeSQL(report_query[type](date));
                         setReportResult(deriveLineChart(result));
                   } finally {
-                        setLoading(false);
+                        type === "summary" ? setLoading(false) : setDetailLoading(false);
                   }
             },
             []
@@ -39,6 +37,7 @@ export function useSummaryReport(): UseSummaryReportReturn {
 
       return {
             loading,
+            detailLoading,
             reportResult,
             generateReport,
       };
