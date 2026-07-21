@@ -11,7 +11,7 @@ import {
       EmptyState,
 } from '@/components/ui/primitives';
 import { BarChart } from '@/components/charts/BarChart';
-import { useTopCustomers } from '@/lib/hooks';
+import { useTopCustomers } from '../../hooks/supabase_hook';
 import { fmtCurrency, fmt, fmtDate } from '@/lib/utils';
 import {
       Users,
@@ -25,6 +25,7 @@ import {
 import * as Avatar from '@radix-ui/react-avatar';
 import SearchInput from "@/components/ui/SearchInput"
 import Button from "@/components/ui/Button"
+import { TopCustomer } from '../../lib/supabase';
 
 function initials(name: string) {
       return name
@@ -35,46 +36,29 @@ function initials(name: string) {
             .toUpperCase();
 }
 
-export default function CustomersPage() {
+export default function Customers() {
       const customers = useTopCustomers(100);
       const [search, setSearch] = useState('');
       const navigate = useNavigate();
 
       const all = customers.data ?? [];
-      const maxLTV = Math.max(...all.map((c) => Number(c.lifetime_value)), 1);
+      const maxLTV = Math.max(...all.map((c: TopCustomer) => Number(c.lifetime_value)), 1);
 
-      const totalRevenue = all.reduce(
-            (s, c) => s + Number(c.lifetime_value),
-            0
-      );
-      const totalPurchases = all.reduce(
-            (s, c) => s + Number(c.total_purchases),
-            0
-      );
+      const totalRevenue = all.reduce((s, c: TopCustomer) => s + Number(c.lifetime_value), 0);
+
+      const totalPurchases = all.reduce((s, c: TopCustomer) => s + Number(c.total_purchases), 0);
+      
       const avgLTV = all.length ? totalRevenue / all.length : 0;
 
-      const filtered = useMemo(
-            () =>
-                  all.filter(
-                        (c) =>
-                              c.customer_name
-                                    .toLowerCase()
-                                    .includes(search.toLowerCase()) ||
-                              (c.phone_number ?? '').includes(search) ||
-                              (c.email ?? '')
-                                    .toLowerCase()
-                                    .includes(search.toLowerCase())
-                  ),
-            [all, search]
-      );
+      const filtered = useMemo( () => all.filter((c: TopCustomer) => c.customer_name.toLowerCase().includes(search.toLowerCase())), [all, search]);
 
-      const top10Chart = all.slice(0, 10).map((c) => ({
+      const top10Chart = all.slice(0, 10).map((c: TopCustomer) => ({
             label: c.customer_name.split(' ')[0],
             value: Number(c.lifetime_value),
       }));
 
       const freq = { once: 0, repeat: 0, loyal: 0 };
-      all.forEach((c) => {
+      all.forEach((c: TopCustomer) => {
             const n = Number(c.total_purchases);
             if (n === 1) freq.once++;
             else if (n <= 5) freq.repeat++;
@@ -240,7 +224,6 @@ export default function CustomersPage() {
                                                 <tr className="border-b border-bg-border">
                                                       {[
                                                             'Customer',
-                                                            'Phone / Email',
                                                             'Purchases',
                                                             'Lifetime Value',
                                                             'Avg Purchase',
@@ -259,7 +242,7 @@ export default function CustomersPage() {
                                           <tbody>
                                                 {filtered
                                                       .slice(0, 50)
-                                                      .map((c, i) => (
+                                                      .map((c: TopCustomer) => (
                                                             <tr
                                                                   onClick={() =>
                                                                         navigate(
@@ -295,7 +278,7 @@ export default function CustomersPage() {
                                                                               </div>
                                                                         </div>
                                                                   </td>
-                                                                  <td className="py-3 pr-4">
+                                                                  {/* <td className="py-3 pr-4">
                                                                         <p className="text-xs font-mono text-ink-secondary">
                                                                               {c.phone_number ??
                                                                                     '—'}
@@ -307,7 +290,7 @@ export default function CustomersPage() {
                                                                                     }
                                                                               </p>
                                                                         )}
-                                                                  </td>
+                                                                  </td> */}
                                                                   <td className="py-3 pr-4">
                                                                         <Badge
                                                                               variant={
@@ -404,6 +387,7 @@ export default function CustomersPage() {
                                     )}
                               </div>
                         </Card>
+                        
                   </main>
             </div>
       );

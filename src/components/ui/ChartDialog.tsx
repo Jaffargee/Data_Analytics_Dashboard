@@ -4,23 +4,27 @@ import { BarChart } from '../charts/BarChart';
 import { LineChart } from '../charts/LineChart';
 import { DonutChart } from '../charts/DonutChart';
 
-interface BarDatum {
+export interface BarLineData {
       label: string;
       value: number;
 }
+
 interface DonutSlice {
       label: string;
       value: number;
       color: string;
 }
 
-interface ChartDialogProps {
-      triggerComponent: React.ReactNode;
-      type: 'line' | 'bar' | 'donut';
-      data: BarDatum[] | DonutSlice[];
-      height?: number;
-      title?: string;
-}
+// interface ChartDialogProps {
+//       triggerComponent: React.ReactNode;
+//       type: 'line' | 'bar' | 'donut';
+//       data: BarLineData[] | DonutSlice[];
+//       height?: number;
+//       title?: string;
+// }
+
+type ChartDialogProps = { type: 'bar' | 'line'; data: BarLineData[]; height?: number; title?: string; triggerComponent: React.ReactNode }
+  | { type: 'donut'; data: DonutSlice[]; height?: number; title?: string; triggerComponent: React.ReactNode };
 
 export function ChartDialog({
       triggerComponent,
@@ -29,11 +33,17 @@ export function ChartDialog({
       title,
       type = 'line',
 }: ChartDialogProps) {
-      const charts = {
-            bar: <BarChart data={data} height={height} />,
-            line: <LineChart data={data} height={height} />,
-            donut: <DonutChart data={data as DonutSlice[]} />,
-      };
+
+      function renderChart() {
+            switch (type) {
+            case 'bar':
+                  return <BarChart data={data as BarLineData[]} height={height} />;
+            case 'line':
+                  return <LineChart data={data as BarLineData[]} height={height} />;
+            case 'donut':
+                  return <DonutChart data={data as DonutSlice[]} />;
+            }
+      }
 
       return (
             <Dialog.Root>
@@ -47,7 +57,7 @@ export function ChartDialog({
                               <Dialog.Description className="text-slate-400">
                                     Accounts Total Summary for a single date
                               </Dialog.Description>
-                              <div className="p-8">{charts[type]}</div>
+                              <div className="p-8">{renderChart()}</div>
                         </Dialog.Content>
                   </Dialog.Portal>
             </Dialog.Root>

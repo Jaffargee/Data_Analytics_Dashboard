@@ -70,8 +70,8 @@ export interface TextareaProps {
 // Shared token for consistent field height across Input, Select, Combobox, Button
 export const FIELD_HEIGHT = "h-[42px]";
 export const FIELD_TEXT = "text-[16px] tracking-[0.5px]";
-export const LABEL_FLOATED = "top-[0px] -translate-y-1/2 text-[12px] bg-black px-[4px] tracking-[0.4px]";
-export const LABEL_RESTING = "top-1/2 -translate-y-1/2 text-[16px] tracking-[0.5px]";
+export const LABEL_FLOATED = "top-[0px] -translate-y-1/2 text-[14px] bg-black px-[4px]";
+export const LABEL_RESTING = "top-1/2 -translate-y-1/2 text-[14px]";
 export const ERROR_TEXT = "flex items-center gap-[4px] mt-[4px] pl-[16px] text-[12px] leading-[16px] tracking-[0.4px] text-accent-red";
 export const PREFIX_SLOT = "pl-[12px] pr-[8px] text-ink-faint flex items-center justify-center shrink-0 h-full self-center select-none";
 export const ICON_WRAP = "w-[20px] h-[20px] flex items-center justify-center [&>svg]:w-[20px] [&>svg]:h-[20px]";

@@ -1,25 +1,14 @@
-import React from 'react';
-import { TopBar } from '@/components/ui/TopBar';
-import {
-      Card,
-      CardHeader,
-      CardTitle,
-      StatCard,
-      SkeletonCard,
-      EmptyState,
-} from '@/components/ui/primitives';
-import { BarChart } from '@/components/charts/BarChart';
-import { DonutChart } from '@/components/charts/DonutChart';
-import {
-      useRevenueDaily,
-      useRevenueMonthly,
-      useBestSelling,
-      useCategoryPerf,
-      useDailySnapshot,
-} from '@/lib/hooks';
-import { fmtCurrency, fmt, fmtMonthLabel, today } from '@/lib/utils';
-import { TrendingUp, ShoppingCart, Package, BarChart2 } from 'lucide-react';
-import { ChartDialog } from '@/components/ui/ChartDialog';
+import { BarChart2, LineChart, Package, ShoppingCart, TrendingUp } from 'lucide-react'
+import { Card, CardHeader } from '@fluentui/react-components'
+import SkeletonCard from '../../components/ui/primitives/SkeletonCard'
+import StatCard from '../../components/ui/primitives/StatCard'
+import ReactECharts from 'echarts-for-react';
+import { TopBar } from '../../components/ui/TopBar';
+import { useDailySnapshot, useRevenueDaily, useRevenueMonthly, useBestSelling, useCategoryPerf } from '../../hooks/supabase_hook';
+import { fmt, fmtCurrency, fmtMonthLabel, today } from '../../lib/utils'
+import CardTitle from '../../components/ui/primitives/CardTitle'
+import EmptyState from '../../components/ui/primitives/EmptyState'
+import SalesAnalyzer from './components/SalesAnalyzer';
 
 const DONUT_COLORS = [
       '#f5c842',
@@ -30,10 +19,11 @@ const DONUT_COLORS = [
       '#34d399',
 ];
 
-export default function Overview() {
+const OverView = () => {
+
       const daily = useRevenueDaily(30);
       const monthly = useRevenueMonthly();
-      const items = useBestSelling(5);
+      const items = useBestSelling(15);
       const cats = useCategoryPerf();
       const snap = useDailySnapshot(today());
 
@@ -55,19 +45,14 @@ export default function Overview() {
 
       const dailyForChart = [...(daily.data ?? [])]
             .reverse()
-            .slice(-30)
+            .slice(-90)
             .map((r) => ({
                   label: r.sale_date.slice(5),
                   value: Number(r.revenue),
             }));
 
-      const catData = (cats.data ?? []).slice(0, 6).map((c, i) => ({
-            label: c.category,
-            value: Number(c.total_revenue),
-            color: DONUT_COLORS[i % DONUT_COLORS.length],
-      }));
 
-      const topItems = (items.data ?? []).slice(0, 5).map((d) => ({
+      const topItems = (items.data ?? []).slice(0, 15).map((d) => ({
             label:
                   d.item_name.length > 22
                         ? d.item_name.slice(0, 22) + '…'
@@ -75,15 +60,119 @@ export default function Overview() {
             value: Number(d.total_revenue),
       }));
 
+      const catData = (cats.data ?? []).slice(0, 6).map((c, i) => ({
+            name: c.category,
+            value: Number(c.total_revenue),
+            itemStyle: { color: DONUT_COLORS[i % DONUT_COLORS.length] } 
+      }));
+
+      const option = {
+            title: { text: 'DAILY REVENUE' },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                  type: 'category',
+                  data: dailyForChart.map(item => item.label) // convert timestamps
+            },
+            yAxis: { type: 'value' },
+            series: [
+                  {
+                        name: 'Daily Revenue',
+                        type: 'line',
+                        data: dailyForChart.map(item => item.value), // your real sales
+                        itemStyle: { color: '#f5c842', type: 'dashed' }
+                  },
+            ]
+      };    
+
+      const option2 = {
+            title: { text: 'MONTHLY REVENUE' },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                  type: 'category',
+                  data: monthlyForChart.map(item => item.label) // convert timestamps
+            },
+            yAxis: { type: 'value' },
+            series: [
+                  {
+                        name: 'Monthly Revenue',
+                        type: 'bar',
+                        data: monthlyForChart.map(item => item.value), // your real sales
+                        itemStyle: { color: '#f5c842', type: 'dashed' }
+                  },
+            ]
+      };
+
+      const option3 = {
+            title: {
+                  text: "Category Revenue",
+                  left: "left",
+                  top: "left"
+            },
+            tooltip: {
+                  trigger: "item",
+                  formatter: (params: any) =>
+                  `${params.name}\n${params.value.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "NGN"
+                  })}`
+            },
+            legend: {
+                  orient: "vertical",
+                  left: "left"
+            },
+            series: [
+                  {
+                        type: "pie",
+                        radius: ["40%", "70%"], // donut effect
+                        avoidLabelOverlap: false,
+                        label: {
+                              show: false,
+                              position: "center",
+                              formatter: (params: any) =>
+                              `${params.name}\n\n${params.value.toLocaleString("en-US", {
+                                    style: "currency",
+                                    currency: "NGN"
+                              })}`
+                        },
+                        emphasis: {
+                              label: {
+                                    show: true,
+                                    fontSize: "16",
+                                    fontWeight: "bold",
+                              }
+                        },
+                        data: catData
+                  }
+            ]
+      };
+
+      const option4 = {
+            title: { text: 'Top 5 Items by Revenue' },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                  type: 'category',
+                  data: topItems.map(item => item.label) // convert timestamps
+            },
+            yAxis: { type: 'value' },
+            series: [
+                  {
+                        name: 'Top 5 Items by Revenue',
+                        type: 'bar',
+                        data: topItems.map(item => item.value), // your real sales
+                        itemStyle: { color: '#f5c842', type: 'dashed' }
+                  },
+            ]
+      };
+
       return (
-            <div className="flex-1 flex flex-col min-h-screen">
+            <div className='flex-1 flex flex-col min-h-screen'>
                   <TopBar
                         title="Overview"
                         subtitle="All-time performance snapshot"
                   />
-
                   <main className="flex-1 p-6 space-y-6">
-                        {/* KPI row */}
+
+                        {/* KPI Row */}
                         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
                               {snap.loading ? (
                                     Array.from({ length: 4 }).map((_, i) => (
@@ -132,86 +221,52 @@ export default function Overview() {
                         {/* Revenue charts row */}
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                               <Card
-                                    glow
+                                    appearance='outline'   
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '150ms',
                                           animationFillMode: 'forwards',
                                     }}
                               >
-                                    <CardHeader>
-                                          <CardTitle>
-                                                Daily Revenue — Last 30 Days
-                                          </CardTitle>
-                                          <span className="text-xs font-mono text-accent-teal">
-                                                ₦ NGN
-                                          </span>
-                                    </CardHeader>
+                                    <CardHeader header={
+                                          <div className='flex flex-row items-center gap-2'>
+                                                <CardTitle>
+                                                      Daily Revenue — Last 30 Days
+                                                </CardTitle>
+                                                <span className="text-xs font-mono text-accent-teal">
+                                                      ₦ NGN
+                                                </span>
+                                          </div>
+                                    } />
                                     {daily.loading ? (
                                           <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
                                     ) : dailyForChart.length ? (
-                                          <ChartDialog
-                                                title="Daily Revenue — Last 30 Days"
-                                                type="bar"
-                                                triggerComponent={
-                                                      <button>
-                                                            <BarChart
-                                                                  data={
-                                                                        dailyForChart
-                                                                  }
-                                                                  height={180}
-                                                                  color="#2dd4bf"
-                                                                  formatValue={
-                                                                        fmtCurrency
-                                                                  }
-                                                            />
-                                                      </button>
-                                                }
-                                                data={dailyForChart}
-                                                height={300}
-                                          />
+                                          <ReactECharts option={option} />
                                     ) : (
                                           <EmptyState />
                                     )}
                               </Card>
 
                               <Card
-                                    glow
+                                    appearance='outline'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '250ms',
                                           animationFillMode: 'forwards',
                                     }}
                               >
-                                    <CardHeader>
-                                          <CardTitle>Monthly Revenue</CardTitle>
-                                          <span className="text-xs font-mono text-accent-gold">
-                                                ₦ NGN
-                                          </span>
-                                    </CardHeader>
+                                    <CardHeader header={
+                                          <div className='flex flex-row items-center gap-2'>
+                                                <CardTitle>Monthly Revenue</CardTitle>
+                                                <span className="text-sm font-mono text-accent-gold">
+                                                      ₦ NGN
+                                                </span>
+                                          </div>
+                                    } />
                                     {monthly.loading ? (
                                           <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
                                     ) : monthlyForChart.length ? (
-                                          <ChartDialog
-                                                title="Monthly Revenue"
-                                                type="bar"
-                                                triggerComponent={
-                                                      <button>
-                                                            <BarChart
-                                                                  data={
-                                                                        monthlyForChart
-                                                                  }
-                                                                  height={180}
-                                                                  color="#f5c842"
-                                                                  formatValue={
-                                                                        fmtCurrency
-                                                                  }
-                                                            />
-                                                      </button>
-                                                }
-                                                data={monthlyForChart}
-                                                height={300}
-                                          />
+                                          <ReactECharts option={option2} />
                                     ) : (
                                           <EmptyState />
                                     )}
@@ -221,59 +276,60 @@ export default function Overview() {
                         {/* Bottom row */}
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                               <Card
-                                    glow
+                                    appearance='outline'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '300ms',
                                           animationFillMode: 'forwards',
                                     }}
                               >
-                                    <CardHeader>
-                                          <CardTitle>
-                                                Revenue by Category
-                                          </CardTitle>
-                                    </CardHeader>
+                                    <CardHeader header={
+                                          <div className='flex flex-row items-center gap-2'>
+                                                <CardTitle>
+                                                      Revenue by Category
+                                                </CardTitle>
+                                          </div>
+                                    } />
                                     {cats.loading ? (
                                           <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
                                     ) : catData.length ? (
-                                          <DonutChart
-                                                data={catData}
-                                                size={180}
-                                                formatValue={fmtCurrency}
-                                          />
+                                          <ReactECharts option={option3} />
                                     ) : (
                                           <EmptyState />
                                     )}
                               </Card>
 
                               <Card
-                                    glow
+                                    appearance='outline'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '400ms',
                                           animationFillMode: 'forwards',
                                     }}
                               >
-                                    <CardHeader>
-                                          <CardTitle>
-                                                Top 5 Items by Revenue
-                                          </CardTitle>
-                                    </CardHeader>
+                                    <CardHeader header={
+                                          <div className='flex flex-row items-center gap-2'>
+                                                <CardTitle>
+                                                      Top 5 Items by Revenue
+                                                </CardTitle>
+                                          </div>
+                                    } />
                                     {items.loading ? (
                                           <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
                                     ) : topItems.length ? (
-                                          <BarChart
-                                                data={topItems}
-                                                height={180}
-                                                color="#a78bfa"
-                                                formatValue={fmtCurrency}
-                                          />
+                                          <ReactECharts option={option4} />
                                     ) : (
                                           <EmptyState />
                                     )}
                               </Card>
+
                         </div>
+
+                        <SalesAnalyzer />
+
                   </main>
             </div>
-      );
+      )
 }
+
+export default OverView

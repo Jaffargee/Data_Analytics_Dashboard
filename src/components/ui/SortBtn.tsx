@@ -22,13 +22,13 @@ export const SortBtn = ({
 }) => (
       <button
             onClick={() => toggleSort?.(k)}
-            className={`flex items-center gap-1 text-xs font-body uppercase tracking-wider transition-colors ${sortKey === k ? 'text-accent-gold' : 'text-ink-muted hover:text-ink-secondary'}`}
+            className={`flex items-center gap-1 text-xs font-body uppercase tracking-wider transition-colors ${sortKey === k ? 'text-accent-gold' : 'text-ink-primary hover:text-ink-primary'}`}
       >
             {label}
             <ArrowUpDown
-                  size={10}
+                  size={18}
                   className={
-                        sortKey === k ? 'text-accent-gold' : 'text-ink-faint'
+                        sortKey === k ? 'text-accent-gold' : 'text-ink-subtle'
                   }
             />
       </button>

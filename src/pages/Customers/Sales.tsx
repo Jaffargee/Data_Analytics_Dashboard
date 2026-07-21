@@ -1,17 +1,25 @@
-import {
-      Card,
-      CardHeader,
-      CardTitle,
-      StatCard,
-} from '@/components/ui/primitives';
-import { TopBar } from '@/components/ui/TopBar';
+import StatCard from '../../components/ui/primitives/StatCard';
+import { Card } from '@fluentui/react-components';
+import CardHeader from '../../components/ui/primitives/CardHeader';
+import CardTitle from '../../components/ui/primitives/CardTitle';
+import { TopBar } from '../../components/ui/TopBar';
+import TableSearch from '../../components/ui/TableSearch';
+import DataTable, { ColumnDef } from '../../components/ui/DataTable';
 import { executeSQL } from '@/lib/llm_utils';
-import { supabase } from '@/lib/supabase';
 import { fmt, fmtCurrency } from '@/lib/utils';
-import { QueryResult, Report } from '@/types';
-import { ArrowUp, Loader2, Search, ShoppingCart, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Report } from '@/types';
+import { ArrowUp, Loader2, Plus, ShoppingCart, Users } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useParams } from 'react-router-dom';
+import ReactECharts from 'echarts-for-react';
+
+interface SaleItemRow {
+      pos_item_id: number | string;
+      name: string;
+      quantity: number;
+      unit_price: number;
+      total: number;
+}
 
 const customer_product_query = (pos_sale_id: number) => {
       return `
@@ -47,15 +55,15 @@ const customer_product_query = (pos_sale_id: number) => {
 export default function CustomerSales() {
       const [report, setReport] = useState<Report | null>(null);
       const [loading, setLoading] = useState(false);
+      const [query, setQuery] = useState<string>('');
+      const [filter, setFilter] = useState<string>('');
 
-      const pos_sale_id = window.location.pathname.split('/').pop();
-      const [params, _] = useSearchParams();
+      const { sales_id: pos_sale_id } = useParams();
+      const [params] = useSearchParams();
       const ctm_name = params.get('ctm_name');
 
       async function fetchCustomerSaleItemData() {
             try {
-                  const start = performance.now();
-
                   if (!pos_sale_id) return;
                   setLoading(true);
 
@@ -65,6 +73,7 @@ export default function CustomerSales() {
 
                   if (!sql_res || !sql_res.rows) {
                         setReport({} as Report);
+                        return;
                   }
 
                   const result = sql_res.rows[0]?.result as Report;
@@ -75,11 +84,89 @@ export default function CustomerSales() {
                   setLoading(false);
             }
       }
+
       useEffect(() => {
             (async () => {
                   await fetchCustomerSaleItemData();
             })();
       }, []);
+
+      // Sold vs Returned — used as the filter dropdown options
+      const ctm_category = useMemo(() => ['Sold', 'Returned'], []);
+
+      const filtered = useMemo(() => {
+            const rows = (report?.sale_items ?? []) as SaleItemRow[];
+            return rows.filter((r) => {
+                  const matchesQuery =
+                        (r.name ?? '').toLowerCase().includes(query.toLowerCase()) ||
+                        (r.pos_item_id?.toString() ?? '').includes(query) ||
+                        (fmt(r.total) ?? '').includes(query.toLowerCase()) ||
+                        (r.total?.toString() ?? '').includes(query.toLowerCase());
+
+                  const matchesFilter =
+                        !filter ||
+                        (filter === 'Sold' && r.quantity > 0) ||
+                        (filter === 'Returned' && r.quantity < 0);
+
+                  return matchesQuery && matchesFilter;
+            });
+      }, [report, query, filter]);
+
+      // Quantity + total per item, for the per-product breakdown chart
+      const chartData = useMemo(() => {
+            const rows = (report?.sale_items ?? []) as SaleItemRow[];
+            return rows
+                  .map((r) => ({
+                        name: r.name,
+                        quantity: Number(r.quantity) || 0,
+                        total: Number(r.total) || 0,
+                  }))
+                  .sort((a, b) => b.total - a.total);
+      }, [report]);
+
+      const columns: ColumnDef<SaleItemRow>[] = [
+            {
+                  key: 'pos_item_id',
+                  label: 'ID',
+                  sortable: true,
+                  width: '0.8fr',
+            },
+            {
+                  key: 'name',
+                  label: 'Name',
+                  sortable: true,
+                  width: '2fr',
+            },
+            {
+                  key: 'quantity',
+                  label: 'Quantity',
+                  sortable: true,
+                  align: 'right',
+                  width: '1fr',
+            },
+            {
+                  key: 'unit_price',
+                  label: 'Unit Price',
+                  sortable: true,
+                  align: 'right',
+                  width: '1.2fr',
+                  sortValue: (r) => Number(r.unit_price),
+                  render: (r) => fmtCurrency(r.unit_price),
+            },
+            {
+                  key: 'total',
+                  label: 'Total',
+                  sortable: true,
+                  align: 'right',
+                  width: '1.2fr',
+                  sortValue: (r) => Number(r.total),
+                  render: (r) => (
+                        <span className="font-mono text-accent-gold font-medium">
+                              {fmtCurrency(r.total)}
+                        </span>
+                  ),
+            },
+      ];
 
       return (
             <div className="flex-1 flex flex-col min-h-screen">
@@ -106,151 +193,145 @@ export default function CustomerSales() {
                                     <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
                                           <StatCard
                                                 label="Revenue"
-                                                value={fmtCurrency(
-                                                      report?.summary.total
-                                                )}
+                                                value={fmtCurrency(report?.summary.total)}
                                                 icon={<Users size={14} />}
                                                 accent="gold"
                                                 delay={0}
                                           />
                                           <StatCard
                                                 label="Profit"
-                                                value={fmt(
-                                                      report?.summary.profit
-                                                )}
+                                                value={fmt(report?.summary.profit)}
                                                 icon={<ArrowUp size={14} />}
                                                 accent="teal"
                                                 delay={100}
                                           />
                                           <StatCard
                                                 label="Total Items Bought"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .total_items_bought
-                                                )}
-                                                icon={
-                                                      <ShoppingCart size={14} />
-                                                }
+                                                value={fmt(report?.summary.total_items_bought)}
+                                                icon={<ShoppingCart size={14} />}
                                                 accent="teal"
                                                 delay={100}
                                           />
                                           <StatCard
                                                 label="Total Items Returned"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .total_items_returned
-                                                )}
-                                                icon={
-                                                      <ShoppingCart size={14} />
-                                                }
+                                                value={fmt(report?.summary.total_items_returned)}
+                                                icon={<ShoppingCart size={14} />}
                                                 accent="red"
                                                 delay={100}
                                           />
-                                          {/* <StatCard label='Avg Order Value' value={fmtCurrency(report?.summary.avg_order_value)} icon={<Tag size={14}/>}    accent="teal"  delay={200} />
-                                                <StatCard label='Loyalty' value={fmtPercent(report?.summary.loyalty_score)} icon={<Star size={14}/>}      accent="purple"delay={300} />
-                                                <StatCard label='Total Items Bought' value={fmt(report?.summary.total_items_bought)} icon={<Package size={14}/>}    accent="purple" delay={400} />
-                                                <StatCard label='Total Items Returned' value={fmt(report?.summary.total_items_returned)} icon={<Package size={14}/>}   accent="red" delay={400} />
-                                                <StatCard label='Visits' value={fmtDate(report?.summary.last_visit)} icon={<Calendar size={14}/>}     accent="gold"   delay={500} />
-                                                <StatCard label='Days Since Last Visit' value={fmt(report?.summary.days_since_last_visit)} icon={<Clock size={14}/>}     accent="purple" delay={600} /> */}
                                     </div>
+
                                     <Card>
                                           <CardHeader>
-                                                <CardTitle>
-                                                      Products Bought by{' '}
-                                                      {ctm_name}
-                                                </CardTitle>
-                                                <div className="relative">
-                                                      <Search
-                                                            size={13}
-                                                            className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
-                                                      />
-                                                      <input
-                                                            // value={search}
-                                                            // onChange={(e) => setSearch(e.target.value)}
-                                                            placeholder="Search customers…"
-                                                            className="bg-bg-hover border border-bg-border rounded-lg pl-8 pr-3 py-1.5 text-xs font-body text-ink-primary placeholder:text-ink-faint outline-none focus:border-accent-gold/40 w-52 transition-colors"
-                                                      />
-                                                </div>
+                                                <CardTitle>Items Breakdown</CardTitle>
                                           </CardHeader>
-                                          <SalesTable
-                                                rows={report?.sale_items}
-                                          />
+                                          <div className="p-4 h-72">
+                                                <ReactECharts
+                                                      style={{ height: '100%', width: '100%' }}
+                                                      option={{
+                                                            tooltip: {
+                                                                  trigger: 'axis',
+                                                                  axisPointer: { type: 'shadow' },
+                                                                  formatter: (params: any[]) => {
+                                                                        const label = params[0]?.axisValue ?? '';
+                                                                        const rows = params
+                                                                              .map((p) => {
+                                                                                    const val =
+                                                                                          p.seriesName === 'Total'
+                                                                                                ? fmtCurrency(p.value)
+                                                                                                : p.value;
+                                                                                    return `${p.marker} ${p.seriesName}: ${val}`;
+                                                                              })
+                                                                              .join('<br/>');
+                                                                        return `${label}<br/>${rows}`;
+                                                                  },
+                                                            },
+                                                            legend: {
+                                                                  data: ['Total', 'Quantity'],
+                                                                  textStyle: { color: 'var(--ink-muted)' },
+                                                                  top: 0,
+                                                            },
+                                                            grid: { left: 50, right: 50, top: 40, bottom: 60 },
+                                                            xAxis: {
+                                                                  type: 'category',
+                                                                  data: chartData.map((d) => d.name),
+                                                                  axisLabel: {
+                                                                        color: 'var(--ink-muted)',
+                                                                        fontSize: 11,
+                                                                        rotate: 30,
+                                                                        interval: 0,
+                                                                  },
+                                                                  axisLine: { lineStyle: { color: 'var(--bg-border)' } },
+                                                            },
+                                                            yAxis: [
+                                                                  {
+                                                                        type: 'value',
+                                                                        name: 'Total',
+                                                                        axisLabel: {
+                                                                              color: 'var(--ink-muted)',
+                                                                              fontSize: 11,
+                                                                              formatter: (v: number) => fmtCurrency(v),
+                                                                        },
+                                                                        splitLine: { lineStyle: { color: 'var(--bg-border)' } },
+                                                                  },
+                                                                  {
+                                                                        type: 'value',
+                                                                        name: 'Quantity',
+                                                                        axisLabel: { color: 'var(--ink-muted)', fontSize: 11 },
+                                                                        splitLine: { show: false },
+                                                                  },
+                                                            ],
+                                                            series: [
+                                                                  {
+                                                                        name: 'Total',
+                                                                        type: 'bar',
+                                                                        yAxisIndex: 0,
+                                                                        data: chartData.map((d) => d.total),
+                                                                        itemStyle: {
+                                                                              color: 'var(--accent-gold)',
+                                                                              borderRadius: [4, 4, 0, 0],
+                                                                        },
+                                                                  },
+                                                                  {
+                                                                        name: 'Quantity',
+                                                                        type: 'line',
+                                                                        yAxisIndex: 1,
+                                                                        data: chartData.map((d) => d.quantity),
+                                                                        smooth: true,
+                                                                        symbol: 'none',
+                                                                        lineStyle: { color: 'var(--accent-teal)', width: 2 },
+                                                                  },
+                                                            ],
+                                                      }}
+                                                />
+                                          </div>
                                     </Card>
+
+                                    <TableSearch
+                                          search={query}
+                                          filterValue={filter}
+                                          title="Add Item"
+                                          buttonIcon={Plus}
+                                          setFilter={setFilter}
+                                          setSearch={setQuery}
+                                          filterOption={ctm_category}
+                                          withButton
+                                          withFilter
+                                    />
+
+                                    <DataTable
+                                          data={filtered}
+                                          columns={columns}
+                                          getRowId={(row) => row.pos_item_id}
+                                          ariaLabel="Sale items table"
+                                          emptyMessage="No items match your search"
+                                          defaultSortKey="total"
+                                          defaultSortDir="desc"
+                                    />
+                                    
                               </div>
                         )}
                   </main>
-            </div>
-      );
-}
-
-function SalesTable({ rows }: { rows: any }) {
-      return (
-            <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                        <thead>
-                              <tr className="border-b border-bg-border">
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          #
-                                    </th>
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          ID
-                                    </th>
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Name
-                                    </th>
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Quantity
-                                    </th>
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Unit Price
-                                    </th>
-                                    <th className="text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Total
-                                    </th>
-                              </tr>
-                        </thead>
-
-                        <tbody>
-                              {rows?.map((r: any, i: number) => {
-                                    const hasReturns =
-                                          Number(r.items_returned) > 0;
-
-                                    return (
-                                          <tr
-                                                key={r.pos_item_id}
-                                                className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors group cursor-pointer"
-                                          >
-                                                <td className="py-3 pr-4 text-xs text-ink-faint">
-                                                      {i + 1}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-primary">
-                                                      {r.pos_item_id}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-secondary">
-                                                      {r.name}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-primary">
-                                                      {r.quantity}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-secondary">
-                                                      {fmtCurrency(
-                                                            r.unit_price
-                                                      )}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs font-mono text-accent-gold font-medium">
-                                                      {fmtCurrency(r.total)}
-                                                </td>
-                                          </tr>
-                                    );
-                              })}
-                        </tbody>
-                  </table>
-                  {/* {!rows.length && <EmptyState message="No items match your search" />} */}
             </div>
       );
 }

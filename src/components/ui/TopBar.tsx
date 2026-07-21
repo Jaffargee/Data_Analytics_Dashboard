@@ -1,8 +1,10 @@
 import React from 'react';
 import { Search, Bell, RefreshCw, ArrowLeft } from 'lucide-react';
-import { today } from '@/lib/utils';
+import { today } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { MobileSideBar } from './Sidebar';
+import { Avatar } from '@fluentui/react-components';
+import Button from './Button';
 
 interface TopBarProps {
       title: string;
@@ -11,7 +13,7 @@ interface TopBarProps {
       onRefresh?: () => void;
 }
 
-export function TopBar({
+function TopBar({
       title,
       subtitle,
       shouldNavigateBack,
@@ -20,7 +22,7 @@ export function TopBar({
       const navigate = useNavigate();
 
       return (
-            <header className="h-14 border-b border-bg-border bg-bg-panel/80 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-10">
+            <header className="h-14 border-b border-bg-border bg-bg-panel/80 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-[1000]">
                   <div className="flex flex-row gap-4">
                         {shouldNavigateBack && (
                               <button
@@ -45,9 +47,9 @@ export function TopBar({
                         </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
                         {/* Date chip */}
-                        <span className="text-[11px] font-mono text-ink-muted bg-bg-hover border border-bg-border px-2.5 py-1 rounded hidden md:block">
+                        <span className="text-[11px] font-mono text-ink-sublte bg-bg-hover border border-bg-border px-4 py-1 rounded-full hidden md:block">
                               {new Date().toLocaleDateString('en-NG', {
                                     weekday: 'short',
                                     day: 'numeric',
@@ -57,25 +59,15 @@ export function TopBar({
                         </span>
 
                         {onRefresh && (
-                              <button
-                                    onClick={onRefresh}
-                                    className="w-8 h-8 rounded-lg border border-bg-border text-ink-muted hover:text-ink-primary hover:bg-bg-hover flex items-center justify-center transition-all"
-                              >
-                                    <RefreshCw size={13} />
-                              </button>
+                              <Button onClick={onRefresh} className='h-[40px] w-[40px]' radius='full' size='sm' value={'Notification'} variant='accent' icon={<RefreshCw size={18} /> } />
                         )}
-
-                        <button className="w-8 h-8 rounded-lg border border-bg-border text-ink-muted hover:text-ink-primary hover:bg-bg-hover flex items-center justify-center transition-all">
-                              <Bell size={13} />
-                        </button>
-
+                        <Button className='h-[40px] w-[40px]' radius='full' size='sm' value={'Notification'} variant='accent' icon={<Bell size={18} /> } />
                         {/* Avatar */}
-                        <div className="w-8 h-8 rounded-lg bg-accent-gold/20 border border-accent-gold/30 flex items-center justify-center">
-                              <span className="text-accent-gold font-display font-bold text-xs">
-                                    T
-                              </span>
-                        </div>
+                        <Avatar active='active' activeAppearance='ring' color='brand' name='Tahir General' shape='circular' size={32} />
                   </div>
             </header>
       );
 }
+
+export { TopBar };
+export default TopBar;

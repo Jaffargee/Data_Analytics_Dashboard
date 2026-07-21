@@ -1,4 +1,4 @@
-import { QueryResult } from '@/types';
+import { QueryResult } from '../types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 export function formatCellValue(key: string, val: unknown): string {
@@ -139,7 +139,7 @@ export function deriveLineChart(res: QueryResult): QueryResult {
 
       if (!valueKey) return res;
 
-      const chartData = res.rows.map((r) => ({
+      const chartData = res.rows.map((r: any) => ({
             label: String(r[labelKey]),
             value: Number(r[valueKey]),
       }));

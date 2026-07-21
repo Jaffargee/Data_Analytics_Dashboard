@@ -1,56 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { TopBar } from '@/components/ui/TopBar';
-import {
-      Card,
-      CardHeader,
-      CardTitle,
-      StatCard,
-      Badge,
-      ProgressBar,
-      EmptyState,
-} from '@/components/ui/primitives';
-import { BarChart } from '@/components/charts/BarChart';
-import { useTopCustomers } from '../../hooks/supabase_hook';
-import { fmtCurrency, fmt, fmtDate } from '@/lib/utils';
-import {
-      Users,
-      ShoppingBag,
-      Award,
-      Clock,
-      Plus,
-      Edit3,
-      User,
-} from 'lucide-react';
-import * as Avatar from '@radix-ui/react-avatar';
-import SearchInput from "@/components/ui/SearchInput"
-import Button from "@/components/ui/Button"
+import { TopBar } from "../../components/ui/TopBar";
 import { TopCustomer } from '../../lib/supabase';
+import { useTopCustomers } from '../../hooks/supabase_hook';
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import StatCard from "../../components/ui/primitives/StatCard"
+import { Award, Clock, ShoppingBag, Users, Plus } from "lucide-react";
+import { fmt, fmtCurrency } from "../../lib/utils";
+import Charts from "./components/Charts";
+import Table from "./components/Table";
+import SearchInput from '../../components/ui/SearchInput';
+import Button from '../../components/ui/Button';
+import TableSearch from '../../components/ui/TableSearch';
+import { ctm_category } from '../../constants';
+import Fuse from 'fuse.js';
 
-function initials(name: string) {
-      return name
-            .split(' ')
-            .slice(0, 2)
-            .map((w) => w[0] ?? '')
-            .join('')
-            .toUpperCase();
+
+// Fuse Config
+const options = {
+      keys: ["customer_name", "category"],
+      threshold: 0.4, 
 }
 
-export default function Customers() {
-      const customers = useTopCustomers(100);
-      const [search, setSearch] = useState('');
+export default function Customer() {
+      const customers = useTopCustomers(1000);
+      const [searchQuery, setSearchQuery] = useState<string>('');
+      const [filterQuery, setFilterQuery] = useState<string>('ALL');
       const navigate = useNavigate();
 
       const all = customers.data ?? [];
-      const maxLTV = Math.max(...all.map((c: TopCustomer) => Number(c.lifetime_value)), 1);
 
       const totalRevenue = all.reduce((s, c: TopCustomer) => s + Number(c.lifetime_value), 0);
 
       const totalPurchases = all.reduce((s, c: TopCustomer) => s + Number(c.total_purchases), 0);
       
       const avgLTV = all.length ? totalRevenue / all.length : 0;
-
-      const filtered = useMemo( () => all.filter((c: TopCustomer) => c.customer_name.toLowerCase().includes(search.toLowerCase())), [all, search]);
 
       const top10Chart = all.slice(0, 10).map((c: TopCustomer) => ({
             label: c.customer_name.split(' ')[0],
@@ -65,16 +48,33 @@ export default function Customers() {
             else freq.loyal++;
       });
 
+
+      // Fuse Searching
+
+      const fuse = useMemo(() => new Fuse(all, options), [all]);
+
+      const results = useMemo(() => {
+            let filtered = all;
+            if (filterQuery !== 'ALL') {
+                  filtered = filtered.filter(c => c.category === filterQuery);
+            }
+            if (searchQuery && searchQuery.length > 0) {
+                  return new Fuse(filtered, options).search(searchQuery).map(r => r.item);
+            }
+            return filtered;
+      }, [searchQuery, filterQuery, all]);
+
+
       return (
             <div className="flex-1 flex flex-col min-h-screen">
-                  <TopBar
+                  <TopBar 
                         title="Customers"
                         subtitle="Lifetime value and purchase analysis"
                   />
+                  <main className="flex-1 space-y-6">
 
-                  <main className="flex-1 p-6 space-y-6">
                         {/* KPIs */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 px-6 py-4">
                               <StatCard
                                     label="Total Customers"
                                     value={fmt(all.length)}
@@ -105,289 +105,23 @@ export default function Customers() {
                               />
                         </div>
 
-                        {/* Charts */}
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                              <Card glow>
-                                    <CardHeader>
-                                          <CardTitle>
-                                                Top 10 by Lifetime Value
-                                          </CardTitle>
-                                    </CardHeader>
-                                    {customers.loading ? (
-                                          <div className="h-52 bg-bg-hover animate-pulse rounded-lg" />
-                                    ) : (
-                                          <BarChart
-                                                data={top10Chart}
-                                                height={200}
-                                                color="#a78bfa"
-                                                formatValue={fmtCurrency}
-                                          />
-                                    )}
-                              </Card>
+                        <Charts customers={customers} />
 
-                              <Card glow>
-                                    <CardHeader>
-                                          <CardTitle>
-                                                Customer Frequency Segments
-                                          </CardTitle>
-                                    </CardHeader>
-                                    <div className="space-y-4 pt-2">
-                                          {[
-                                                {
-                                                      label: 'One-time buyers',
-                                                      value: freq.once,
-                                                      color: 'red' as const,
-                                                      desc: '1 purchase',
-                                                },
-                                                {
-                                                      label: 'Repeat customers',
-                                                      value: freq.repeat,
-                                                      color: 'gold' as const,
-                                                      desc: '2–5 purchases',
-                                                },
-                                                {
-                                                      label: 'Loyal customers',
-                                                      value: freq.loyal,
-                                                      color: 'teal' as const,
-                                                      desc: '6+ purchases',
-                                                },
-                                          ].map((seg) => (
-                                                <div
-                                                      key={seg.label}
-                                                      className="flex items-center gap-4"
-                                                >
-                                                      <div className="w-40 shrink-0">
-                                                            <p className="text-xs font-body text-ink-primary">
-                                                                  {seg.label}
-                                                            </p>
-                                                            <p className="text-[10px] text-ink-muted font-body">
-                                                                  {seg.desc}
-                                                            </p>
-                                                      </div>
-                                                      <div className="flex-1">
-                                                            <ProgressBar
-                                                                  value={
-                                                                        seg.value
-                                                                  }
-                                                                  max={
-                                                                        all.length ||
-                                                                        1
-                                                                  }
-                                                                  accent={
-                                                                        seg.color
-                                                                  }
-                                                            />
-                                                      </div>
-                                                      <div className="w-16 text-right shrink-0">
-                                                            <Badge
-                                                                  variant={
-                                                                        seg.color
-                                                                  }
-                                                            >
-                                                                  {fmt(
-                                                                        seg.value
-                                                                  )}
-                                                            </Badge>
-                                                      </div>
-                                                </div>
-                                          ))}
-                                    </div>
-                              </Card>
-                        </div>
+                        <TableSearch 
+                              search={searchQuery} 
+                              filterValue={filterQuery} 
+                              title="New Customer" 
+                              buttonIcon={Plus} 
+                              setFilter={setFilterQuery} 
+                              setSearch={setSearchQuery} 
+                              filterOption={ctm_category} 
+                              withButton 
+                              withFilter  
+                        />
 
-                        {/* Customer table */}
-                        <Card>
-                              <CardHeader>
-                                    <div className='flex-1'>
-                                          <CardTitle>All Customers</CardTitle>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-1">
-                                          <SearchInput placeholder="Search customers…" className="h-[40px]" value={search} onChange={(v: string) => setSearch(v)} />
-                                          <Button className="h-[40px]" onClick={() => navigate('/customers/new')} >
-                                                <div className="flex flex-row items-center w-full relative justify-center whitespace-nowrap flex-nowrap gap-2">
-                                                      <div>
-                                                            <span>
-                                                                  <Plus size={24} />
-                                                            </span>
-                                                      </div>
-                                                      <div>
-                                                            <span className='leading-6'>New Customer</span>
-                                                      </div>
-                                                </div>
-                                          </Button>
-                                    </div>
-                              </CardHeader>
+                        <Table customers={results} />
 
-                              <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                          <thead>
-                                                <tr className="border-b border-bg-border">
-                                                      {[
-                                                            'Customer',
-                                                            'Purchases',
-                                                            'Lifetime Value',
-                                                            'Avg Purchase',
-                                                            'Last Seen',
-                                                            '',
-                                                      ].map((h) => (
-                                                            <th
-                                                                  key={h}
-                                                                  className="text-left pb-3 pr-4 text-xs font-body uppercase tracking-wider text-ink-muted"
-                                                            >
-                                                                  {h}
-                                                            </th>
-                                                      ))}
-                                                </tr>
-                                          </thead>
-                                          <tbody>
-                                                {filtered
-                                                      .slice(0, 50)
-                                                      .map((c: TopCustomer) => (
-                                                            <tr
-                                                                  onClick={() =>
-                                                                        navigate(
-                                                                              `/customers/customer/${c.pos_customer_id}?ctm_name=${c.customer_name}`
-                                                                        )
-                                                                  }
-                                                                  key={
-                                                                        c.pos_customer_id
-                                                                  }
-                                                                  className="cursor-pointer border-b border-bg-border/40 hover:bg-bg-hover transition-colors group"
-                                                            >
-                                                                  <td className="py-3 pr-4">
-                                                                        <div className="flex items-center gap-2.5">
-                                                                              <Avatar.Root className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
-                                                                                    <Avatar.Fallback className="w-full h-full bg-accent-gold/15 border border-accent-gold/25 flex items-center justify-center text-[10px] font-display font-bold text-accent-gold">
-                                                                                          {initials(
-                                                                                                c.customer_name
-                                                                                          )}
-                                                                                    </Avatar.Fallback>
-                                                                              </Avatar.Root>
-                                                                              <div>
-                                                                                    <p className="text-xs font-body text-ink-primary group-hover:text-accent-gold transition-colors">
-                                                                                          {
-                                                                                                c.customer_name
-                                                                                          }
-                                                                                    </p>
-                                                                                    <p className="text-[10px] text-ink-faint font-mono">
-                                                                                          #
-                                                                                          {
-                                                                                                c.pos_customer_id
-                                                                                          }
-                                                                                    </p>
-                                                                              </div>
-                                                                        </div>
-                                                                  </td>
-                                                                  {/* <td className="py-3 pr-4">
-                                                                        <p className="text-xs font-mono text-ink-secondary">
-                                                                              {c.phone_number ??
-                                                                                    '—'}
-                                                                        </p>
-                                                                        {c.email && (
-                                                                              <p className="text-[10px] text-ink-muted">
-                                                                                    {
-                                                                                          c.email
-                                                                                    }
-                                                                              </p>
-                                                                        )}
-                                                                  </td> */}
-                                                                  <td className="py-3 pr-4">
-                                                                        <Badge
-                                                                              variant={
-                                                                                    Number(
-                                                                                          c.total_purchases
-                                                                                    ) >
-                                                                                    5
-                                                                                          ? 'teal'
-                                                                                          : Number(
-                                                                                                    c.total_purchases
-                                                                                              ) >
-                                                                                              1
-                                                                                            ? 'gold'
-                                                                                            : 'muted'
-                                                                              }
-                                                                        >
-                                                                              {fmt(
-                                                                                    c.total_purchases
-                                                                              )}
-                                                                        </Badge>
-                                                                  </td>
-                                                                  <td className="py-3 pr-4">
-                                                                        <p className="text-xs font-mono text-accent-gold font-medium">
-                                                                              {fmtCurrency(
-                                                                                    c.lifetime_value
-                                                                              )}
-                                                                        </p>
-                                                                        <ProgressBar
-                                                                              value={Number(
-                                                                                    c.lifetime_value
-                                                                              )}
-                                                                              max={
-                                                                                    maxLTV
-                                                                              }
-                                                                              className="w-20 mt-1"
-                                                                        />
-                                                                  </td>
-                                                                  <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">
-                                                                        {fmtCurrency(
-                                                                              c.avg_purchase
-                                                                        )}
-                                                                  </td>
-                                                                  <td className="py-3 pr-4 text-xs font-mono text-ink-muted">
-                                                                        {c.last_purchase_at
-                                                                              ? fmtDate(
-                                                                                      c.last_purchase_at
-                                                                                )
-                                                                              : '—'}
-                                                                  </td>
-                                                                  <td className="py-3 flex flex-row gap-2">
-                                                                        <button
-                                                                              onClick={(
-                                                                                    e
-                                                                              ) => {
-                                                                                    e.stopPropagation();
-                                                                                    navigate(
-                                                                                          `/customers/${c.id}/edit`
-                                                                                    );
-                                                                              }}
-                                                                              className="md:opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg border border-bg-border text-ink-muted hover:text-accent-gold hover:border-accent-gold/30 text-[10px] font-mono transition-all"
-                                                                        >
-                                                                              <Edit3
-                                                                                    size={
-                                                                                          10
-                                                                                    }
-                                                                              />
-                                                                              Edit
-                                                                        </button>
-                                                                        <button
-                                                                              onClick={(
-                                                                                    e
-                                                                              ) => {
-                                                                                    e.stopPropagation();
-                                                                                    navigate(
-                                                                                          `/customers/customer/profile/${c.id}?id=${c.id}&pos_cid=${c.pos_customer_id}`
-                                                                                    );
-                                                                              }}
-                                                                              className="md:opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg border border-bg-border text-ink-muted hover:text-accent-gold hover:border-accent-gold/30 text-[10px] font-mono transition-all"
-                                                                        >
-                                                                              <User
-                                                                                    size={
-                                                                                          10
-                                                                                    }
-                                                                              />
-                                                                              Profile
-                                                                        </button>
-                                                                  </td>
-                                                            </tr>
-                                                      ))}
-                                          </tbody>
-                                    </table>
-                                    {!filtered.length && (
-                                          <EmptyState message="No customers found" />
-                                    )}
-                              </div>
-                        </Card>
                   </main>
             </div>
-      );
+      )
 }

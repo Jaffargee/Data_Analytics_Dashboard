@@ -223,10 +223,12 @@ export interface QueryResponse {
       error?: string;
 }
 
-interface ChatData {
+interface ChartData {
       label: string;
       value: number;
       color?: string;
+      type?: 'line' | 'bar' | 'pie';
+      chartData?: ChartData;
 }
 
 export interface QueryResult {
@@ -234,5 +236,5 @@ export interface QueryResult {
       rows: Record<string, unknown>[];
       rowCount: number;
       executionMs: number;
-      chartData: ChatData;
+      chartData: ChartData;
 }

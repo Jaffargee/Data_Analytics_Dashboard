@@ -1,353 +1,441 @@
-import {
-      Badge,
-      Card,
-      CardHeader,
-      CardTitle,
-      StatCard,
-} from '@/components/ui/primitives';
-import { TopBar } from '@/components/ui/TopBar';
-import { customer_product_query, executeSQL } from '@/lib/llm_utils';
+// import { Card } from '@fluentui/react-components';
+// import CardHeader from '../../components/ui/primitives/CardHeader';
+// import CardTitle from '../../components/ui/primitives/CardTitle';
+// import StatCard from '../../components/ui/primitives/StatCard';
+// import { TopBar } from '../../components/ui/TopBar';
+// import DataTable, { ColumnDef } from '../../components/ui/DataTable';
+// import { fmt, fmtCurrency, fmtDate, fmtPercent } from '@/lib/utils';
+// import {
+//       Calendar,
+//       Clock,
+//       Loader2,
+//       Package,
+//       Plus,
+//       ShoppingCart,
+//       Star,
+//       Tag,
+//       Users,
+// } from 'lucide-react';
+// import { useState } from 'react';
+// import ReactECharts from 'echarts-for-react';
+// import {
+// 	Tab,
+// 	TabList,
+// 	TabValue,
+// } from "@fluentui/react-components";
+// import CustomerSales from "./components/CustomerSales";
+// import useCustomerSalesData from "./ctmSalesData"
+
+// const tabs = {
+// 	sales: <CustomerSales />
+// }
+
+// export default function Customer() {
+      
+//       const { chartData, loading, ctm_name, report } = useCustomerSalesData();
+//       const [selectedTab, setSelectedTab] = useState<TabValue>("home");
+
+//       return (
+//             <div className="flex-1 flex flex-col min-h-screen">
+//                   <TopBar
+//                         title={ctm_name as string}
+//                         subtitle="Sales details by customer."
+//                         onRefresh={async () => await fetchCustomerSalesData()}
+//                         shouldNavigateBack
+//                   />
+
+//                   <main className="flex-1 space-y-6">
+//                         {loading ? (
+//                               <div className="flex h-full w-full relative items-center justify-center gap-2">
+//                                     <Loader2
+//                                           size={18}
+//                                           className="text-accent-gold animate-spin shrink-0"
+//                                     />
+//                                     <p className="text-ink-muted font-body">Loading...</p>
+//                               </div>
+//                         ) : (
+//                               <div className="flex flex-col gap-2 space-y-4">
+                                    
+//                                     <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4 px-6 py-4">
+//                                           <StatCard
+//                                                 label="Revenue"
+//                                                 value={fmtCurrency(report?.summary.revenue)}
+//                                                 icon={<Users size={14} />}
+//                                                 accent="gold"
+//                                                 delay={0}
+//                                           />
+//                                           <StatCard
+//                                                 label="Profit"
+//                                                 value={fmtCurrency(report?.summary.profit)}
+//                                                 icon={<Users size={14} />}
+//                                                 accent="teal"
+//                                                 delay={0}
+//                                           />
+//                                           <StatCard
+//                                                 label="Total Orders"
+//                                                 value={fmt(report?.summary.total_orders)}
+//                                                 icon={<ShoppingCart size={14} />}
+//                                                 accent="teal"
+//                                                 delay={100}
+//                                           />
+//                                           <StatCard
+//                                                 label="Avg Order Value"
+//                                                 value={fmtCurrency(report?.summary.avg_order_value)}
+//                                                 icon={<Tag size={14} />}
+//                                                 accent="teal"
+//                                                 delay={200}
+//                                           />
+//                                           <StatCard
+//                                                 label="Loyalty"
+//                                                 value={fmtPercent(report?.summary.loyalty_score)}
+//                                                 icon={<Star size={14} />}
+//                                                 accent="purple"
+//                                                 delay={300}
+//                                           />
+//                                           <StatCard
+//                                                 label="Total Items Bought"
+//                                                 value={fmt(report?.summary.total_items_bought)}
+//                                                 icon={<Package size={14} />}
+//                                                 accent="purple"
+//                                                 delay={400}
+//                                           />
+//                                           <StatCard
+//                                                 label="Total Items Returned"
+//                                                 value={fmt(report?.summary.total_items_returned)}
+//                                                 icon={<Package size={14} />}
+//                                                 accent="red"
+//                                                 delay={400}
+//                                           />
+//                                           <StatCard
+//                                                 label="Visits"
+//                                                 value={fmtDate(report?.summary.last_visit)}
+//                                                 icon={<Calendar size={14} />}
+//                                                 accent="gold"
+//                                                 delay={500}
+//                                           />
+//                                           <StatCard
+//                                                 label="Days Since Last Visit"
+//                                                 value={fmt(report?.summary.days_since_last_visit)}
+//                                                 icon={<Clock size={14} />}
+//                                                 accent="purple"
+//                                                 delay={600}
+//                                           />
+//                                     </div>
+
+//                                     <div className="px-6 py-4"> 
+//                                           <Card appearance="outline">
+//                                                 <CardHeader>
+//                                                       <CardTitle>Sales Trend</CardTitle>
+//                                                 </CardHeader>
+//                                                 <div className="p-4 h-72">
+//                                                       <ReactECharts
+//                                                             style={{ height: '100%', width: '100%' }}
+//                                                             option={{
+//                                                                   tooltip: {
+//                                                                         trigger: 'axis',
+//                                                                         axisPointer: { type: 'shadow' },
+//                                                                         formatter: (params: any[]) => {
+//                                                                               const date = params[0]?.axisValue ?? '';
+//                                                                               const rows = params
+//                                                                                     .map((p) => {
+//                                                                                           const val =
+//                                                                                                 p.seriesName === 'Revenue'
+//                                                                                                       ? fmtCurrency(p.value)
+//                                                                                                       : p.value;
+//                                                                                           return `${p.marker} ${p.seriesName}: ${val}`;
+//                                                                                     })
+//                                                                                     .join('<br/>');
+//                                                                               return `${date}<br/>${rows}`;
+//                                                                         },
+//                                                                   },
+//                                                                   legend: {
+//                                                                         data: ['Revenue', 'Items Sold'],
+//                                                                         textStyle: { color: 'var(--ink-muted)' },
+//                                                                         top: 0,
+//                                                                   },
+//                                                                   grid: { left: 50, right: 50, top: 40, bottom: 30 },
+//                                                                   xAxis: {
+//                                                                         type: 'category',
+//                                                                         data: chartData.map((d) => d.date),
+//                                                                         axisLabel: { color: 'var(--ink-muted)', fontSize: 11 },
+//                                                                         axisLine: { lineStyle: { color: 'var(--bg-border)' } },
+//                                                                   },
+//                                                                   yAxis: [
+//                                                                         {
+//                                                                               type: 'value',
+//                                                                               name: 'Revenue',
+//                                                                               axisLabel: {
+//                                                                                     color: '#a1a1aa',
+//                                                                                     fontSize: 11,
+//                                                                                     formatter: (v: number) => fmtCurrency(v),
+//                                                                               },
+//                                                                               splitLine: { lineStyle: { color: 'var(--bg-border)' } },
+//                                                                         },
+//                                                                         {
+//                                                                               type: 'value',
+//                                                                               name: 'Items Sold',
+//                                                                               axisLabel: { color: '#a1a1aa', fontSize: 14 },
+//                                                                               splitLine: { show: false },
+//                                                                         },
+//                                                                   ],
+//                                                                   series: [
+//                                                                         {
+//                                                                               name: 'Revenue',
+//                                                                               type: 'bar',
+//                                                                               yAxisIndex: 0,
+//                                                                               data: chartData.map((d) => d.revenue),
+//                                                                               itemStyle: {
+//                                                                                     color: '#f5c842',
+//                                                                                     borderRadius: [4, 4, 0, 0],
+//                                                                               },
+//                                                                         },
+//                                                                         {
+//                                                                               name: 'Items Sold',
+//                                                                               type: 'line',
+//                                                                               yAxisIndex: 1,
+//                                                                               data: chartData.map((d) => d.items),
+//                                                                               smooth: true,
+//                                                                               symbol: 'none',
+//                                                                               lineStyle: { color: '#426ff5', width: 2 },
+//                                                                         },
+//                                                                   ],
+//                                                             }}
+//                                                       />
+//                                                 </div>
+//                                           </Card>
+//                                     </div>
+
+//                                     <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value)} style={{ marginBottom: "24px" }}>
+// 							<Tab value="sales">Sales</Tab>
+// 				      	</TabList>
+
+// 				      	{tabs[selectedTab]}
+
+//                               </div>
+//                         )}
+//                   </main>
+//             </div>
+//       );
+// }
+
+import { Card } from '@fluentui/react-components';
+import CardHeader from '../../components/ui/primitives/CardHeader';
+import CardTitle from '../../components/ui/primitives/CardTitle';
+import StatCard from '../../components/ui/primitives/StatCard';
+import { TopBar } from '../../components/ui/TopBar';
 import { fmt, fmtCurrency, fmtDate, fmtPercent } from '@/lib/utils';
-import { Report } from '@/types';
 import {
       Calendar,
       Clock,
-      DollarSign,
       Loader2,
       Package,
-      Search,
       ShoppingCart,
       Star,
       Tag,
       Users,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import ReactECharts from 'echarts-for-react';
+import { Tab, TabList, TabValue } from '@fluentui/react-components';
+import CustomerSales from './components/CustomerSales';
+import CustomerProductIntelligence from './components/CustomerProductIntelligence';
+import CustomerBehavior from './components/CustomerBehavior';
+import useCustomerSalesData from './ctmSalesData';
 
 export default function Customer() {
-      // Essentials
-      const customer_id = window.location.pathname.split('/').pop();
-      const [params, _] = useSearchParams();
-      const ctm_name = params.get('ctm_name');
+      const { id: customer_id } = useParams();
+      const { chartData, loading, ctm_name, report, navigate } = useCustomerSalesData();
+      const [selectedTab, setSelectedTab] = useState<TabValue>('sales');
 
-      // States
-      const [report, setReport] = useState<Report | null>(null);
-      const [loading, setLoading] = useState<boolean>(false);
-      const [search, setSearch] = useState<string>('');
-
-      async function fetchCustomerSalesData() {
-            try {
-                  if (!customer_id) return;
-                  setLoading(true);
-
-                  const sql_res = await executeSQL(
-                        customer_product_query(parseInt(customer_id as string))
-                  );
-
-                  if (!sql_res || !sql_res.rows) {
-                        setReport({} as Report);
-                  }
-
-                  const result = sql_res.rows[0]?.result as Report;
-
-                  setReport(result);
-            } catch (error) {
-                  console.log(error);
-            } finally {
-                  setLoading(false);
-            }
-      }
-
-      const filtered = useMemo(() => {
-            return (
-                  report &&
-                  report?.sales.filter(
-                        (c: any) =>
-                              (c.comment ?? '')
-                                    .toLowerCase()
-                                    .includes(search.toLowerCase()) ||
-                              (c.pos_sale_id.toString() ?? '').includes(
-                                    search
-                              ) ||
-                              (fmt(c.invoice_total) ?? '').includes(
-                                    search.toLowerCase()
-                              ) ||
-                              (c.invoice_total.toString() ?? '').includes(
-                                    search.toLowerCase()
-                              )
-                  )
-            );
-      }, [report, search]);
-
-      useEffect(() => {
-            (async () => {
-                  await fetchCustomerSalesData();
-            })();
-      }, []);
+      const tabs: Record<string, React.ReactNode> = {
+            sales: <CustomerSales />,
+            products: <CustomerProductIntelligence customerId={customer_id} />,
+            behavior: <CustomerBehavior sales={report?.sales ?? []} />,
+      };
 
       return (
             <div className="flex-1 flex flex-col min-h-screen">
                   <TopBar
                         title={ctm_name as string}
                         subtitle="Sales details by customer."
-                        onRefresh={async () => await fetchCustomerSalesData()}
+                        onRefresh={async () => await navigate(0)}
                         shouldNavigateBack
                   />
 
-                  <main className="flex-1 p-6 space-y-6">
+                  <main className="flex-1 space-y-6">
                         {loading ? (
                               <div className="flex h-full w-full relative items-center justify-center gap-2">
-                                    <Loader2
-                                          size={18}
-                                          className="text-accent-gold animate-spin shrink-0"
-                                    />
-                                    <p className="text-ink-muted font-body">
-                                          Loading...
-                                    </p>
+                                    <Loader2 size={18} className="text-accent-gold animate-spin shrink-0" />
+                                    <p className="text-ink-muted font-body">Loading...</p>
                               </div>
                         ) : (
                               <div className="flex flex-col gap-2 space-y-4">
-                                    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+                                    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4 px-6 py-4">
                                           <StatCard
                                                 label="Revenue"
-                                                value={fmtCurrency(
-                                                      report?.summary.revenue
-                                                )}
+                                                value={fmtCurrency(report?.summary.revenue)}
                                                 icon={<Users size={14} />}
                                                 accent="gold"
                                                 delay={0}
                                           />
                                           <StatCard
                                                 label="Profit"
-                                                value={fmtCurrency(
-                                                      report?.summary.profit
-                                                )}
+                                                value={fmtCurrency(report?.summary.profit)}
                                                 icon={<Users size={14} />}
                                                 accent="teal"
                                                 delay={0}
                                           />
                                           <StatCard
                                                 label="Total Orders"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .total_orders
-                                                )}
-                                                icon={
-                                                      <ShoppingCart size={14} />
-                                                }
+                                                value={fmt(report?.summary.total_orders)}
+                                                icon={<ShoppingCart size={14} />}
                                                 accent="teal"
                                                 delay={100}
                                           />
                                           <StatCard
                                                 label="Avg Order Value"
-                                                value={fmtCurrency(
-                                                      report?.summary
-                                                            .avg_order_value
-                                                )}
+                                                value={fmtCurrency(report?.summary.avg_order_value)}
                                                 icon={<Tag size={14} />}
                                                 accent="teal"
                                                 delay={200}
                                           />
                                           <StatCard
                                                 label="Loyalty"
-                                                value={fmtPercent(
-                                                      report?.summary
-                                                            .loyalty_score
-                                                )}
+                                                value={fmtPercent(report?.summary.loyalty_score)}
                                                 icon={<Star size={14} />}
                                                 accent="purple"
                                                 delay={300}
                                           />
                                           <StatCard
                                                 label="Total Items Bought"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .total_items_bought
-                                                )}
+                                                value={fmt(report?.summary.total_items_bought)}
                                                 icon={<Package size={14} />}
                                                 accent="purple"
                                                 delay={400}
                                           />
                                           <StatCard
                                                 label="Total Items Returned"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .total_items_returned
-                                                )}
+                                                value={fmt(report?.summary.total_items_returned)}
                                                 icon={<Package size={14} />}
                                                 accent="red"
                                                 delay={400}
                                           />
                                           <StatCard
                                                 label="Visits"
-                                                value={fmtDate(
-                                                      report?.summary.last_visit
-                                                )}
+                                                value={fmtDate(report?.summary.last_visit)}
                                                 icon={<Calendar size={14} />}
                                                 accent="gold"
                                                 delay={500}
                                           />
                                           <StatCard
                                                 label="Days Since Last Visit"
-                                                value={fmt(
-                                                      report?.summary
-                                                            .days_since_last_visit
-                                                )}
+                                                value={fmt(report?.summary.days_since_last_visit)}
                                                 icon={<Clock size={14} />}
                                                 accent="purple"
                                                 delay={600}
                                           />
                                     </div>
-                                    <Card>
-                                          <CardHeader>
-                                                <CardTitle>
-                                                      Products Bought by{' '}
-                                                      {ctm_name}
-                                                </CardTitle>
-                                                <div className="relative">
-                                                      <Search
-                                                            size={13}
-                                                            className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
-                                                      />
-                                                      <input
-                                                            value={search}
-                                                            onChange={(e) =>
-                                                                  setSearch(
-                                                                        e.target
-                                                                              .value
-                                                                  )
-                                                            }
-                                                            placeholder="Search customers…"
-                                                            className="bg-bg-hover border border-bg-border rounded-lg pl-8 pr-3 py-1.5 text-xs font-body text-ink-primary placeholder:text-ink-faint outline-none focus:border-accent-gold/40 w-52 transition-colors"
+
+                                    <div className="px-6 py-4">
+                                          <Card appearance="outline">
+                                                <CardHeader>
+                                                      <CardTitle>Sales Trend</CardTitle>
+                                                </CardHeader>
+                                                <div className="p-4 h-72">
+                                                      <ReactECharts
+                                                            style={{ height: '100%', width: '100%' }}
+                                                            option={{
+                                                                  tooltip: {
+                                                                        trigger: 'axis',
+                                                                        axisPointer: { type: 'shadow' },
+                                                                        formatter: (params: any[]) => {
+                                                                              const date = params[0]?.axisValue ?? '';
+                                                                              const rows = params
+                                                                                    .map((p) => {
+                                                                                          const val =
+                                                                                                p.seriesName === 'Revenue'
+                                                                                                      ? fmtCurrency(p.value)
+                                                                                                      : p.value;
+                                                                                          return `${p.marker} ${p.seriesName}: ${val}`;
+                                                                                    })
+                                                                                    .join('<br/>');
+                                                                              return `${date}<br/>${rows}`;
+                                                                        },
+                                                                  },
+                                                                  legend: {
+                                                                        data: ['Revenue', 'Items Sold'],
+                                                                        textStyle: { color: 'var(--ink-muted)' },
+                                                                        top: 0,
+                                                                  },
+                                                                  grid: { left: 50, right: 50, top: 40, bottom: 30 },
+                                                                  xAxis: {
+                                                                        type: 'category',
+                                                                        data: chartData.map((d) => d.date),
+                                                                        axisLabel: { color: 'var(--ink-muted)', fontSize: 11 },
+                                                                        axisLine: { lineStyle: { color: 'var(--bg-border)' } },
+                                                                  },
+                                                                  yAxis: [
+                                                                        {
+                                                                              type: 'value',
+                                                                              name: 'Revenue',
+                                                                              axisLabel: {
+                                                                                    color: '#a1a1aa',
+                                                                                    fontSize: 11,
+                                                                                    formatter: (v: number) => fmtCurrency(v),
+                                                                              },
+                                                                              splitLine: { lineStyle: { color: 'var(--bg-border)' } },
+                                                                        },
+                                                                        {
+                                                                              type: 'value',
+                                                                              name: 'Items Sold',
+                                                                              axisLabel: { color: '#a1a1aa', fontSize: 14 },
+                                                                              splitLine: { show: false },
+                                                                        },
+                                                                  ],
+                                                                  series: [
+                                                                        {
+                                                                              name: 'Revenue',
+                                                                              type: 'bar',
+                                                                              yAxisIndex: 0,
+                                                                              data: chartData.map((d) => d.revenue),
+                                                                              itemStyle: {
+                                                                                    color: '#f5c842',
+                                                                                    borderRadius: [4, 4, 0, 0],
+                                                                              },
+                                                                        },
+                                                                        {
+                                                                              name: 'Items Sold',
+                                                                              type: 'line',
+                                                                              yAxisIndex: 1,
+                                                                              data: chartData.map((d) => d.items),
+                                                                              smooth: true,
+                                                                              symbol: 'none',
+                                                                              lineStyle: { color: '#426ff5', width: 2 },
+                                                                        },
+                                                                  ],
+                                                            }}
                                                       />
                                                 </div>
-                                          </CardHeader>
-                                          <CustomerProducts
-                                                products={filtered}
-                                                ctm_name={ctm_name}
-                                          />
-                                    </Card>
+                                          </Card>
+                                    </div>
+
+                                    <div className="px-6">
+                                          <TabList
+                                                selectedValue={selectedTab}
+                                                onTabSelect={(_, data) => setSelectedTab(data.value)}
+                                                style={{ marginBottom: '24px' }}
+                                          >
+                                                <Tab value="sales">Sales</Tab>
+                                                <Tab value="products">Product Intelligence</Tab>
+                                                <Tab value="behavior">Behavior</Tab>
+                                          </TabList>
+
+                                          {tabs[selectedTab as string]}
+                                    </div>
                               </div>
                         )}
                   </main>
-            </div>
-      );
-}
-
-function CustomerProducts({
-      products,
-      ctm_name,
-}: {
-      products: any;
-      ctm_name?: string | null;
-}) {
-      const navigate = useNavigate();
-      return (
-            <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                        <thead className="sticky top-0 left-0 right-0">
-                              <tr className="border-b border-bg-border">
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          #
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          ID
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Date
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Customer
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Salesperson
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Comment
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Items Sold
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Returns
-                                    </th>
-                                    <th className="sticky top-0 z-10 text-left pb-3 pr-4 text-xs text-ink-muted">
-                                          Total
-                                    </th>
-                              </tr>
-                        </thead>
-
-                        <tbody>
-                              {products?.map((r: any, i: number) => {
-                                    const hasReturns =
-                                          Number(r.items_returned) > 0;
-
-                                    return (
-                                          <tr
-                                                key={r.pos_sale_id}
-                                                className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors group cursor-pointer"
-                                                onClick={() => {
-                                                      // 👉 navigate to sale details
-                                                      navigate(
-                                                            `/customers/customer/${r.pos_customer_id}/sales/${r.pos_sale_id}?ctm_name=${ctm_name}`
-                                                      );
-                                                }}
-                                          >
-                                                <td className="py-3 pr-4 text-xs text-ink-faint">
-                                                      {i + 1}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-primary">
-                                                      {r.pos_sale_id}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-secondary">
-                                                      {new Date(
-                                                            r.invoice_datetime
-                                                      ).toLocaleString()}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-primary">
-                                                      {r.customer_name}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-secondary">
-                                                      {r.salesperson}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs text-ink-secondary">
-                                                      {r.comment}
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">
-                                                      {fmt(r.items_sold)}
-                                                </td>
-
-                                                <td className="py-3 pr-4">
-                                                      <Badge
-                                                            variant={
-                                                                  hasReturns
-                                                                        ? 'red'
-                                                                        : 'teal'
-                                                            }
-                                                      >
-                                                            {fmt(
-                                                                  r.items_returned
-                                                            )}
-                                                      </Badge>
-                                                </td>
-
-                                                <td className="py-3 pr-4 text-xs font-mono text-accent-gold font-medium">
-                                                      {fmtCurrency(
-                                                            r.invoice_total
-                                                      )}
-                                                </td>
-                                          </tr>
-                                    );
-                              })}
-                        </tbody>
-                  </table>
-                  {/* {!filtered.length && <EmptyState message="No items match your search" />} */}
             </div>
       );
 }

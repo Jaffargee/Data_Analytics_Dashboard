@@ -12,7 +12,7 @@ import type {
       DailySnapshot,
 } from '../lib/supabase';
 
-type FetchState<T> = { data: T | null; loading: boolean; error: string | null };
+export type FetchState<T> = { data: T | null; loading: boolean; error: string | null };
 type SupabaseReturnObjects = { data: any, error: any }
 
 function useView<T>(view: string, limit = 100): FetchState<T[]> {
