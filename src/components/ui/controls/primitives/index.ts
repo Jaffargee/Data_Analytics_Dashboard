@@ -6,5 +6,6 @@ import StatCard from "./StatCard";
 import SkeletonCard from "./SkeletonCard";
 import SectionHeader from "./SectionHeader";
 import { Card, ProgressBar } from "@fluentui/react-components";
+import Stats from "./Stats"
 
-export { Badge, CardTitle, CardHeader, EmptyState, StatCard, SkeletonCard, SectionHeader, Card, ProgressBar };
+export { Badge, CardTitle, CardHeader, EmptyState, StatCard, SkeletonCard, SectionHeader, Stats, Card, ProgressBar };

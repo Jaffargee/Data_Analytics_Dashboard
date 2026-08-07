@@ -1,6 +1,6 @@
 import { ArrowUpDown } from 'lucide-react';
 
-type SortKey =
+export type SortKey =
       | 'total_revenue'
       | 'total_qty_sold'
       | 'margin_pct'

@@ -16,7 +16,7 @@ export default function StatCard({
             : 'gold';
       const a = accentMap[accentKey];
       return (
-            <div className={cn('rounded-sm border p-5 flex flex-col gap-3 animate-fade-up opacity-0-init transition-all duration-300 card-glow', 'bg-bg-card', a.border)}
+            <div className={cn('rounded-2xl border p-5 flex flex-col gap-3 animate-fade-up opacity-0-init transition-all duration-300 card-glow', 'bg-bg-card', a.border)}
                   style={{
                         animationDelay: `${delay}ms`,
                         animationFillMode: 'forwards',
