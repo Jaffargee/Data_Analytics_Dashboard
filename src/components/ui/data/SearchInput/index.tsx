@@ -1,6 +1,6 @@
 import React, { useId, useRef } from "react";
 import { Search, X } from "lucide-react";
-import { cn } from '../../../lib/utils';
+import { cn } from '@/lib/utils';
 import { SearchInputProps } from "./types";
 
 export default function SearchInput({

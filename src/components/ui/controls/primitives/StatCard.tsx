@@ -1,4 +1,4 @@
-import { cn } from "../../../lib/utils";
+import { cn } from '@/lib/utils';
 import { accentMap } from "./constants";
 import { StatCardProps } from "./types";
 
@@ -11,7 +11,10 @@ export default function StatCard({
       accent = 'gold',
       delay = 0,
 }: StatCardProps) {
-      const a = accentMap[accent];
+      const accentKey = accent === 'gold' || accent === 'teal' || accent === 'red' || accent === 'purple'
+            ? accent
+            : 'gold';
+      const a = accentMap[accentKey];
       return (
             <div className={cn('rounded-sm border p-5 flex flex-col gap-3 animate-fade-up opacity-0-init transition-all duration-300 card-glow', 'bg-bg-card', a.border)}
                   style={{

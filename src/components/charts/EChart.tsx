@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
-import { CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
+import { EmptyState } from '@/components/ui/primitives';
 import { fmtCurrency } from '@/lib/utils';
 import { Card } from '@fluentui/react-components';
-import type { EChartsOption } from "echarts";
+import type { EChartsOption } from 'echarts';
 
 interface EChartProps {
       option: EChartsOption;

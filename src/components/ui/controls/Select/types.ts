@@ -1,4 +1,4 @@
-import { Option } from "@/types/ui";
+import type { Option } from '@/types/ui';
 
 export interface SelectProps {
       value: string;

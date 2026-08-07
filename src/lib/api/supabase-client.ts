@@ -7,9 +7,9 @@
 import { supabase } from '../services/supabase';
 import type { PostgrestError } from '@supabase/supabase-js';
 
-type SupabaseQueryType = 'table' | 'view' | 'rpc'
+export type SupabaseQueryType = 'table' | 'view' | 'rpc'
 
-interface SupabaseViewOptions {
+export interface SupabaseViewOptions {
       limit?: number;
       offset?: number;
       columns?: string;
@@ -17,16 +17,16 @@ interface SupabaseViewOptions {
       filters?: Array<{ column: string; operator: string; value: unknown }>;
 }
 
-interface SupabaseRpcOptions {
+export interface SupabaseRpcOptions {
       args: Record<string, unknown>;
 }
 
-interface SupabaseTableOptions extends SupabaseViewOptions {
+export interface SupabaseTableOptions extends SupabaseViewOptions {
       eq?: Record<string, unknown>;
       neq?: Record<string, unknown>;
 }
 
-interface SupabaseQueryResult<T> {
+export interface SupabaseQueryResult<T> {
       data: T[] | null;
       error: PostgrestError | null;
       count?: number | undefined

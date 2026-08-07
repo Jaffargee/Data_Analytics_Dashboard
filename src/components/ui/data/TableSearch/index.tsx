@@ -1,8 +1,8 @@
-import React from "react"
-import SearchInput from "../SearchInput";
-import Button from "../Button";
-import Select from "../Select";
-import type { Option } from '../../../types/ui/index';
+import React from 'react';
+import SearchInput from '@/components/ui/data/SearchInput';
+import Button from '@/components/ui/controls/Button';
+import Select from '@/components/ui/controls/Select';
+import type { Option } from '@/types/ui';
 
 interface TableSearchProps {
 	withButton?: boolean;
@@ -34,8 +34,8 @@ export default function TableSearch ({ search, title, filterValue, withButton, w
 					</Button>
 				}
 				{
-					withFilter && 
-					<Select value={filterValue} options={[{ value: 'ALL', label: 'ALL' }, ...filterOption]} onChange={(v) => setFilter(v)} className="max-w-[200px]" />
+					withFilter && filterOption &&
+					<Select value={filterValue ?? 'ALL'} options={[{ value: 'ALL', label: 'ALL' }, ...filterOption]} onChange={(v) => setFilter?.(v)} className="max-w-[200px]" />
 				}
 			</div>
 		</div>

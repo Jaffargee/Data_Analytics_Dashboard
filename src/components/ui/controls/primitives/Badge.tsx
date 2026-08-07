@@ -1,4 +1,4 @@
-import { cn } from "../../../lib/utils";
+import { cn } from '@/lib/utils';
 import { badgeMap } from "./constants";
 import { BadgeVariant } from "./types";
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import EmptyState from '../../../components/ui/primitives/EmptyState';
+import EmptyState from '@/components/ui/primitives/EmptyState';
 
 /**
  * Column definition for DataTable.

@@ -3,7 +3,7 @@ import * as echarts from 'echarts';
 import { CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
 import { fmtCurrency } from '@/lib/utils';
 import { Card } from '@fluentui/react-components';
-import type { EChartsOption } from "echarts";
+import type { EChartsOption } from 'echarts';
 
 interface SalesTrendRow {
       pos_item_id: number;
@@ -168,12 +168,28 @@ export function buildTopCustomersOption(
 }
 
 
-import type {
-      RevenueWeekRow,
-      DiscountTrendRow,
-      RetentionWeekRow,
-      AbcRow,
-} from "../hooks/useAnalyticsDashboard";
+interface RevenueWeekRow {
+      week_start: string;
+      revenue: number;
+      profit: number;
+      margin_pct: number;
+}
+
+interface DiscountTrendRow {
+      week_start: string;
+      discount_pct: number;
+}
+
+interface RetentionWeekRow {
+      week_start: string;
+      new_customers: number;
+      returning_customers: number;
+}
+
+interface AbcRow {
+      abc_tier: 'A' | 'B' | 'C';
+      revenue: number;
+}
 
 // const GOLD = "#D4AF37"; // ADJUST to your actual --accent-gold token if it differs
 const RED = "#E5484D";

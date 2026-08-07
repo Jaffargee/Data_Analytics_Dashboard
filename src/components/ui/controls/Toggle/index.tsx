@@ -1,4 +1,4 @@
-import { cn } from '../../../lib/utils';
+import { cn } from '@/lib/utils';
 import { ToggleProps } from './types';
 import { Field, Switch } from '@fluentui/react-components';
 

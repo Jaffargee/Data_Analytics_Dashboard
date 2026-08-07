@@ -52,6 +52,7 @@ export async function executeSQL(sql: string): Promise<QueryResult> {
             rows,
             rowCount: rows.length,
             executionMs: Math.round(performance.now() - start),
+            chartData: { label: 'query', value: rows.length },
       };
 }
 
