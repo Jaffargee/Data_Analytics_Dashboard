@@ -4,7 +4,7 @@
 			"path": "src"
 		},
 		{
-			"path": "src-legacy"
+			"path": "pages"
 		}
 	],
 	"settings": {}
