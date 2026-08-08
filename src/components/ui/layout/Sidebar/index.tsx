@@ -3,22 +3,11 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
       LayoutDashboard,
-      TrendingUp,
       Package,
       Users,
-      Truck,
-      AlertTriangle,
-      UserCheck,
-      Settings,
-      ChevronRight,
-      Search,
-      MessageSquare,
       FileBarChart,
-      MessageCircle,
-      Plus,
       Menu,
       X,
-      TruckIcon,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Avatar } from "@fluentui/react-components";
@@ -29,41 +18,18 @@ const nav = [
             group: 'Analytics',
             items: [
                   { label: 'Overview', icon: LayoutDashboard, path: '/' },
-                  { label: 'Revenue', icon: TrendingUp, path: '/revenue' },
                   { label: 'Reports', icon: FileBarChart, path: '/reports' },
-                  { label: 'Business Health', icon: TrendingUp, path: '/rev_intel' },
-                  { label: 'Analytics', icon: TrendingUp, path: '/analytics' },
+                  { label: 'Business Health', icon: LayoutDashboard, path: '/rev_intel' },
+                  { label: 'Analytics', icon: LayoutDashboard, path: '/analytics' },
             ],
       },
       {
             group: 'Inventory',
             items: [
                   { label: 'Products', icon: Package, path: '/products' },
-                  { label: 'Low Stock', icon: AlertTriangle, path: '/stock' },
-                  { label: 'Suppliers', icon: Truck, path: '/suppliers' },
             ],
       },
-      {
-            group: 'People',
-            items: [
-                  { label: 'Customers', icon: Users, path: '/customers' },
-                  { label: 'Staff', icon: UserCheck, path: '/staff' },
-            ],
-      },
-      {
-            group: 'AI Tools',
-            items: [
-                  { label: 'Search', icon: Search, path: '/search' },
-                  { label: 'AI Analyst', icon: MessageCircle, path: '/chat' },
-                  { label: 'WA Posts', icon: MessageSquare, path: '/posts' },
-            ],
-      },
-      {
-            group: 'Others',
-            items: [
-                  { label: 'Delivery', icon: TruckIcon, path: '/delivery' },
-            ],
-      },
+      { group: 'People', items: [{ label: 'Customers', icon: Users, path: '/customers' }] },
 ];
 
 const quickActions = [
@@ -125,9 +91,7 @@ function SidebarContent({ onClose }: SidebarContentProps) {
                         ))}
                   </nav>
 
-                  {/* Footer */}
                   <div className="p-3 border-t border-bg-border">
-                        <NavItem key={'/settings'} active={isActive('/settings')} path={'/settings'} label={'Settings'} icon={Settings} />
                         <div className="text-[10px] text-ink-faint font-mono px-3 pt-2">
                               v1.0.0 — Supabase
                         </div>

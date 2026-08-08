@@ -10,6 +10,7 @@ interface TableSearchProps {
 	filterValue?: string;
 	filterOption?: Option[];
 	buttonIcon?: any;
+	icon?: any;
 	title?: string;
 	search: string;
 	setSearch: (v: string) => void;
@@ -17,7 +18,8 @@ interface TableSearchProps {
 	onClick?: () => void;
 }
 
-export default function TableSearch ({ search, title, filterValue, withButton, withFilter, filterOption, buttonIcon: Icon, setFilter, setSearch, onClick }: TableSearchProps) {
+export default function TableSearch ({ search, title, filterValue, withButton, withFilter, filterOption, buttonIcon, icon, setFilter, setSearch, onClick }: TableSearchProps) {
+	const Icon = buttonIcon ?? icon;
 
 	return (
 		<div className="flex sticky w-full relative top-14 left-0 z-[1000] bg-[#0a0a0b] backdrop-blur-md shadow-md border-bg-border border-b">

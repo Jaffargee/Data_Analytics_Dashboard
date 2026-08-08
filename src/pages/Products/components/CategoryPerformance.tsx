@@ -62,9 +62,9 @@ export function CategoryPerformance({ data }: CategoryPerfProps) {
                               return `
                                     <div style="font-family: monospace;">
                                           <strong>${row.category}</strong><br/>
-                                          Revenue: ${fmtCurrency(row.total_revenue)}<br/>
-                                          Units: ${fmt(row.total_qty_sold)}<br/>
-                                          Items: ${fmt(row.num_items)}
+                                          Revenue: ${fmtCurrency(Number(row.total_revenue))}<br/>
+                                          Units: ${fmt(Number(row.total_qty_sold))}<br/>
+                                          Items: ${fmt(Number(row.num_items))}
                                     </div>
                               `;
                         },

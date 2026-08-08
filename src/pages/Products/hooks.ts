@@ -8,7 +8,7 @@ export function useProductsData() {
       const items = useBestSelling(BEST_SELLING_LIMIT);
       const cats = useCategoryPerf();
 
-      const allItems = items.data ?? [];
+      const allItems = items.data?.data ?? [];
 
       const totals = useMemo(() => {
             const totalRevenue = allItems.reduce((s, i) => s + Number(i.total_revenue), 0);
@@ -32,7 +32,7 @@ export function useProductsData() {
 
       const catDonut = useMemo(
             () =>
-                  (cats.data ?? []).slice(0, MAX_DONUT_SEGMENTS).map((c, i) => ({
+                  (cats.data?.data ?? []).slice(0, MAX_DONUT_SEGMENTS).map((c, i) => ({
                         label: c.category,
                         value: Number(c.total_revenue),
                         color: DONUT_COLORS[i % DONUT_COLORS.length],
@@ -51,7 +51,7 @@ export function useProductsData() {
 }
 
 export function useFilteredProducts(
-      allItems: ReturnType<typeof useBestSelling>['data'],
+      allItems: import('@/hooks/data/types').BestSellingItem[] | null | undefined,
       search: string,
       sortKey: SortKey,
       sortDir: SortDir
@@ -90,13 +90,13 @@ const PERIOD_VIEWS = {
 };
 
 export default function useProductAnalytics(pos_item_id: number, initialGranularity: string = "weekly") {
-      const [product, setProduct] = useState(null);
-      const [topCustomers, setTopCustomers] = useState([]);
-      const [salesTrend, setSalesTrend] = useState([]);
+      const [product, setProduct] = useState<any>(null);
+      const [topCustomers, setTopCustomers] = useState<any[]>([]);
+      const [salesTrend, setSalesTrend] = useState<any[]>([]);
       const [granularity, setGranularity] = useState(initialGranularity);
       const [loading, setLoading] = useState(true);
       const [trendLoading, setTrendLoading] = useState(false);
-      const [error, setError] = useState(null);
+      const [error, setError] = useState<Error | null>(null);
 
       const fetchCore = useCallback(async () => {
             if (!pos_item_id) return;
@@ -123,7 +123,7 @@ export default function useProductAnalytics(pos_item_id: number, initialGranular
                   setProduct(productRow);
                   setTopCustomers(customers ?? []);
             } catch (err) {
-                  setError(err);
+                  setError(err instanceof Error ? err : new Error(String(err)));
             } finally {
                   setLoading(false);
             }
@@ -133,7 +133,7 @@ export default function useProductAnalytics(pos_item_id: number, initialGranular
             if (!pos_item_id) return;
             setTrendLoading(true);
             try {
-                  const view = PERIOD_VIEWS[granularity] ?? PERIOD_VIEWS.weekly;
+                  const view = PERIOD_VIEWS[granularity as keyof typeof PERIOD_VIEWS] ?? PERIOD_VIEWS.weekly;
                   const { data, error: trendErr } = await supabase
                         .from(view)
                         .select("*")
@@ -143,7 +143,7 @@ export default function useProductAnalytics(pos_item_id: number, initialGranular
                   if (trendErr) throw trendErr;
                   setSalesTrend(data ?? []);
             } catch (err) {
-                  setError(err);
+                  setError(err instanceof Error ? err : new Error(String(err)));
             } finally {
                   setTrendLoading(false);
             }

@@ -54,16 +54,16 @@ export default function ProductsPage() {
                         <ProductCharts
                               top10Chart={top10Chart}
                               catDonut={catDonut}
-                              itemsLoading={items.loading}
-                              catsLoading={cats.loading}
+                              itemsLoading={items.isLoading}
+                              catsLoading={cats.isLoading}
                         />
 
-                        <CategoryPerformance data={cats.data ?? []} />
+                        <CategoryPerformance data={cats.data?.data ?? []} />
 
                         <TableSearch search="" setSearch={() => {}} title="New Product" icon={Plus} withButton={true} />
 
                         <ProductsTable
-                              allItems={items.data}
+                              allItems={items.data?.data}
                               maxRevenue={totals.maxRevenue}
                         />
                         

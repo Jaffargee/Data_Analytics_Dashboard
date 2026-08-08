@@ -19,7 +19,7 @@ import useAnalyticsDashboard, {
       type ChurnRiskRow,
       type RevenueAnomalyRow,
       type BelowCostRow,
-} from "../../hooks/useAnalytics";
+} from "../../hooks/useAnalyticsDashboard";
 import {
       buildRevenueGrowthOption,
       buildDiscountTrendOption,
@@ -372,7 +372,7 @@ export default function Insights(): JSX.Element {
                   {
                         id: "latest-aov",
                         label: "Avg Order Value",
-                        value: fmtCurrency(latestWeek.avg_order_value),
+                        value: fmtCurrency(latestWeek.avg_order_value ?? 0),
                         icon: <DollarSign size={14} />,
                         accent: "gold",
                         delay: 0.15,
@@ -438,7 +438,7 @@ export default function Insights(): JSX.Element {
                                                       <DataTable<DiscountByItemRow>
                                                             data={discountByItem}
                                                             columns={DISCOUNT_ITEM_COLUMNS}
-                                                            getRowId={(row) => row.pos_item_id}
+                                                            getRowId={(row) => `${row.pos_item_id}-${row.item_name}`}
                                                             ariaLabel="Discount by item"
                                                             emptyMessage="No discount data available"
                                                             defaultSortKey="discount_pct"
@@ -502,7 +502,7 @@ export default function Insights(): JSX.Element {
                                                       <DataTable<DeadStockRow>
                                                             data={deadStock}
                                                             columns={DEAD_STOCK_COLUMNS}
-                                                            getRowId={(row) => row.pos_item_id}
+                                                            getRowId={(row) => `${row.pos_item_id}-${row.item_name}`}
                                                             ariaLabel="Dead and slow-moving items"
                                                             emptyMessage="No dead or slow-moving items"
                                                             defaultSortKey="last_sold_at"
@@ -520,7 +520,7 @@ export default function Insights(): JSX.Element {
                                                       <DataTable<AbcRow>
                                                             data={abc}
                                                             columns={ABC_COLUMNS}
-                                                            getRowId={(row) => row.pos_item_id}
+                                                            getRowId={(row) => `${row.abc_tier}-${row.item_name}`}
                                                             ariaLabel="ABC classification"
                                                             emptyMessage="No product revenue data"
                                                             defaultSortKey="revenue"
@@ -546,7 +546,7 @@ export default function Insights(): JSX.Element {
                                     <DataTable<ChurnRiskRow>
                                           data={churnRisk}
                                           columns={CHURN_COLUMNS}
-                                          getRowId={(row) => row.pos_customer_id}
+                                          getRowId={(row) => row.customer_name}
                                           ariaLabel="Customer churn risk"
                                           emptyMessage="No repeat customers yet"
                                           defaultSortKey="days_since_last_order"
@@ -578,7 +578,7 @@ export default function Insights(): JSX.Element {
                                     <DataTable<BelowCostRow>
                                           data={belowCost}
                                           columns={BELOW_COST_COLUMNS}
-                                          getRowId={(row) => `${row.pos_sale_id}-${row.item_name}`}
+                                          getRowId={(row) => `${row.invoice_datetime}-${row.item_name}`}
                                           ariaLabel="Below-cost sales"
                                           emptyMessage="No below-cost sales found"
                                           defaultSortKey="loss_amount"

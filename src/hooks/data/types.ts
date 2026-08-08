@@ -54,6 +54,8 @@ export interface TopCustomer {
       lifetime_value: number;
       avg_purchase: number;
       last_purchase_at: string;
+      category: string;
+      status_level: string;
 }
 
 // ── Sales ────────────────────────────────────

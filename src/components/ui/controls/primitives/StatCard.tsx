@@ -9,10 +9,12 @@ export default function StatCard({
       icon,
       trend,
       accent = 'gold',
+      tone,
       delay = 0,
 }: StatCardProps) {
-      const accentKey = accent === 'gold' || accent === 'teal' || accent === 'red' || accent === 'purple'
-            ? accent
+      const selectedAccent = tone ?? accent;
+      const accentKey = selectedAccent === 'gold' || selectedAccent === 'teal' || selectedAccent === 'red' || selectedAccent === 'purple'
+            ? selectedAccent
             : 'gold';
       const a = accentMap[accentKey];
       return (

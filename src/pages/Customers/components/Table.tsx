@@ -69,7 +69,7 @@ const Table = ({ customers }: CustomerTableProps) => {
                   sortValue: (c) => c.customer_name?.toLowerCase() ?? '',
                   render: (c) => (
                         <div className="flex items-center gap-2.5 min-w-0">
-                              <Badge variant={status_color[c.status_level.toLowerCase()]}>{c.status_level}</Badge>
+                              <Badge variant={(status_color[c.status_level.toLowerCase() as keyof typeof status_color] ?? 'muted') as import('@/components/ui/primitives/Badge').BadgeVariant}>{c.status_level}</Badge>
                         </div>
                   ),
             },

@@ -27,6 +27,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 
       // Destructive — dangerous action
       destructive: "bg-accent-red/[0.12] border border-accent-red/30 text-accent-red hover:bg-accent-red/[0.20] active:bg-accent-red/[0.08]",
+      solid: "bg-accent-gold text-black hover:bg-accent-gold/90 active:bg-accent-gold/80 border border-transparent",
 };
 
 export default function Button({

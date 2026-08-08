@@ -304,7 +304,7 @@ export default function Product(): JSX.Element {
             loading,
             trendLoading,
             error,
-      } = useProductAnalytics(pos_item_id) as UseProductAnalyticsReturn;
+      } = useProductAnalytics(Number(pos_item_id ?? 0)) as UseProductAnalyticsReturn;
  
       const stats = useMemo(() => generateStats(product), [product]);
  
@@ -466,7 +466,7 @@ export default function Product(): JSX.Element {
                                           <SearchInput
                                                 placeholder="Search customer..."
                                                 value={customerSearch}
-                                                onChange={(e) => setCustomerSearch(e.target.value)}
+                                                onChange={(value) => setCustomerSearch(value)}
                                           />
                                     </div>
  

@@ -1,5 +1,5 @@
 
-export type ButtonVariant = 'primary' | 'secondary' | 'dashed' | 'accent' | 'ghost' | 'destructive';
+export type ButtonVariant = 'primary' | 'secondary' | 'dashed' | 'accent' | 'ghost' | 'destructive' | 'solid';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xm';
 
 export interface ButtonProps {

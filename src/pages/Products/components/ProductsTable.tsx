@@ -22,7 +22,7 @@ interface ProductRow {
 }
 
 interface ProductsTableProps {
-      allItems: ReturnType<typeof import('@/lib/hooks').useBestSelling>['data'];
+      allItems: import('@/hooks/data/types').BestSellingItem[] | null | undefined;
       maxRevenue: number;
 }
 
@@ -139,7 +139,7 @@ export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
                                     variant="accent"
                                     type="button"
                                     icon={<Edit3 size={14} aria-hidden="true" />}
-                                    aria-label={`Edit ${r.name}`}
+                                    aria-label={`Edit ${r.item_name}`}
                                     onClick={() => navigate(`/products/${r.pos_item_id}/edit`)}
                               >
                                     <span>Edit</span>
@@ -150,7 +150,7 @@ export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
                                     variant="accent"
                                     type="button"
                                     icon={<User size={14} aria-hidden="true" />}
-                                    aria-label={`View profile for ${r.name}`}
+                                    aria-label={`View profile for ${r.item_name}`}
                                     onClick={() => {}}
                               >
                                     <span>Profile</span>

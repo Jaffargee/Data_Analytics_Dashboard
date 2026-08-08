@@ -11,6 +11,7 @@ import { fmt, fmtCurrency, fmtDate, fmtPercent } from '@/lib/utils';
 
 // Components
 import Badge from '../../components/ui/primitives/Badge';
+import type { ColumnDef } from '../../components/ui/DataTable';
 
 
 interface SaleRow {
@@ -74,7 +75,7 @@ export default function useCustomerSalesData () {
                               .map((s: SaleRow) => s.salesperson)
                               .filter(Boolean)
                   )
-            );
+            ).map((value) => ({ value: String(value), label: String(value) }));
       }, [report]);
 
       const filtered = useMemo(() => {

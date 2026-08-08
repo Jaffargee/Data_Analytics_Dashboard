@@ -158,7 +158,7 @@ function buildBandBarOption(
                         color: "#9a9a9a",
                         fontSize: 11,
                         formatter: (v: number) =>
-                              metric === "revenue" ? fmtCurrency(v, { compact: true }) : String(v),
+                              metric === "revenue" ? fmtCurrency(v) : String(v),
                   },
             },
             series: [
@@ -219,11 +219,11 @@ function BandDrilldown({
       const { data: topItems, isLoading } = usePriceSensitivityTopItems(customerId, dateFrom, dateTo, 5);
 
       const revenueItems = useMemo(
-            () => (topItems ?? []).filter((i) => i.priceRange === priceRange && i.metric === "revenue"),
+            () => (topItems ?? []).filter((item: TopItemRow) => item.priceRange === priceRange && item.metric === "revenue"),
             [topItems, priceRange]
       );
       const volumeItems = useMemo(
-            () => (topItems ?? []).filter((i) => i.priceRange === priceRange && i.metric === "volume"),
+            () => (topItems ?? []).filter((item: TopItemRow) => item.priceRange === priceRange && item.metric === "volume"),
             [topItems, priceRange]
       );
 
@@ -250,7 +250,7 @@ export default function PriceSensitivityAnalytics({
       className = "",
 }: PriceSensitivityAnalyticsProps): JSX.Element {
       const { data: rowsData, isLoading, isError } = usePriceSensitivity(customerId, dateFrom, dateTo);
-      const rows = rowsData ?? [];
+      const rows: PriceBandRow[] = rowsData ?? [];
       const [expanded, setExpanded] = useState<string | null>(null);
 
       const revenueOption = useMemo(() => buildBandBarOption(rows, "revenue", "#c98a3e"), [rows]);
@@ -311,7 +311,7 @@ export default function PriceSensitivityAnalytics({
                                                 </tr>
                                           </thead>
                                           <tbody>
-                                                {rows.map((row) => {
+                                                {rows.map((row: PriceBandRow) => {
                                                       const isOpen = expanded === row.priceRange;
                                                       return (
                                                             <React.Fragment key={row.priceRange}>

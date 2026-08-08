@@ -92,7 +92,7 @@ export default function CustomerSales() {
       }, []);
 
       // Sold vs Returned — used as the filter dropdown options
-      const ctm_category = useMemo(() => ['Sold', 'Returned'], []);
+      const ctm_category = useMemo(() => [{ value: 'Sold', label: 'Sold' }, { value: 'Returned', label: 'Returned' }], []);
 
       const filtered = useMemo(() => {
             const rows = (report?.sale_items ?? []) as SaleItemRow[];

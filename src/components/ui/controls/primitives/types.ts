@@ -5,6 +5,7 @@ export interface StatCardProps {
       icon?: React.ReactNode;
       trend?: number;
       accent?: 'gold' | 'teal' | 'red' | 'purple' | string;
+      tone?: string;
       delay?: number;
 }
 
