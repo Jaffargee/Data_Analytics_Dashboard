@@ -151,7 +151,7 @@ export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
                                     type="button"
                                     icon={<User size={14} aria-hidden="true" />}
                                     aria-label={`View profile for ${r.item_name}`}
-                                    onClick={() => {}}
+                                    onClick={() => navigate(`/products/${r.pos_item_id}`)}
                               >
                                     <span>Profile</span>
                               </Button>
@@ -159,7 +159,7 @@ export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
                   )}
                   actionsLabel=""
                   actionsWidth="0.9fr"
-                  onRowClick={(row) => navigate(`/products/product/${row.pos_item_id}`)}
+                  onRowClick={(row) => navigate(`/products/${row.pos_item_id}`)}
             />
       );
 }

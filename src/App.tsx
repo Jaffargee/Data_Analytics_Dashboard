@@ -10,6 +10,7 @@ import ProductForm from '@/pages/Products/Create';
 import Analytics from '@/pages/Analytics';
 import Reports from '@/pages/Reports';
 import RevIntelligence from '@/pages/RevIntelligence';
+import Revenue from '@/pages/Revenue';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { QueryClient } from '@tanstack/react-query';
 import { FluentProvider, teamsDarkTheme, } from '@fluentui/react-components';
@@ -37,12 +38,14 @@ export default function App() {
                                           <Route path="/analytics" element={<Analytics />} />
                                           <Route path="/reports" element={<Reports />} />
                                           <Route path="/rev_intel" element={<RevIntelligence />} />
+                                          <Route path="/revenue" element={<Revenue />} />
                                           <Route path="/customers" element={<Customers />} />
                                           <Route path="/customers/customer/:id" element={<CustomerProfile />} />
                                           <Route path="/customers/customer/:id/sales" element={<CustomerSales />} />
                                           <Route path="/products" element={<Products />} />
                                           <Route path="/products/new" element={<ProductForm />} />
-                                          <Route path="/products/:pos_item_id" element={<Product />} />
+                                          <Route path="/products/:product_id" element={<Product />} />
+                                          <Route path="/products/product/:product_id" element={<Product />} />
 
                                           <Route path="*" element={<NotFound />} />
                                     </Routes>

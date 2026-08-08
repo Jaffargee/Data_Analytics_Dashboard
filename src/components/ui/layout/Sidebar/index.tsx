@@ -6,6 +6,7 @@ import {
       Package,
       Users,
       FileBarChart,
+      TrendingUp,
       Menu,
       X,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const nav = [
             items: [
                   { label: 'Overview', icon: LayoutDashboard, path: '/' },
                   { label: 'Reports', icon: FileBarChart, path: '/reports' },
+                  { label: 'Revenue', icon: TrendingUp, path: '/revenue' },
                   { label: 'Business Health', icon: LayoutDashboard, path: '/rev_intel' },
                   { label: 'Analytics', icon: LayoutDashboard, path: '/analytics' },
             ],
