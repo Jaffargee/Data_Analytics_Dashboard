@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "../../lib/supabase";
-import { useBestSelling, useCategoryPerf } from '@/lib/hooks';
+import { supabase } from "@/lib/services/supabase";
+import { useBestSelling, useCategoryPerf } from '@/hooks/data';
 import { BEST_SELLING_LIMIT, DONUT_COLORS, TOP_CHART_COUNT, MAX_DONUT_SEGMENTS } from './constants';
 import type { SortKey, SortDir } from './types';
 

@@ -5,7 +5,7 @@ import CardTitle from '../../components/ui/primitives/CardTitle';
 import { TopBar } from '../../components/ui/TopBar';
 import TableSearch from '../../components/ui/TableSearch';
 import DataTable, { ColumnDef } from '../../components/ui/DataTable';
-import { executeSQL } from '@/lib/llm_utils';
+import { executeSQL } from '@/lib/services/llm';
 import { fmt, fmtCurrency } from '@/lib/utils';
 import { Report } from '@/types';
 import { ArrowUp, Loader2, Plus, ShoppingCart, Users } from 'lucide-react';

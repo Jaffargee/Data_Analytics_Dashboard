@@ -19,13 +19,13 @@ import useAnalyticsDashboard, {
       type ChurnRiskRow,
       type RevenueAnomalyRow,
       type BelowCostRow,
-} from "../../hooks/useAnalyticsDashboard";
+} from "../../hooks/analytics/useAnalyticsDashboard";
 import {
       buildRevenueGrowthOption,
       buildDiscountTrendOption,
       buildRetentionOption,
       buildAbcDonutOption,
-} from "../../lib/analyticsCharts";
+} from "../../components/charts/charts";
 import PriceSensitivityAnalytics from "./PriceSensitivityAnalytics"
 
 const ABC_ACCENT: Record<AbcRow["abc_tier"], string> = {

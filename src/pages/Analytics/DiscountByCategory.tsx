@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../../lib/supabase"; // ADJUST PATH if your client lives elsewhere
+import { supabase } from "@/lib/services/supabase"; // ADJUST PATH if your client lives elsewhere
 
 import Badge from "../../components/ui/primitives/Badge"; // ADJUST if named differently
 import { CardTitle, CardHeader } from "../../components/ui/primitives/"; // ADJUST path/names to match your actual exports
@@ -7,7 +7,7 @@ import DataTable, { ColumnDef } from "../../components/ui/DataTable";
 import EChart from "../../components/charts/EChart";
 
 import { fmtCurrency } from "../../lib/utils";
-import { buildDiscountByCategoryOption, type DiscountByCategoryRow } from "../../lib/analyticsCharts";
+import { buildDiscountByCategoryOption, type DiscountByCategoryRow } from "../../components/charts/charts";
 
 const CATEGORY_ACCENT: Record<string, string> = {
       WHSL1: "gold",

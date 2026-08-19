@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/services/supabase';
 
 export interface RevIntelligenceItem {
       total_sales: number;

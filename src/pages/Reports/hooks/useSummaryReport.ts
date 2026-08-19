@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { executeSQL } from '@/lib/llm_utils';
+import { executeSQL } from '@/lib/services/llm';
 import { deriveLineChart } from '@/lib/utils';
 import { accounts_summary_report, todays_sales_report } from '../constants';
 import type { QueryResult } from '@/types';

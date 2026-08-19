@@ -50,16 +50,6 @@ export async function executeViewQuery<T>( viewName: string, options: SupabaseVi
 
             query = (options.filters ?? []).reduce((q, { column, operator, value }) => q.filter(column, operator as any, value), query);
 
-            // if(options.filters && options.filters.length > 0) {
-            //       for(const filter of options.filters) {
-            //             query = query.filter(
-            //                   filter.column,
-            //                   filter.operator as any,
-            //                   filter.value
-            //             );
-            //       }
-            // }
-
             if(options.order) {
                   query = query.order(options.order.column, { ascending: options.order.ascending ?? false });
             }

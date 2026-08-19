@@ -4,7 +4,7 @@ import type {
       DiscountTrendRow,
       RetentionWeekRow,
       AbcRow,
-} from "../../hooks/useAnalyticsDashboard";
+} from "../../hooks/analytics/useAnalyticsDashboard";
 
 const GOLD = "#D4AF37"; // ADJUST to your actual --accent-gold token if it differs
 const RED = "#E5484D";

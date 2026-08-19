@@ -1,7 +1,7 @@
 import { Card, CardHeader, ProgressBar } from "@fluentui/react-components";
 import CardTitle from "../../../components/ui/primitives/CardTitle";
-import { TopCustomer } from "../../../lib/supabase";
-import { FetchState } from "../../../hooks/supabase_hook";
+import { TopCustomer } from "@/lib/services/supabase";
+import { FetchState } from "@/hooks/data/";
 import ReactECharts from 'echarts-for-react';
 import Badge from "../../../components/ui/primitives/Badge";
 import { fmt } from "../../../lib/utils";
@@ -11,7 +11,7 @@ interface ChartsProps<T> {
 }
 
 export default function Charts({ customers }: ChartsProps<TopCustomer[]>) {
-      const all = customers.data ?? [];
+      const all = customers.data.data ?? [];
 
       const top10Chart = all.slice(0, 10).map((c: TopCustomer) => ({
             label: c.customer_name,

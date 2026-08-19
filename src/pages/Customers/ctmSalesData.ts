@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Report } from '@/types';
 
 // Import Utils
-import { customer_product_query, executeSQL } from '@/lib/llm_utils';
+import { buildCustomerProductQuery as customer_product_query, executeSQL } from '@/lib/services/llm';
 import { fmt, fmtCurrency, fmtDate, fmtPercent } from '@/lib/utils';
 
 // Components

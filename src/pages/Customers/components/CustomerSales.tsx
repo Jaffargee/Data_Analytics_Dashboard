@@ -2,15 +2,7 @@ import DataTable, { ColumnDef } from '../../../components/ui/DataTable';
 import TableSearch from '../../../components/ui/TableSearch';
 import useCustomerSalesData from "../ctmSalesData"
 import {
-      Calendar,
-      Clock,
-      Loader2,
-      Package,
       Plus,
-      ShoppingCart,
-      Star,
-      Tag,
-      Users,
 } from 'lucide-react';
 
 export default function CustomerSales () {

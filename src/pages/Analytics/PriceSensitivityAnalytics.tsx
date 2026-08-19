@@ -6,7 +6,7 @@ import type { EChartsOption } from "echarts";
 import EChart from "@/components/charts/EChart"; // adjust to wherever EChart.tsx lives
 import { CardHeader, CardTitle, EmptyState } from "@/components/ui/primitives";
 import { fmtCurrency } from "@/lib/utils";
-import { supabase } from "@/lib/supabase"; // your existing client singleton
+import { supabase } from "@/lib/services/supabase"; // your existing client singleton
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */

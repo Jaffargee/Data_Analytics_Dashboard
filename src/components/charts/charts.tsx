@@ -1,8 +1,3 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import * as echarts from 'echarts';
-import { CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
-import { fmtCurrency } from '@/lib/utils';
-import { Card } from '@fluentui/react-components';
 import type { EChartsOption } from 'echarts';
 
 interface SalesTrendRow {
@@ -26,9 +21,57 @@ interface ProductTopCustomerRow {
       qty_rank: number;
 }
 
+export interface DiscountByCategoryRow {
+      category: string;
+      customer_count: number;
+      total_orders: number;
+      gross_revenue: number;
+      actual_revenue: number;
+      cogs: number;
+      discount_given: number;
+      profit: number;
+      blended_discount_pct: number;
+      avg_customer_discount_pct: number;
+      min_customer_discount_pct: number;
+      max_customer_discount_pct: number;
+      blended_margin_pct: number;
+      avg_customer_margin_pct: number;
+      avg_revenue_per_customer: number;
+}
+
+
+interface RevenueWeekRow {
+      week_start: string;
+      revenue: number;
+      profit: number;
+      margin_pct: number;
+}
+
+interface DiscountTrendRow {
+      week_start: string;
+      discount_pct: number;
+}
+
+interface RetentionWeekRow {
+      week_start: string;
+      new_customers: number;
+      returning_customers: number;
+}
+
+interface AbcRow {
+      abc_tier: 'A' | 'B' | 'C';
+      revenue: number;
+}
+
+function fmtDate(d: string): string {
+      return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 const GOLD = "#D4AF37"; // ADJUST to your actual --accent-gold token if it differs
 const AXIS_LINE = "#3a3a3a";
 const AXIS_LABEL = "#9a9a9a";
+const RED = "#E5484D";
+const GREEN = "#3DD68C";
 
 /**
  * Dual-axis line chart: units sold (left axis) vs revenue (right axis) over time.
@@ -165,40 +208,6 @@ export function buildTopCustomersOption(
                   },
             ],
       };
-}
-
-
-interface RevenueWeekRow {
-      week_start: string;
-      revenue: number;
-      profit: number;
-      margin_pct: number;
-}
-
-interface DiscountTrendRow {
-      week_start: string;
-      discount_pct: number;
-}
-
-interface RetentionWeekRow {
-      week_start: string;
-      new_customers: number;
-      returning_customers: number;
-}
-
-interface AbcRow {
-      abc_tier: 'A' | 'B' | 'C';
-      revenue: number;
-}
-
-// const GOLD = "#D4AF37"; // ADJUST to your actual --accent-gold token if it differs
-const RED = "#E5484D";
-const GREEN = "#3DD68C";
-// const AXIS_LINE = "#3a3a3a";
-// const AXIS_LABEL = "#9a9a9a";
-
-function fmtDate(d: string): string {
-      return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 /** Revenue, profit, and margin % over time, weekly. */
@@ -384,25 +393,6 @@ export function buildAbcDonutOption(rows: AbcRow[]): EChartsOption {
       };
 }
 
-
-export interface DiscountByCategoryRow {
-      category: string;
-      customer_count: number;
-      total_orders: number;
-      gross_revenue: number;
-      actual_revenue: number;
-      cogs: number;
-      discount_given: number;
-      profit: number;
-      blended_discount_pct: number;
-      avg_customer_discount_pct: number;
-      min_customer_discount_pct: number;
-      max_customer_discount_pct: number;
-      blended_margin_pct: number;
-      avg_customer_margin_pct: number;
-      avg_revenue_per_customer: number;
-}
- 
 /** Grouped bar: blended discount % vs blended margin % per customer category. */
 export function buildDiscountByCategoryOption(rows: DiscountByCategoryRow[]): EChartsOption {
       const sorted = [...rows].sort((a, b) => b.blended_discount_pct - a.blended_discount_pct);

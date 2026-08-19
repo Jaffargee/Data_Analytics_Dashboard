@@ -1,36 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TopBar } from '@/components/ui/TopBar';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/services/supabase';
 import { fmtCurrency, cn } from '@/lib/utils';
 import * as Tabs from '@radix-ui/react-tabs';
 import {
       Package,
-      Tag,
       DollarSign,
       Archive,
       Layers,
-      Settings2,
       ChevronLeft,
       Save,
       Loader2,
       AlertCircle,
       Check,
-      Barcode,
-      Truck,
       Star,
       Trash2,
-      Plus,
-      Info,
-      Weight,
       Ruler,
-      ToggleLeft,
-      Hash,
       Percent,
-      Calendar,
       Box,
-      ShoppingCart,
-      Repeat,
       AlertTriangle,
 } from 'lucide-react';
 

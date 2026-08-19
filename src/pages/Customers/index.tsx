@@ -1,6 +1,6 @@
 import { TopBar } from "../../components/ui/TopBar";
-import { TopCustomer } from '../../lib/supabase';
-import { useTopCustomers } from '../../hooks/supabase_hook';
+import { TopCustomer } from '@/hooks/data/';
+import { useTopCustomers } from '@/hooks/data/';
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StatCard from "../../components/ui/primitives/StatCard"
@@ -27,7 +27,7 @@ export default function Customer() {
       const [filterQuery, setFilterQuery] = useState<string>('ALL');
       const navigate = useNavigate();
 
-      const all = customers.data ?? [];
+      const all: TopCustomer[] = customers.data?.data ?? [];
 
       const totalRevenue = all.reduce((s, c: TopCustomer) => s + Number(c.lifetime_value), 0);
 
