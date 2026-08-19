@@ -98,7 +98,7 @@ function usePriceSensitivityTopItems(
       customerId?: number | null,
       dateFrom?: string | null,
       dateTo?: string | null,
-      limit = 5,
+      limit = 15,
       enabled = true
 ) {
       const params = useBandParams(customerId, dateFrom, dateTo);
@@ -216,7 +216,7 @@ function BandDrilldown({
       dateFrom?: string | null;
       dateTo?: string | null;
 }) {
-      const { data: topItems, isLoading } = usePriceSensitivityTopItems(customerId, dateFrom, dateTo, 5);
+      const { data: topItems, isLoading } = usePriceSensitivityTopItems(customerId, dateFrom, dateTo, 15);
 
       const revenueItems = useMemo(
             () => (topItems ?? []).filter((item: TopItemRow) => item.priceRange === priceRange && item.metric === "revenue"),
@@ -233,8 +233,8 @@ function BandDrilldown({
 
       return (
             <div className="flex flex-col sm:flex-row gap-6 py-4 px-2">
-                  <TopItemsList title="Top 5 by Revenue" items={revenueItems} />
-                  <TopItemsList title="Top 5 by Volume" items={volumeItems} />
+                  <TopItemsList title="Top 15 by Revenue" items={revenueItems} />
+                  <TopItemsList title="Top 15 by Volume" items={volumeItems} />
             </div>
       );
 }

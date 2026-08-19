@@ -30,4 +30,21 @@ export {
       useRevenueMonthly,
       useRevenueRange,
       useRevenueWeekly,
-} from "./use-revenue-queries"
+      useRevenueAnomarly,
+} from "./use-revenue-queries";
+
+export {
+      useDiscountTrend,
+      useDiscountByItem,
+      useDiscountByCustomer,
+} from "./use-discount-queries"
+
+
+export {
+      useCustomerChurnRisk,
+      useCustomerRetention,
+      useDeadStocks,
+      useABCClassification,
+      useBelowCost,
+      useDataQuality,
+} from "./use-general-queries"
