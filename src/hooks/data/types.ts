@@ -183,3 +183,21 @@ export type CustomerInsert = Omit<
 };
 
 export type CustomerUpdate = Partial<CustomerInsert>;
+
+
+
+
+
+// Analytics
+export interface RevenueWeekRow {
+      week_start: string;
+      revenue: number;
+      profit: number;
+      margin_pct: number;
+      cogs: number;
+      transactions: number;
+      unit_sold: number;
+      prev_week_revenue: number;
+      wow_growth_pct?: number;
+      avg_order_value?: number;
+}

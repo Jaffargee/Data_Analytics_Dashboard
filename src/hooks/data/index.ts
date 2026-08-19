@@ -29,4 +29,5 @@ export {
       useRevenueDaily,
       useRevenueMonthly,
       useRevenueRange,
+      useRevenueWeekly,
 } from "./use-revenue-queries"

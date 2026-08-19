@@ -1,6 +1,6 @@
 // src/hooks/data/use-revenue-queries.ts
 import { useViewQuery, useRpcQuery } from './use-supabase';
-import type { RevenueDaily, RevenueMonthly, DailySnapshot } from './types';
+import type { RevenueDaily, RevenueMonthly, DailySnapshot, RevenueWeekRow } from './types';
 
 /**
  * Fetch daily revenue with smart caching
@@ -43,4 +43,9 @@ export function useDailySnapshot(date: string) {
             'fn_daily_snapshot',
             { args: { target_date: date } }
       );
+}
+
+// Fetch Weekly Revenue
+export function useRevenueWeekly() {
+      return useViewQuery<RevenueWeekRow>('v_revenue_weekly')
 }
