@@ -2,7 +2,11 @@
 /**
  * Core data types for Supabase queries
  */
-
+export type FetchState<T> =
+      | { status: 'loading'; data: null; error: null }
+      | { status: 'error'; data: null; error: string }
+      | { status: 'success'; data: T[]; error: null };
+      
 // ── Revenue ────────────────────────────────────
 export interface RevenueDaily {
       sale_date: string;

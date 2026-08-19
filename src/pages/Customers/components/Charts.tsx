@@ -1,17 +1,16 @@
 import { Card, CardHeader, ProgressBar } from "@fluentui/react-components";
 import CardTitle from "../../../components/ui/primitives/CardTitle";
-import { TopCustomer } from "@/lib/services/supabase";
-import { FetchState } from "@/hooks/data/";
+import { TopCustomer } from "@/hooks/data";
 import ReactECharts from 'echarts-for-react';
 import Badge from "../../../components/ui/primitives/Badge";
 import { fmt } from "../../../lib/utils";
 
 interface ChartsProps<T> {
-      customers: FetchState<T>
+      customers: any
 }
 
-export default function Charts({ customers }: ChartsProps<TopCustomer[]>) {
-      const all = customers.data.data ?? [];
+export default function Charts({ customers }: ChartsProps<TopCustomer>) {
+      const all = customers?.data.data ?? [];
 
       const top10Chart = all.slice(0, 10).map((c: TopCustomer) => ({
             label: c.customer_name,
@@ -32,14 +31,14 @@ export default function Charts({ customers }: ChartsProps<TopCustomer[]>) {
             tooltip: { trigger: 'axis' },
             xAxis: {
                   type: 'category',
-                  data: top10Chart.map(item => item.label) // convert timestamps
+                  data: top10Chart.map((item: any) => item.label) // convert timestamps
             },
             yAxis: { type: 'value' },
             series: [
                   {
                         name: 'Revenue',
                         type: 'bar',
-                        data: top10Chart.map(item => item.value), // your real sales
+                        data: top10Chart.map((item: any) => item.value), // your real sales
                         itemStyle: { color: '#f5c842', type: 'dashed' }
                   },
             ]

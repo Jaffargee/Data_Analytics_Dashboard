@@ -8,7 +8,8 @@ export type {
       DailySnapshot,
       LowStockItem,
       RevenueDaily,
-      RevenueMonthly
+      RevenueMonthly,
+      FetchState,
 } from "./types";
 
 export {

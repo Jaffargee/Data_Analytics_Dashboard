@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TopCustomer } from '../../../lib/supabase';
+import { TopCustomer } from '@/hooks/data';
 import Badge from '../../../components/ui/primitives/Badge';
 import Button from '../../../components/ui/Button';
 import { fmt, fmtCurrency, fmtDate } from '../../../lib/utils';
