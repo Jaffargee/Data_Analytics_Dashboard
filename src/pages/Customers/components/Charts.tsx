@@ -10,6 +10,7 @@ interface ChartsProps<T> {
 }
 
 export default function Charts({ customers }: ChartsProps<TopCustomer>) {
+      console.log(customers.data)
       const all = customers?.data.data ?? [];
 
       const top10Chart = all.slice(0, 10).map((c: TopCustomer) => ({

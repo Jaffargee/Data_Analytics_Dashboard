@@ -105,7 +105,7 @@ export default function Customer() {
                               />
                         </div>
 
-                        <Charts customers={customers} />
+                        {/* <Charts customers={all} /> */}
 
                         <TableSearch 
                               search={searchQuery} 
