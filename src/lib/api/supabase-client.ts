@@ -109,6 +109,14 @@ export async function executeTableQuery<T>(tableName: string, options: SupabaseT
 
             query = (options.filters ?? []).reduce((q, { column, operator, value }) => q.filter(column, operator as any, value), query)
 
+            if (options.eq) {
+                  query = Object.entries(options.eq).reduce((q, [column, value]) => q.eq(column, value as never), query);
+            }
+
+            if (options.neq) {
+                  query = Object.entries(options.neq).reduce((q, [column, value]) => q.neq(column, value as never), query);
+            }
+
             if(options.order) {
                   query = query.order(options.order.column, { ascending: options.order.ascending ?? false });
             }

@@ -13,6 +13,9 @@ export type {
       DeadStockReportRow,
       SlowMovingStockRow,
       PaymentRow,
+      SaleDetail,
+      SaleItemDetail,
+      SalePayment,
 } from "./types";
 
 export {
@@ -33,6 +36,12 @@ export {
 export {
       usePayments,
 } from "./use-payments";
+
+export {
+      useSaleDetail,
+      useSaleItemsDetail,
+      useSalePayments,
+} from "./use-sales";
 
 export {
       useDailySnapshot,

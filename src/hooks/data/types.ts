@@ -328,6 +328,39 @@ export interface AbcRow {
       cumulative_pct: number;
 }
 
+// ── Sales (individual sale / invoice detail) ────────────────────────────────────
+export interface SaleDetail {
+      pos_sale_id: number;
+      pos_customer_id: number | null;
+      salesperson: string | null;
+      customer_name: string | null;
+      comment: string | null;
+      is_anonymous_customer: boolean;
+      invoice_total: number;
+      items_net: number;
+      items_sold: number;
+      items_returned: number;
+      invoice_datetime: string;
+}
+
+export interface SaleItemDetail {
+      pos_sale_id: number;
+      pos_item_id: number;
+      name: string;
+      quantity: number;
+      unit_price: number;
+      total: number;
+      cost_price: number;
+      total_cost: number;
+      gross_profit: number;
+}
+
+export interface SalePayment {
+      pos_sale_id: number;
+      account: string;
+      amount: number;
+}
+
 
 
 

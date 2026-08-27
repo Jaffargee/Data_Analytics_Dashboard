@@ -2,101 +2,46 @@ import StatCard from '../../components/ui/primitives/StatCard';
 import { Card } from '@fluentui/react-components';
 import CardHeader from '../../components/ui/primitives/CardHeader';
 import CardTitle from '../../components/ui/primitives/CardTitle';
+import { Badge, EmptyState } from '@/components/ui/primitives';
 import { TopBar } from '../../components/ui/TopBar';
 import TableSearch from '../../components/ui/TableSearch';
 import DataTable, { ColumnDef } from '../../components/ui/DataTable';
-import { executeSQL } from '@/lib/services/llm';
-import { fmt, fmtCurrency } from '@/lib/utils';
-import { Report } from '@/types';
-import { ArrowUp, Loader2, Plus, ShoppingCart, Users } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useSaleDetail, useSaleItemsDetail, useSalePayments } from '@/hooks/data';
+import type { SaleItemDetail } from '@/hooks/data';
+import { fmt, fmtCurrency, fmtDate } from '@/lib/utils';
+import { ArrowUp, Loader2, Plus, ShoppingCart, Users, Calendar, User, Wallet } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
 
-interface SaleItemRow {
-      pos_item_id: number | string;
-      name: string;
-      quantity: number;
-      unit_price: number;
-      total: number;
-}
-
-const customer_product_query = (pos_sale_id: number) => {
-      return `
-            SELECT json_build_object(
-                  -- 📊 Summary block
-                  'summary', (
-                        SELECT json_build_object(
-                              'total', ROUND(SUM(si.total), 2),
-                              'total_items_bought', SUM(CASE WHEN si.quantity > 0 THEN si.quantity ELSE 0 END),
-                              'total_items_returned', SUM(CASE WHEN si.quantity < 0 THEN si.quantity ELSE 0 END),
-                              'profit', ROUND(SUM(si.total - (i.cost_price * si.quantity)), 2)
-                        )
-                        FROM sale_items si
-                        JOIN items i ON si.pos_item_id = i.pos_item_id
-                        WHERE si.pos_sale_id = ${pos_sale_id}
-                  ),
-
-                  -- 📋 Sales list
-                  'sale_items', (
-                        SELECT json_agg(t)
-                        FROM (
-                              SELECT
-                                    *
-                                    FROM sale_items s
-                              WHERE s.pos_sale_id = ${pos_sale_id}
-                        ) t
-                  )
-            ) AS result;
-
-      `.trim();
-};
-
 export default function CustomerSales() {
-      const [report, setReport] = useState<Report | null>(null);
-      const [loading, setLoading] = useState(false);
       const [query, setQuery] = useState<string>('');
       const [filter, setFilter] = useState<string>('');
 
-      const { sales_id: pos_sale_id } = useParams();
+      const { sales_id } = useParams();
+      const posSaleId = sales_id ? Number(sales_id) : undefined;
       const [params] = useSearchParams();
       const ctm_name = params.get('ctm_name');
 
-      async function fetchCustomerSaleItemData() {
-            try {
-                  if (!pos_sale_id) return;
-                  setLoading(true);
+      const sale = useSaleDetail(posSaleId);
+      const saleItems = useSaleItemsDetail(posSaleId);
+      const payments = useSalePayments(posSaleId);
 
-                  const sql_res = await executeSQL(
-                        customer_product_query(parseInt(pos_sale_id as string))
-                  );
+      const loading = sale.isLoading || saleItems.isLoading;
+      const saleRow = sale.data?.data?.[0];
+      const items = saleItems.data?.data ?? [];
+      const paymentRows = payments.data?.data ?? [];
 
-                  if (!sql_res || !sql_res.rows) {
-                        setReport({} as Report);
-                        return;
-                  }
-
-                  const result = sql_res.rows[0]?.result as Report;
-                  setReport(result);
-            } catch (error) {
-                  console.log(error);
-            } finally {
-                  setLoading(false);
-            }
-      }
-
-      useEffect(() => {
-            (async () => {
-                  await fetchCustomerSaleItemData();
-            })();
-      }, []);
+      const totals = useMemo(() => {
+            const profit = items.reduce((sum, r) => sum + Number(r.gross_profit ?? 0), 0);
+            return { profit };
+      }, [items]);
 
       // Sold vs Returned — used as the filter dropdown options
       const ctm_category = useMemo(() => [{ value: 'Sold', label: 'Sold' }, { value: 'Returned', label: 'Returned' }], []);
 
       const filtered = useMemo(() => {
-            const rows = (report?.sale_items ?? []) as SaleItemRow[];
-            return rows.filter((r) => {
+            return items.filter((r) => {
                   const matchesQuery =
                         (r.name ?? '').toLowerCase().includes(query.toLowerCase()) ||
                         (r.pos_item_id?.toString() ?? '').includes(query) ||
@@ -110,21 +55,20 @@ export default function CustomerSales() {
 
                   return matchesQuery && matchesFilter;
             });
-      }, [report, query, filter]);
+      }, [items, query, filter]);
 
       // Quantity + total per item, for the per-product breakdown chart
       const chartData = useMemo(() => {
-            const rows = (report?.sale_items ?? []) as SaleItemRow[];
-            return rows
+            return [...items]
                   .map((r) => ({
                         name: r.name,
                         quantity: Number(r.quantity) || 0,
                         total: Number(r.total) || 0,
                   }))
                   .sort((a, b) => b.total - a.total);
-      }, [report]);
+      }, [items]);
 
-      const columns: ColumnDef<SaleItemRow>[] = [
+      const columns: ColumnDef<SaleItemDetail>[] = [
             {
                   key: 'pos_item_id',
                   label: 'ID',
@@ -154,6 +98,19 @@ export default function CustomerSales() {
                   render: (r) => fmtCurrency(r.unit_price),
             },
             {
+                  key: 'gross_profit',
+                  label: 'Profit',
+                  sortable: true,
+                  align: 'right',
+                  width: '1.1fr',
+                  sortValue: (r) => Number(r.gross_profit),
+                  render: (r) => (
+                        <span className={Number(r.gross_profit) < 0 ? 'text-accent-red' : 'text-ink-secondary'}>
+                              {fmtCurrency(r.gross_profit)}
+                        </span>
+                  ),
+            },
+            {
                   key: 'total',
                   label: 'Total',
                   sortable: true,
@@ -168,12 +125,13 @@ export default function CustomerSales() {
             },
       ];
 
+      const displayName = saleRow?.customer_name || ctm_name || 'Walk-in Customer';
+
       return (
             <div className="flex-1 flex flex-col min-h-screen">
                   <TopBar
-                        title={ctm_name || 'Customer Sales'}
-                        subtitle={`Sales history for customer #${pos_sale_id}`}
-                        onRefresh={fetchCustomerSaleItemData}
+                        title={`Sale #${posSaleId ?? ''}`}
+                        subtitle={displayName}
                         shouldNavigateBack
                   />
 
@@ -188,33 +146,74 @@ export default function CustomerSales() {
                                           Loading...
                                     </p>
                               </div>
+                        ) : !saleRow ? (
+                              <EmptyState message="Sale not found." />
                         ) : (
                               <div className="flex flex-col gap-2 space-y-4">
+                                    <Card>
+                                          <CardHeader>
+                                                <CardTitle>Sale Details</CardTitle>
+                                                {saleRow.salesperson && (
+                                                      <Badge variant="teal">{saleRow.salesperson}</Badge>
+                                                )}
+                                          </CardHeader>
+                                          <div className="flex flex-wrap gap-x-8 gap-y-3 px-1 pb-1">
+                                                <div className="flex items-center gap-2 text-xs text-ink-secondary">
+                                                      <Calendar size={13} className="text-ink-faint" />
+                                                      {fmtDate(saleRow.invoice_datetime)}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-ink-secondary">
+                                                      <User size={13} className="text-ink-faint" />
+                                                      {displayName}
+                                                      {saleRow.is_anonymous_customer && (
+                                                            <span className="text-ink-faint">(anonymous)</span>
+                                                      )}
+                                                </div>
+                                                {paymentRows.length > 0 && (
+                                                      <div className="flex items-center gap-2 text-xs text-ink-secondary">
+                                                            <Wallet size={13} className="text-ink-faint" />
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                  {paymentRows.map((p, i) => (
+                                                                        <Badge key={`${p.account}-${i}`} variant="gold">
+                                                                              {p.account}: {fmtCurrency(p.amount)}
+                                                                        </Badge>
+                                                                  ))}
+                                                            </div>
+                                                      </div>
+                                                )}
+                                                {saleRow.comment && (
+                                                      <div className="text-xs text-ink-muted italic">
+                                                            &ldquo;{saleRow.comment}&rdquo;
+                                                      </div>
+                                                )}
+                                          </div>
+                                    </Card>
+
                                     <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
                                           <StatCard
                                                 label="Revenue"
-                                                value={fmtCurrency(report?.summary.total)}
+                                                value={fmtCurrency(saleRow.invoice_total)}
                                                 icon={<Users size={14} />}
                                                 accent="gold"
                                                 delay={0}
                                           />
                                           <StatCard
                                                 label="Profit"
-                                                value={fmt(report?.summary.profit)}
+                                                value={fmtCurrency(totals.profit)}
                                                 icon={<ArrowUp size={14} />}
                                                 accent="teal"
                                                 delay={100}
                                           />
                                           <StatCard
                                                 label="Total Items Bought"
-                                                value={fmt(report?.summary.total_items_bought)}
+                                                value={fmt(saleRow.items_sold)}
                                                 icon={<ShoppingCart size={14} />}
                                                 accent="teal"
                                                 delay={100}
                                           />
                                           <StatCard
                                                 label="Total Items Returned"
-                                                value={fmt(report?.summary.total_items_returned)}
+                                                value={fmt(saleRow.items_returned)}
                                                 icon={<ShoppingCart size={14} />}
                                                 accent="red"
                                                 delay={100}
@@ -328,7 +327,7 @@ export default function CustomerSales() {
                                           defaultSortKey="total"
                                           defaultSortDir="desc"
                                     />
-                                    
+
                               </div>
                         )}
                   </main>
