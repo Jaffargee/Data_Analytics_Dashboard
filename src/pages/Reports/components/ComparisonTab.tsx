@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePeriodComparison } from '../hooks/usePeriodComparison';
+import { usePeriodComparison } from '../hooks/usePeriodReports';
 import { ComparisonTable } from './ComparisonTable';
 
 const INPUT_CLASS =

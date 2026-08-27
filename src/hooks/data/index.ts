@@ -24,6 +24,8 @@ export type {
       WhatsappPostRow,
       ItemPickerRow,
       PeriodComparisonRow,
+      PeriodDowRow,
+      PeriodTopProductRow,
 } from "./types";
 
 export {

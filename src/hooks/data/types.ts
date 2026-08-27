@@ -438,6 +438,26 @@ export interface PeriodComparisonRow {
       change_pct: number;
 }
 
+export interface PeriodDowRow {
+      day_of_week: string;
+      dow_num: number;
+      transactions: number;
+      revenue: number;
+      units_sold: number;
+}
+
+export interface PeriodTopProductRow {
+      item_name: string;
+      category: string;
+      revenue: number;
+      units_sold: number;
+      transactions: number;
+      avg_price: number;
+      rev_per_txn: number;
+      gross_profit: number;
+      margin_pct: number;
+}
+
 
 
 
