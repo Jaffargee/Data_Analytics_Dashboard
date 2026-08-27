@@ -411,6 +411,24 @@ export interface DeliveryTripRow {
       created_at: string;
 }
 
+// ── WhatsApp post tracking ────────────────────────────────────
+export interface WhatsappPostRow {
+      id: string;
+      items_id: string;
+      item_name: string;
+      media_type: string;
+      time: string | null;
+      posted_at: string;
+      created_at: string;
+}
+
+export interface ItemPickerRow {
+      id: string;
+      pos_item_id: number;
+      item_name: string;
+      category: string | null;
+}
+
 
 
 

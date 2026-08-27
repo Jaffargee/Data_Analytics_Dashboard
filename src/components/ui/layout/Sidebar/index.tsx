@@ -9,6 +9,7 @@ import {
       FileBarChart,
       TrendingUp,
       Truck,
+      MessageCircle,
       Menu,
       X,
 } from 'lucide-react';
@@ -35,7 +36,10 @@ const nav = [
             ],
       },
       { group: 'People', items: [{ label: 'Customers', icon: Users, path: '/customers' }] },
-      { group: 'Operations', items: [{ label: 'Deliveries', icon: Truck, path: '/deliveries' }] },
+      { group: 'Operations', items: [
+            { label: 'Deliveries', icon: Truck, path: '/deliveries' },
+            { label: 'WhatsApp Tracking', icon: MessageCircle, path: '/whatsapp' },
+      ] },
 ];
 
 const quickActions = [

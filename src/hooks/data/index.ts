@@ -21,6 +21,8 @@ export type {
       DeliveryStatus,
       TransitMode,
       TripStatus,
+      WhatsappPostRow,
+      ItemPickerRow,
 } from "./types";
 
 export {
@@ -52,6 +54,11 @@ export {
       useDeliveries,
       useDeliveryTrips,
 } from "./use-deliveries";
+
+export {
+      useWhatsappPosts,
+      useItemsPicker,
+} from "./use-whatsapp";
 
 export {
       useDailySnapshot,
