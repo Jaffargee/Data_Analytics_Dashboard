@@ -10,6 +10,9 @@ export type {
       RevenueDaily,
       RevenueMonthly,
       FetchState,
+      DeadStockReportRow,
+      SlowMovingStockRow,
+      PaymentRow,
 } from "./types";
 
 export {
@@ -23,7 +26,13 @@ export {
       useCategoryPerf,
       useLowStock,
       useSupplierStock,
+      useDeadStockReport,
+      useSlowMovingStock,
 } from "./use-items";
+
+export {
+      usePayments,
+} from "./use-payments";
 
 export {
       useDailySnapshot,

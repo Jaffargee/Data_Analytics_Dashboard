@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import {
       LayoutDashboard,
       Package,
+      PackageX,
       Users,
       FileBarChart,
       TrendingUp,
@@ -29,6 +30,7 @@ const nav = [
             group: 'Inventory',
             items: [
                   { label: 'Products', icon: Package, path: '/products' },
+                  { label: 'Working Capital', icon: PackageX, path: '/inventory' },
             ],
       },
       { group: 'People', items: [{ label: 'Customers', icon: Users, path: '/customers' }] },
