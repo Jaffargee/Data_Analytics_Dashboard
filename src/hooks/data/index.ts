@@ -23,6 +23,7 @@ export type {
       TripStatus,
       WhatsappPostRow,
       ItemPickerRow,
+      PeriodComparisonRow,
 } from "./types";
 
 export {

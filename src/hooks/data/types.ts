@@ -429,6 +429,15 @@ export interface ItemPickerRow {
       category: string | null;
 }
 
+// ── Period comparison (fn_period_comparison) ────────────────────────────────────
+export interface PeriodComparisonRow {
+      metric: string;
+      period_1: number;
+      period_2: number;
+      change: number;
+      change_pct: number;
+}
+
 
 
 
