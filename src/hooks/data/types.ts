@@ -458,6 +458,15 @@ export interface PeriodTopProductRow {
       margin_pct: number;
 }
 
+export interface PeriodTopCustomerRow {
+      customer_name: string;
+      revenue: number;
+      transactions: number;
+      units: number;
+      avg_basket: number;
+      pct_of_total: number;
+}
+
 
 
 

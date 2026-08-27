@@ -7,6 +7,7 @@ import { SummaryReports } from './SummaryReports';
 import { ComparisonTab } from './ComparisonTab';
 import { TimingTab } from './TimingTab';
 import { ProductsTab } from './ProductsTab';
+import { CustomersTab } from './CustomersTab';
 import type { ReportType } from '../constants';
 
 const TAB_TRIGGER_CLASS =
@@ -42,6 +43,7 @@ export function ReportGenerator() {
                                     <Tabs.Trigger value="comparison" className={TAB_TRIGGER_CLASS}>Period Comparison</Tabs.Trigger>
                                     <Tabs.Trigger value="timing" className={TAB_TRIGGER_CLASS}>Timing</Tabs.Trigger>
                                     <Tabs.Trigger value="products" className={TAB_TRIGGER_CLASS}>Products</Tabs.Trigger>
+                                    <Tabs.Trigger value="customers" className={TAB_TRIGGER_CLASS}>Customers</Tabs.Trigger>
                               </Tabs.List>
 
                               <Tabs.Content value="summary" className="space-y-6">
@@ -67,6 +69,10 @@ export function ReportGenerator() {
 
                               <Tabs.Content value="products">
                                     <ProductsTab />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="customers">
+                                    <CustomersTab />
                               </Tabs.Content>
                         </Tabs.Root>
                   </main>

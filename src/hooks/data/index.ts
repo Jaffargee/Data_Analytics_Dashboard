@@ -26,6 +26,7 @@ export type {
       PeriodComparisonRow,
       PeriodDowRow,
       PeriodTopProductRow,
+      PeriodTopCustomerRow,
 } from "./types";
 
 export {
