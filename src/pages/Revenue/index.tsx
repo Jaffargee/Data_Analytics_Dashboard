@@ -4,8 +4,9 @@ import type { EChartsOption } from 'echarts';
 import { TopBar } from '@/components/ui/TopBar';
 import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState, StatCard } from '@/components/ui/primitives';
-import { useRevenueDaily, useRevenueMonthly, useRevenueRange } from '@/hooks/data';
+import { useRevenueDaily, useRevenueMonthly, useRevenueRange, usePayments } from '@/hooks/data';
 import { fmt, fmtCurrency, fmtMonthLabel, nDaysAgo, today } from '@/lib/utils';
+import { CHART_COLORS } from '@/lib/constants/colors';
 
 const chartBase = {
       backgroundColor: 'transparent',
@@ -15,12 +16,48 @@ const chartBase = {
       yAxis: { type: 'value', axisLabel: { color: '#8A8578', formatter: (value: number) => fmtCurrency(value) }, splitLine: { lineStyle: { color: 'rgba(138,133,120,.18)', type: 'dashed' } } },
 } satisfies EChartsOption;
 
+const PAYMENT_PALETTE: readonly string[] = Object.values(CHART_COLORS);
+
+interface PaymentSlice {
+      name: string;
+      value: number;
+      itemStyle: { color: string };
+}
+
+function buildPaymentOption(slices: PaymentSlice[]): EChartsOption {
+      return {
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'item', valueFormatter: (value) => fmtCurrency(Number(value)) },
+            legend: {
+                  orient: 'vertical',
+                  right: 0,
+                  top: 'middle',
+                  textStyle: { color: '#8A8578', fontSize: 11 },
+                  itemWidth: 10,
+                  itemHeight: 10,
+                  icon: 'circle',
+            },
+            series: [
+                  {
+                        type: 'pie',
+                        radius: ['50%', '75%'],
+                        center: ['38%', '50%'],
+                        avoidLabelOverlap: true,
+                        label: { show: false },
+                        labelLine: { show: false },
+                        data: slices,
+                  },
+            ],
+      };
+}
+
 export default function RevenuePage() {
       const [from, setFrom] = useState(nDaysAgo(30));
       const [to, setTo] = useState(today());
       const daily = useRevenueDaily(90);
       const monthly = useRevenueMonthly();
       const range = useRevenueRange(from, to);
+      const payments = usePayments();
       const months = useMemo(() => [...(monthly.data?.data ?? [])].reverse(), [monthly.data]);
       const latest = months[months.length - 1];
       const previous = months[months.length - 2];
@@ -38,6 +75,25 @@ export default function RevenuePage() {
       const dailyRows = [...(daily.data?.data ?? [])].reverse().slice(-30).map((row) => ({ label: row.sale_date.slice(5), value: Number(row.revenue) }));
       const rangeRows = [...(range.data?.data ?? [])].reverse().map((row) => ({ label: row.sale_date.slice(5), value: Number(row.revenue) }));
 
+      const paymentBreakdown = useMemo(() => {
+            const rows = payments.data?.data ?? [];
+            const byAccount = new Map<string, number>();
+            for (const row of rows) {
+                  const key = row.account ?? 'Unknown';
+                  const current = byAccount.get(key) ?? 0;
+                  byAccount.set(key, current + Number(row.amount));
+            }
+            const slices: PaymentSlice[] = Array.from(byAccount.entries())
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([name, value], index) => ({
+                        name,
+                        value,
+                        itemStyle: { color: PAYMENT_PALETTE[index % PAYMENT_PALETTE.length] },
+                  }));
+            return slices;
+      }, [payments.data]);
+      const paymentOption = useMemo(() => buildPaymentOption(paymentBreakdown), [paymentBreakdown]);
+
       return <div className="flex-1 flex flex-col min-h-screen">
             <TopBar title="Revenue" subtitle="Revenue performance across every sales period" />
             <main className="flex-1 p-6 space-y-6">
@@ -47,6 +103,16 @@ export default function RevenuePage() {
                         <StatCard label="Latest Month" value={fmtCurrency(Number(latest?.revenue ?? 0))} accent="purple" delay={200} />
                         <StatCard label="MoM Change" value={mom === null ? '—' : `${mom >= 0 ? '+' : ''}${mom.toFixed(1)}%`} accent={mom !== null && mom >= 0 ? 'teal' : 'red'} delay={300} />
                   </div>
+                  <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
+                        <CardHeader><CardTitle>Revenue by Payment Method</CardTitle></CardHeader>
+                        {payments.isLoading ? (
+                              <div className="h-72 animate-pulse rounded bg-bg-hover" />
+                        ) : paymentBreakdown.length ? (
+                              <EChart option={paymentOption} height="240px" />
+                        ) : (
+                              <EmptyState message="No payment records found." />
+                        )}
+                  </section>
                   <Tabs.Root defaultValue="monthly">
                         <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1">
                               {['monthly', 'daily', 'custom'].map((value) => <Tabs.Trigger key={value} value={value} className="rounded-md px-4 py-1.5 text-xs capitalize text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold">{value}</Tabs.Trigger>)}

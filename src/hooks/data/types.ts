@@ -81,6 +81,41 @@ export interface SupplierStockValue {
       outstanding_balance: number;
 }
 
+// ── Inventory / Working Capital ────────────────────────────────────
+export interface DeadStockReportRow {
+      pos_item_id: number;
+      item_name: string;
+      category: string;
+      stock_on_hand: number;
+      cost_price: number;
+      selling_price: number;
+      dead_stock_cost_value: number;
+      dead_stock_retail_value: number;
+      lifecycle_marked_dead_at: string | null;
+      days_dead: number;
+      last_sold_at: string | null;
+      lifecycle_sales_since_dead: number;
+      revival_watch_status: string;
+}
+
+export interface SlowMovingStockRow {
+      pos_item_id: number;
+      item_name: string;
+      category: string;
+      stock_on_hand: number;
+      cost_price: number;
+      selling_price: number;
+      slow_stock_cost_value: number;
+      last_sold_at: string | null;
+      days_since_last_sale: number;
+}
+
+// ── Payments ────────────────────────────────────
+export interface PaymentRow {
+      account: string;
+      amount: number;
+}
+
 // ── Category ────────────────────────────────────
 export interface CategoryPerformance {
       category: string;

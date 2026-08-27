@@ -7,6 +7,7 @@ import CustomerSales from '@/pages/Customers/Sales';
 import Products from '@/pages/Products';
 import Product from '@/pages/Products/Product';
 import ProductForm from '@/pages/Products/Create';
+import Inventory from '@/pages/Inventory';
 import Analytics from '@/pages/Analytics';
 import Reports from '@/pages/Reports';
 import RevIntelligence from '@/pages/RevIntelligence';
@@ -42,6 +43,7 @@ export default function App() {
                                           <Route path="/customers" element={<Customers />} />
                                           <Route path="/customers/customer/:id" element={<CustomerProfile />} />
                                           <Route path="/customers/customer/:id/sales" element={<CustomerSales />} />
+                                          <Route path="/inventory" element={<Inventory />} />
                                           <Route path="/products" element={<Products />} />
                                           <Route path="/products/new" element={<ProductForm />} />
                                           <Route path="/products/:product_id" element={<Product />} />

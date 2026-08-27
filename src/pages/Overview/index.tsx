@@ -1,7 +1,7 @@
 import { TopBar } from '@/components/ui';
 import { CardHeader, CardTitle, Stats, EmptyState } from '@/components/ui/controls/primitives';
 import { fmtCurrency, fmt, fmtMonthLabel, today } from '@/lib/utils';
-import { useRevenueDaily, useRevenueMonthly, useCategoryPerf, useDailySnapshot, useBestSelling } from '@/hooks/data';
+import { useRevenueDaily, useRevenueMonthly, useCategoryPerf, useDailySnapshot, useBestSelling, useSalesperson } from '@/hooks/data';
 import { BarChart2, Package, ShoppingCart, TrendingUp } from "lucide-react";
 import { Card } from "@fluentui/react-components";
 import ReactECharts from 'echarts-for-react';
@@ -23,6 +23,7 @@ export default function Overview () {
       const items = useBestSelling(15);
       const cats = useCategoryPerf();
       const snap = useDailySnapshot(today());
+      const salespeople = useSalesperson();
 
       const snapMap = Object.fromEntries(
             (snap.data?.data ?? []).map((r: { metric: string; value: number }) => [r.metric, r.value])
@@ -61,6 +62,13 @@ export default function Overview () {
             value: Number(c.total_revenue),
             itemStyle: { color: DONUT_COLORS[i % DONUT_COLORS.length] } 
       }));
+
+      const salespersonForChart = [...(salespeople.data?.data ?? [])]
+            .sort((a, b) => Number(b.total_revenue) - Number(a.total_revenue))
+            .map((r) => ({
+                  label: r.salesperson,
+                  value: Number(r.total_revenue),
+            }));
 
       const kpis = [
             {
@@ -195,6 +203,24 @@ export default function Overview () {
             ]
       };
 
+      const option5 = {
+            title: { text: 'Revenue by Salesperson' },
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                  type: 'category',
+                  data: salespersonForChart.map(item => item.label)
+            },
+            yAxis: { type: 'value' },
+            series: [
+                  {
+                        name: 'Revenue by Salesperson',
+                        type: 'bar',
+                        data: salespersonForChart.map(item => item.value),
+                        itemStyle: { color: '#2dd4bf' }
+                  },
+            ]
+      };
+
       return (
             <div className='flex-1 flex flex-col min-h-screen'>
                   <TopBar
@@ -312,6 +338,33 @@ export default function Overview () {
                                     )}
                               </Card>
 
+                        </div>
+
+                        {/* Team row */}
+                        <div className="grid grid-cols-1 gap-4">
+                              <Card
+                                    appearance='outline'
+                                    className="animate-fade-up opacity-0-init"
+                                    style={{
+                                          animationDelay: '500ms',
+                                          animationFillMode: 'forwards',
+                                    }}
+                              >
+                                    <CardHeader>
+                                          <div className='flex flex-row items-center gap-2'>
+                                                <CardTitle>
+                                                      Revenue by Salesperson
+                                                </CardTitle>
+                                          </div>
+                                    </CardHeader>
+                                    {salespeople.isLoading ? (
+                                          <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
+                                    ) : salespersonForChart.length ? (
+                                          <ReactECharts option={option5} />
+                                    ) : (
+                                          <EmptyState />
+                                    )}
+                              </Card>
                         </div>
 
                   </main>
