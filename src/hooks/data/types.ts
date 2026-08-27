@@ -361,6 +361,56 @@ export interface SalePayment {
       amount: number;
 }
 
+// ── Deliveries ────────────────────────────────────
+export type DeliveryStatus = 'PENDING' | 'DISPATCHED_TO_PARK' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED';
+export type TransitMode = 'MARKET_RUN' | 'PARK_TRANSIT';
+export type TripStatus = 'LOADING' | 'DEPARTED' | 'COMPLETED';
+
+export interface DeliveryRow {
+      id: string;
+      customer_id: string | null;
+      customer_name: string | null;
+      customer_phone: string | null;
+      pos_sale_id: number | null;
+      transit_mode: TransitMode;
+      status: DeliveryStatus;
+      destination_label: string | null;
+      destination_state: string | null;
+      destination_lga: string | null;
+      destination_country: string | null;
+      shop_handover_by: string | null;
+      local_runner_name: string | null;
+      left_shop_at: string | null;
+      trip_id: string | null;
+      driver_name: string | null;
+      driver_phone: string | null;
+      vehicle_plate: string | null;
+      park_loaded_at: string | null;
+      package_description: string | null;
+      package_weight: number | null;
+      package_count: number | null;
+      delivery_fee: number | null;
+      cod_amount: number | null;
+      is_paid: boolean;
+      delivered_at: string | null;
+      notes: string | null;
+      failure_reason: string | null;
+      created_at: string;
+}
+
+export interface DeliveryTripRow {
+      id: string;
+      destination_state: string | null;
+      driver_name: string | null;
+      driver_phone: string | null;
+      vehicle_plate: string | null;
+      park_name: string | null;
+      loaded_by: string | null;
+      loaded_at: string | null;
+      status: TripStatus;
+      created_at: string;
+}
+
 
 
 

@@ -8,6 +8,7 @@ import {
       Users,
       FileBarChart,
       TrendingUp,
+      Truck,
       Menu,
       X,
 } from 'lucide-react';
@@ -34,6 +35,7 @@ const nav = [
             ],
       },
       { group: 'People', items: [{ label: 'Customers', icon: Users, path: '/customers' }] },
+      { group: 'Operations', items: [{ label: 'Deliveries', icon: Truck, path: '/deliveries' }] },
 ];
 
 const quickActions = [

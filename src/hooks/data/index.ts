@@ -16,6 +16,11 @@ export type {
       SaleDetail,
       SaleItemDetail,
       SalePayment,
+      DeliveryRow,
+      DeliveryTripRow,
+      DeliveryStatus,
+      TransitMode,
+      TripStatus,
 } from "./types";
 
 export {
@@ -42,6 +47,11 @@ export {
       useSaleItemsDetail,
       useSalePayments,
 } from "./use-sales";
+
+export {
+      useDeliveries,
+      useDeliveryTrips,
+} from "./use-deliveries";
 
 export {
       useDailySnapshot,
