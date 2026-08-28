@@ -27,6 +27,16 @@ export type {
       PeriodDowRow,
       PeriodTopProductRow,
       PeriodTopCustomerRow,
+      CustomerDirectoryRow,
+      CustomerProfitRow,
+      CustomerCategorySummaryRow,
+      CustomerAtRiskRow,
+      CustomerIntelligenceRow,
+      ProductPeakPeriodRow,
+      CategoryBestDayRow,
+      ProductPerformanceRow,
+      RevenueSummaryRow,
+      TimeOfDayRow,
 } from "./types";
 
 export {
@@ -63,6 +73,25 @@ export {
       useWhatsappPosts,
       useItemsPicker,
 } from "./use-whatsapp";
+
+export {
+      useCustomerDirectory,
+      useCustomerProfit,
+      useCustomerCategorySummary,
+      useCustomersAtRisk,
+      useCustomerIntelligence,
+} from "./use-customer-360";
+
+export {
+      useProductPeakPeriod,
+      useCategoryBestDay,
+      useProductPerformance,
+} from "./use-product-seasonality";
+
+export {
+      useRevenueSummary,
+      useTimeOfDay,
+} from "./use-revenue-extras";
 
 export {
       useDailySnapshot,

@@ -467,6 +467,125 @@ export interface PeriodTopCustomerRow {
       pct_of_total: number;
 }
 
+// ── Customer 360 (previously-unused views) ────────────────────────────────────
+export interface CustomerDirectoryRow {
+      id: string;
+      pos_customer_id: number;
+      display_name: string;
+      company_name: string | null;
+      email: string | null;
+      phone: string | null;
+      category: string;
+      status_level: string;
+      is_active: boolean;
+      total_spent: number;
+      total_orders: number;
+      total_quantity_purchased: number;
+      lifetime_value: number;
+      profit_contribution: number;
+      balance: number;
+      credit_limit: number;
+      last_order_at: string | null;
+      days_since_last_order: number | null;
+}
+
+export interface CustomerProfitRow {
+      pos_customer_id: number;
+      profit: number;
+}
+
+export interface CustomerCategorySummaryRow {
+      category: string;
+      customer_count: number;
+      total_revenue: number;
+      avg_spent: number;
+      avg_orders: number;
+      pct_of_revenue: number;
+}
+
+export interface CustomerAtRiskRow {
+      id: string;
+      pos_customer_id: number;
+      display_name: string;
+      company_name: string | null;
+      email: string | null;
+      phone: string | null;
+      category: string;
+      status_level: string;
+      is_active: boolean;
+      total_spent: number;
+      total_orders: number;
+      total_quantity_purchased: number;
+      lifetime_value: number;
+      profit_contribution: number;
+      balance: number;
+      credit_limit: number;
+      last_order_at: string | null;
+      days_since_last_order: number | null;
+}
+
+export interface CustomerIntelligenceRow {
+      pos_customer_id: number;
+      customer_name: string;
+      total_purchases: number;
+      lifetime_value: number;
+      avg_basket: number;
+      total_units: number;
+      last_purchase_at: string | null;
+      first_purchase_at: string | null;
+      avg_purchase: number;
+}
+
+// ── Product seasonality (previously-unused views) ────────────────────────────────────
+export interface ProductPeakPeriodRow {
+      pos_item_id: number;
+      item_name: string;
+      peak_week: string;
+      peak_week_quantity: number;
+      peak_week_revenue: number;
+}
+
+export interface CategoryBestDayRow {
+      category: string;
+      day_of_week: string;
+      dow_num: number;
+      revenue_on_best_day: number;
+}
+
+export interface ProductPerformanceRow {
+      pos_item_id: number;
+      item_name: string;
+      category: string;
+      selling_price: number;
+      cost_price: number;
+      total_qty_sold: number;
+      total_revenue: number;
+      times_sold: number;
+      avg_selling_price: number;
+      rev_per_transaction: number;
+      gross_profit: number;
+      margin_pct: number;
+}
+
+// ── Revenue extras (previously-unused views) ────────────────────────────────────
+export interface RevenueSummaryRow {
+      period_day: string;
+      period_month: string;
+      period_year: string;
+      total_sales: number;
+      total_revenue: number;
+      avg_sale_value: number;
+      total_items_sold: number;
+      total_items_returned: number;
+}
+
+export interface TimeOfDayRow {
+      time_bucket: string;
+      sort_order: number;
+      transactions: number;
+      revenue: number;
+}
+
 
 
 
