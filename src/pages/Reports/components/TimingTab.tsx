@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { EChartsOption } from 'echarts';
 import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
+import SimpleTable from '@/components/ui/data/SimpleTable';
 import { usePeriodRevenueByDow } from '../hooks/usePeriodReports';
 import { useTimeOfDay } from '@/hooks/data';
 import { fmtCurrency, fmt } from '@/lib/utils';
@@ -121,26 +122,26 @@ export function TimingTab() {
                   </section>
 
                   {!dow.isLoading && rows.length > 0 && (
-                        <section className="rounded-lg border border-bg-border bg-bg-panel p-5 overflow-x-auto">
-                              <table className="w-full">
-                                    <thead>
-                                          <tr className="border-b border-bg-border">
-                                                {['Day', 'Transactions', 'Units Sold', 'Revenue'].map((h) => (
-                                                      <th key={h} className="text-left pb-3 pr-4 text-xs font-body uppercase tracking-wider text-ink-muted">{h}</th>
-                                                ))}
-                                          </tr>
-                                    </thead>
-                                    <tbody>
-                                          {rows.map((row) => (
-                                                <tr key={row.dow_num} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors">
-                                                      <td className="py-3 pr-4 text-xs font-body text-ink-primary font-medium">{row.day_of_week}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">{fmt(row.transactions)}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">{fmt(row.units_sold)}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-accent-gold font-medium">{fmtCurrency(row.revenue)}</td>
-                                                </tr>
-                                          ))}
-                                    </tbody>
-                              </table>
+                        <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
+                              <SimpleTable
+                                    headers={['Day', 'Transactions', 'Units Sold', 'Revenue']}
+                                    rows={rows}
+                                    getRowKey={(row) => row.dow_num}
+                                    renderCell={(row, columnIndex) => {
+                                          switch (columnIndex) {
+                                                case 0:
+                                                      return <span className="text-xs font-body text-ink-primary font-medium">{row.day_of_week}</span>;
+                                                case 1:
+                                                      return <span className="text-xs font-mono text-ink-secondary">{fmt(row.transactions)}</span>;
+                                                case 2:
+                                                      return <span className="text-xs font-mono text-ink-secondary">{fmt(row.units_sold)}</span>;
+                                                case 3:
+                                                      return <span className="text-xs font-mono text-accent-gold font-medium">{fmtCurrency(row.revenue)}</span>;
+                                                default:
+                                                      return null;
+                                          }
+                                    }}
+                              />
                         </section>
                   )}
             </div>

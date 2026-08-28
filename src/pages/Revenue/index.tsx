@@ -130,7 +130,7 @@ export default function RevenuePage() {
                         {revSummary.isLoading ? (
                               <div className="h-16 animate-pulse rounded bg-bg-hover" />
                         ) : (
-                              <div className="grid grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                           <p className="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Items Sold</p>
                                           <p className="text-lg font-mono text-ink-primary">{fmt(returnsSummary.itemsSold)}</p>
@@ -147,7 +147,7 @@ export default function RevenuePage() {
                         )}
                   </section>
                   <Tabs.Root defaultValue="monthly">
-                        <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1">
+                        <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
                               {['monthly', 'daily', 'custom'].map((value) => <Tabs.Trigger key={value} value={value} className="rounded-md px-4 py-1.5 text-xs capitalize text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold">{value}</Tabs.Trigger>)}
                         </Tabs.List>
                         <RevenuePanel value="monthly" title="Monthly Revenue Trend" rows={monthlyRows} option={makeOption(monthlyRows, 'bar', '#f5c842')} loading={monthly.isLoading} />

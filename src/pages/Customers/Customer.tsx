@@ -420,7 +420,8 @@ export default function Customer() {
                                           </Card>
                                     </div>
 
-                                    <div className="px-6">
+                                    <div className="px-4 sm:px-6">
+                                          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                                           <TabList
                                                 selectedValue={selectedTab}
                                                 onTabSelect={(_, data) => setSelectedTab(data.value)}
@@ -430,6 +431,7 @@ export default function Customer() {
                                                 <Tab value="products">Product Intelligence</Tab>
                                                 <Tab value="behavior">Behavior</Tab>
                                           </TabList>
+                                          </div>
 
                                           {tabs[selectedTab as string]}
                                     </div>
