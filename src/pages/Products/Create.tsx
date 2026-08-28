@@ -665,7 +665,7 @@ export default function ProductFormPage() {
                                     value={activeTab}
                                     onValueChange={setActiveTab}
                               >
-                                    <Tabs.List className="flex gap-1 bg-bg-panel border border-bg-border rounded-xl p-1 mb-8 flex-wrap">
+                                    <Tabs.List className="flex gap-1 bg-bg-panel border border-bg-border rounded-xl p-1 mb-8 overflow-x-auto flex-nowrap [scrollbar-width:thin]">
                                           {TABS.map((tab) => {
                                                 const hasTabError =
                                                       (tab.id === 'details' &&
@@ -678,7 +678,7 @@ export default function ProductFormPage() {
                                                             key={tab.id}
                                                             value={tab.id}
                                                             className={cn(
-                                                                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body transition-all relative',
+                                                                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body transition-all relative shrink-0 whitespace-nowrap',
                                                                   'data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold data-[state=active]:border data-[state=active]:border-accent-gold/30',
                                                                   'text-ink-secondary hover:text-ink-primary'
                                                             )}

@@ -14,6 +14,7 @@ import SearchInput from '../../components/ui/SearchInput';
 import Button from '../../components/ui/Button';
 import TableSearch from '../../components/ui/TableSearch';
 import { ctm_category } from '../../constants';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 import Fuse from 'fuse.js';
 
 
@@ -22,9 +23,6 @@ const options = {
       keys: ["customer_name", "category"],
       threshold: 0.4, 
 }
-
-const TAB_TRIGGER_CLASS =
-      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
 
 export default function Customer() {
       const customers = useTopCustomers(1000);
@@ -113,8 +111,8 @@ export default function Customer() {
                         {/* <Charts customers={all} /> */}
 
                         <Tabs.Root defaultValue="overview">
-                              <div className="px-6 mb-4">
-                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
+                              <div className={`px-4 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
+                                    <Tabs.List className={TAB_LIST_CLASS}>
                                           <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
                                           <Tabs.Trigger value="directory" className={TAB_TRIGGER_CLASS}>Directory</Tabs.Trigger>
                                           <Tabs.Trigger value="segments" className={TAB_TRIGGER_CLASS}>By Segment</Tabs.Trigger>
