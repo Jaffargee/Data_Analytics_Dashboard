@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { SectionHeader, Badge } from '@/components/ui/primitives';
+import { Badge } from '@/components/ui/primitives';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import { fmtCurrency, fmt, fmtDate } from '@/lib/utils';
 import type {
@@ -98,12 +98,9 @@ export function DeadStockTable({ data, loading }: DeadStockTableProps) {
 
       return (
             <section className="space-y-3">
-                  <div className="px-6">
-                        <SectionHeader
-                              title="Dead Stock"
-                              sub="Items with no qualifying sales — capital tied up on the shelf"
-                        />
-                  </div>
+                  <p className="px-6 text-xs text-ink-muted font-body">
+                        Items with no qualifying sales — capital tied up on the shelf
+                  </p>
                   {loading ? (
                         <TableSkeleton />
                   ) : (
@@ -179,12 +176,9 @@ export function SlowStockTable({ data, loading }: SlowStockTableProps) {
 
       return (
             <section className="space-y-3">
-                  <div className="px-6">
-                        <SectionHeader
-                              title="Slow-Moving Stock"
-                              sub="Still selling, but slowing down — watch before it goes dead"
-                        />
-                  </div>
+                  <p className="px-6 text-xs text-ink-muted font-body">
+                        Still selling, but slowing down — watch before it goes dead
+                  </p>
                   {loading ? (
                         <TableSkeleton />
                   ) : (
@@ -257,12 +251,9 @@ export function ReorderAlertsTable({ data, loading }: ReorderAlertsTableProps) {
 
       return (
             <section className="space-y-3">
-                  <div className="px-6">
-                        <SectionHeader
-                              title="Reorder Alerts"
-                              sub="Items at or below their reorder level"
-                        />
-                  </div>
+                  <p className="px-6 text-xs text-ink-muted font-body">
+                        Items at or below their reorder level
+                  </p>
                   {loading ? (
                         <TableSkeleton />
                   ) : (
@@ -337,12 +328,9 @@ export function SupplierExposureTable({ data, loading }: SupplierExposureTablePr
 
       return (
             <section className="space-y-3">
-                  <div className="px-6">
-                        <SectionHeader
-                              title="Supplier Exposure"
-                              sub="Stock value and outstanding balance by supplier"
-                        />
-                  </div>
+                  <p className="px-6 text-xs text-ink-muted font-body">
+                        Stock value and outstanding balance by supplier
+                  </p>
                   {loading ? (
                         <TableSkeleton />
                   ) : (

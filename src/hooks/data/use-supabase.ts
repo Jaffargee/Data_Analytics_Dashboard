@@ -80,7 +80,7 @@ export function useRpcQuery<T = unknown>(
 export function useTableQuery<T = unknown>(
       tableName: string,
       options?: SupabaseTableOptions,
-      queryOptions?: UseQueryOptions<SupabaseQueryResult<T>>
+      queryOptions?: Omit<UseQueryOptions<SupabaseQueryResult<T>, Error>, 'queryKey' | 'queryFn'>
 ): UseQueryResult<SupabaseQueryResult<T>> {
       return useQuery({
             queryKey: ['table', tableName, options],

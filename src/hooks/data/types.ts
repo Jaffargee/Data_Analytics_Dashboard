@@ -328,6 +328,264 @@ export interface AbcRow {
       cumulative_pct: number;
 }
 
+// ── Sales (individual sale / invoice detail) ────────────────────────────────────
+export interface SaleDetail {
+      pos_sale_id: number;
+      pos_customer_id: number | null;
+      salesperson: string | null;
+      customer_name: string | null;
+      comment: string | null;
+      is_anonymous_customer: boolean;
+      invoice_total: number;
+      items_net: number;
+      items_sold: number;
+      items_returned: number;
+      invoice_datetime: string;
+}
+
+export interface SaleItemDetail {
+      pos_sale_id: number;
+      pos_item_id: number;
+      name: string;
+      quantity: number;
+      unit_price: number;
+      total: number;
+      cost_price: number;
+      total_cost: number;
+      gross_profit: number;
+}
+
+export interface SalePayment {
+      pos_sale_id: number;
+      account: string;
+      amount: number;
+}
+
+// ── Deliveries ────────────────────────────────────
+export type DeliveryStatus = 'PENDING' | 'DISPATCHED_TO_PARK' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED';
+export type TransitMode = 'MARKET_RUN' | 'PARK_TRANSIT';
+export type TripStatus = 'LOADING' | 'DEPARTED' | 'COMPLETED';
+
+export interface DeliveryRow {
+      id: string;
+      customer_id: string | null;
+      customer_name: string | null;
+      customer_phone: string | null;
+      pos_sale_id: number | null;
+      transit_mode: TransitMode;
+      status: DeliveryStatus;
+      destination_label: string | null;
+      destination_state: string | null;
+      destination_lga: string | null;
+      destination_country: string | null;
+      shop_handover_by: string | null;
+      local_runner_name: string | null;
+      left_shop_at: string | null;
+      trip_id: string | null;
+      driver_name: string | null;
+      driver_phone: string | null;
+      vehicle_plate: string | null;
+      park_loaded_at: string | null;
+      package_description: string | null;
+      package_weight: number | null;
+      package_count: number | null;
+      delivery_fee: number | null;
+      cod_amount: number | null;
+      is_paid: boolean;
+      delivered_at: string | null;
+      notes: string | null;
+      failure_reason: string | null;
+      created_at: string;
+}
+
+export interface DeliveryTripRow {
+      id: string;
+      destination_state: string | null;
+      driver_name: string | null;
+      driver_phone: string | null;
+      vehicle_plate: string | null;
+      park_name: string | null;
+      loaded_by: string | null;
+      loaded_at: string | null;
+      status: TripStatus;
+      created_at: string;
+}
+
+// ── WhatsApp post tracking ────────────────────────────────────
+export interface WhatsappPostRow {
+      id: string;
+      items_id: string;
+      item_name: string;
+      media_type: string;
+      time: string | null;
+      posted_at: string;
+      created_at: string;
+}
+
+export interface ItemPickerRow {
+      id: string;
+      pos_item_id: number;
+      item_name: string;
+      category: string | null;
+}
+
+// ── Period comparison (fn_period_comparison) ────────────────────────────────────
+export interface PeriodComparisonRow {
+      metric: string;
+      period_1: number;
+      period_2: number;
+      change: number;
+      change_pct: number;
+}
+
+export interface PeriodDowRow {
+      day_of_week: string;
+      dow_num: number;
+      transactions: number;
+      revenue: number;
+      units_sold: number;
+}
+
+export interface PeriodTopProductRow {
+      item_name: string;
+      category: string;
+      revenue: number;
+      units_sold: number;
+      transactions: number;
+      avg_price: number;
+      rev_per_txn: number;
+      gross_profit: number;
+      margin_pct: number;
+}
+
+export interface PeriodTopCustomerRow {
+      customer_name: string;
+      revenue: number;
+      transactions: number;
+      units: number;
+      avg_basket: number;
+      pct_of_total: number;
+}
+
+// ── Customer 360 (previously-unused views) ────────────────────────────────────
+export interface CustomerDirectoryRow {
+      id: string;
+      pos_customer_id: number;
+      display_name: string;
+      company_name: string | null;
+      email: string | null;
+      phone: string | null;
+      category: string;
+      status_level: string;
+      is_active: boolean;
+      total_spent: number;
+      total_orders: number;
+      total_quantity_purchased: number;
+      lifetime_value: number;
+      profit_contribution: number;
+      balance: number;
+      credit_limit: number;
+      last_order_at: string | null;
+      days_since_last_order: number | null;
+}
+
+export interface CustomerProfitRow {
+      pos_customer_id: number;
+      profit: number;
+}
+
+export interface CustomerCategorySummaryRow {
+      category: string;
+      customer_count: number;
+      total_revenue: number;
+      avg_spent: number;
+      avg_orders: number;
+      pct_of_revenue: number;
+}
+
+export interface CustomerAtRiskRow {
+      id: string;
+      pos_customer_id: number;
+      display_name: string;
+      company_name: string | null;
+      email: string | null;
+      phone: string | null;
+      category: string;
+      status_level: string;
+      is_active: boolean;
+      total_spent: number;
+      total_orders: number;
+      total_quantity_purchased: number;
+      lifetime_value: number;
+      profit_contribution: number;
+      balance: number;
+      credit_limit: number;
+      last_order_at: string | null;
+      days_since_last_order: number | null;
+}
+
+export interface CustomerIntelligenceRow {
+      pos_customer_id: number;
+      customer_name: string;
+      total_purchases: number;
+      lifetime_value: number;
+      avg_basket: number;
+      total_units: number;
+      last_purchase_at: string | null;
+      first_purchase_at: string | null;
+      avg_purchase: number;
+}
+
+// ── Product seasonality (previously-unused views) ────────────────────────────────────
+export interface ProductPeakPeriodRow {
+      pos_item_id: number;
+      item_name: string;
+      peak_week: string;
+      peak_week_quantity: number;
+      peak_week_revenue: number;
+}
+
+export interface CategoryBestDayRow {
+      category: string;
+      day_of_week: string;
+      dow_num: number;
+      revenue_on_best_day: number;
+}
+
+export interface ProductPerformanceRow {
+      pos_item_id: number;
+      item_name: string;
+      category: string;
+      selling_price: number;
+      cost_price: number;
+      total_qty_sold: number;
+      total_revenue: number;
+      times_sold: number;
+      avg_selling_price: number;
+      rev_per_transaction: number;
+      gross_profit: number;
+      margin_pct: number;
+}
+
+// ── Revenue extras (previously-unused views) ────────────────────────────────────
+export interface RevenueSummaryRow {
+      period_day: string;
+      period_month: string;
+      period_year: string;
+      total_sales: number;
+      total_revenue: number;
+      avg_sale_value: number;
+      total_items_sold: number;
+      total_items_returned: number;
+}
+
+export interface TimeOfDayRow {
+      time_bucket: string;
+      sort_order: number;
+      transactions: number;
+      revenue: number;
+}
+
 
 
 

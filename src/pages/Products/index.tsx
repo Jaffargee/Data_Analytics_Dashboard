@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Tabs from '@radix-ui/react-tabs';
 import { TopBar } from '../../components/ui/TopBar';
 import StatCard from '../../components/ui/primitives/StatCard';
 import { DollarSign, Package, TrendingUp, Percent, Plus } from 'lucide-react';
@@ -7,7 +8,11 @@ import { useProductsData } from './hooks';
 import { ProductCharts } from './components/ProductCharts';
 import { CategoryPerformance } from './components/CategoryPerformance';
 import { ProductsTable } from './components/ProductsTable';
+import { SeasonalityTab } from './components/SeasonalityTab';
 import TableSearch from "../../components/ui/TableSearch";
+
+const TAB_TRIGGER_CLASS =
+      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
 
 export default function ProductsPage() {
       const { items, cats, allItems, totals, top10Chart, catDonut } = useProductsData();
@@ -19,7 +24,7 @@ export default function ProductsPage() {
                         subtitle="Sales performance by item and category"
                   />
                   <main className="flex-1 space-y-6">
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 py-4">
                               <StatCard
                                     label="Total Revenue"
@@ -51,22 +56,37 @@ export default function ProductsPage() {
                               />
                         </div>
 
-                        <ProductCharts
-                              top10Chart={top10Chart}
-                              catDonut={catDonut}
-                              itemsLoading={items.isLoading}
-                              catsLoading={cats.isLoading}
-                        />
+                        <Tabs.Root defaultValue="overview">
+                              <div className="px-4 mb-2">
+                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1">
+                                          <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
+                                          <Tabs.Trigger value="seasonality" className={TAB_TRIGGER_CLASS}>Seasonality</Tabs.Trigger>
+                                    </Tabs.List>
+                              </div>
 
-                        <CategoryPerformance data={cats.data?.data ?? []} />
+                              <Tabs.Content value="overview" className="space-y-6">
+                                    <ProductCharts
+                                          top10Chart={top10Chart}
+                                          catDonut={catDonut}
+                                          itemsLoading={items.isLoading}
+                                          catsLoading={cats.isLoading}
+                                    />
 
-                        <TableSearch search="" setSearch={() => {}} title="New Product" icon={Plus} withButton={true} />
+                                    <CategoryPerformance data={cats.data?.data ?? []} />
 
-                        <ProductsTable
-                              allItems={items.data?.data}
-                              maxRevenue={totals.maxRevenue}
-                        />
-                        
+                                    <TableSearch search="" setSearch={() => {}} title="New Product" icon={Plus} withButton={true} />
+
+                                    <ProductsTable
+                                          allItems={items.data?.data}
+                                          maxRevenue={totals.maxRevenue}
+                                    />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="seasonality">
+                                    <SeasonalityTab />
+                              </Tabs.Content>
+                        </Tabs.Root>
+
                   </main>
             </div>
       );

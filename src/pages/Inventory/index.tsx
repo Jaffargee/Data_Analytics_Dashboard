@@ -1,3 +1,4 @@
+import * as Tabs from '@radix-ui/react-tabs';
 import { TopBar } from '@/components/ui';
 import { Stats } from '@/components/ui/primitives';
 import { AlertTriangle, Archive, PackageX, Truck } from 'lucide-react';
@@ -11,6 +12,9 @@ import {
       ReorderAlertsTable,
       SupplierExposureTable,
 } from './components/InventoryTables';
+
+const TAB_TRIGGER_CLASS =
+      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
 
 export default function InventoryPage() {
       const {
@@ -61,13 +65,20 @@ export default function InventoryPage() {
             },
       ];
 
+      const tabs: Array<{ value: string; label: string; count: number }> = [
+            { value: 'dead', label: 'Dead Stock', count: totals.deadItemCount },
+            { value: 'slow', label: 'Slow-Moving', count: totals.slowItemCount },
+            { value: 'reorder', label: 'Reorder Alerts', count: totals.lowStockCount },
+            { value: 'suppliers', label: 'Suppliers', count: supplierRows.length },
+      ];
+
       return (
             <div className="flex-1 flex flex-col min-h-screen">
                   <TopBar
                         title="Inventory & Working Capital"
                         subtitle="Dead stock, slow stock, reorder alerts, and supplier exposure"
                   />
-                  <main className="flex-1 space-y-8 pb-8">
+                  <main className="flex-1 space-y-6 pb-8">
                         <Stats stats={kpis} />
 
                         <div className="px-4">
@@ -79,10 +90,30 @@ export default function InventoryPage() {
                               />
                         </div>
 
-                        <DeadStockTable data={deadRows} loading={deadStock.isLoading} />
-                        <SlowStockTable data={slowRows} loading={slowStock.isLoading} />
-                        <ReorderAlertsTable data={lowRows} loading={lowStock.isLoading} />
-                        <SupplierExposureTable data={supplierRows} loading={supplierStock.isLoading} />
+                        <div className="px-4">
+                              <Tabs.Root defaultValue="dead">
+                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 mb-4 flex-wrap">
+                                          {tabs.map((tab) => (
+                                                <Tabs.Trigger key={tab.value} value={tab.value} className={TAB_TRIGGER_CLASS}>
+                                                      {tab.label} <span className="text-ink-faint">({fmt(tab.count)})</span>
+                                                </Tabs.Trigger>
+                                          ))}
+                                    </Tabs.List>
+
+                                    <Tabs.Content value="dead">
+                                          <DeadStockTable data={deadRows} loading={deadStock.isLoading} />
+                                    </Tabs.Content>
+                                    <Tabs.Content value="slow">
+                                          <SlowStockTable data={slowRows} loading={slowStock.isLoading} />
+                                    </Tabs.Content>
+                                    <Tabs.Content value="reorder">
+                                          <ReorderAlertsTable data={lowRows} loading={lowStock.isLoading} />
+                                    </Tabs.Content>
+                                    <Tabs.Content value="suppliers">
+                                          <SupplierExposureTable data={supplierRows} loading={supplierStock.isLoading} />
+                                    </Tabs.Content>
+                              </Tabs.Root>
+                        </div>
                   </main>
             </div>
       );

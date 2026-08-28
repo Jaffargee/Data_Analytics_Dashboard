@@ -3,11 +3,13 @@ import { TopCustomer } from '@/hooks/data/';
 import { useTopCustomers } from '@/hooks/data/';
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import * as Tabs from '@radix-ui/react-tabs';
 import StatCard from "../../components/ui/primitives/StatCard"
 import { Award, Clock, ShoppingBag, Users, Plus } from "lucide-react";
 import { fmt, fmtCurrency } from "../../lib/utils";
 import Charts from "./components/Charts";
 import Table from "./components/Table";
+import { DirectoryTab, SegmentsTab, AtRiskTab, BehaviorTab } from "./components/Customer360Tabs";
 import SearchInput from '../../components/ui/SearchInput';
 import Button from '../../components/ui/Button';
 import TableSearch from '../../components/ui/TableSearch';
@@ -20,6 +22,9 @@ const options = {
       keys: ["customer_name", "category"],
       threshold: 0.4, 
 }
+
+const TAB_TRIGGER_CLASS =
+      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
 
 export default function Customer() {
       const customers = useTopCustomers(1000);
@@ -107,19 +112,49 @@ export default function Customer() {
 
                         {/* <Charts customers={all} /> */}
 
-                        <TableSearch 
-                              search={searchQuery} 
-                              filterValue={filterQuery} 
-                              title="New Customer" 
-                              buttonIcon={Plus} 
-                              setFilter={setFilterQuery} 
-                              setSearch={setSearchQuery} 
-                              filterOption={ctm_category} 
-                              withButton 
-                              withFilter  
-                        />
+                        <Tabs.Root defaultValue="overview">
+                              <div className="px-6 mb-4">
+                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
+                                          <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
+                                          <Tabs.Trigger value="directory" className={TAB_TRIGGER_CLASS}>Directory</Tabs.Trigger>
+                                          <Tabs.Trigger value="segments" className={TAB_TRIGGER_CLASS}>By Segment</Tabs.Trigger>
+                                          <Tabs.Trigger value="at-risk" className={TAB_TRIGGER_CLASS}>At Risk</Tabs.Trigger>
+                                          <Tabs.Trigger value="behavior" className={TAB_TRIGGER_CLASS}>Purchase Behavior</Tabs.Trigger>
+                                    </Tabs.List>
+                              </div>
 
-                        <Table customers={results} />
+                              <Tabs.Content value="overview" className="space-y-6">
+                                    <TableSearch
+                                          search={searchQuery}
+                                          filterValue={filterQuery}
+                                          title="New Customer"
+                                          buttonIcon={Plus}
+                                          setFilter={setFilterQuery}
+                                          setSearch={setSearchQuery}
+                                          filterOption={ctm_category}
+                                          withButton
+                                          withFilter
+                                    />
+
+                                    <Table customers={results} />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="directory">
+                                    <DirectoryTab />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="segments" className="px-6">
+                                    <SegmentsTab />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="at-risk">
+                                    <AtRiskTab />
+                              </Tabs.Content>
+
+                              <Tabs.Content value="behavior">
+                                    <BehaviorTab />
+                              </Tabs.Content>
+                        </Tabs.Root>
 
                   </main>
             </div>
