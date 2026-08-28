@@ -3,6 +3,7 @@ import type { EChartsOption } from 'echarts';
 import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
 import { usePeriodRevenueByDow } from '../hooks/usePeriodReports';
+import { useTimeOfDay } from '@/hooks/data';
 import { fmtCurrency, fmt } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
 
@@ -23,6 +24,37 @@ export function TimingTab() {
 
       const dow = usePeriodRevenueByDow(from, to);
       const rows = [...(dow.data?.data ?? [])].sort((a, b) => a.dow_num - b.dow_num);
+
+      const timeOfDay = useTimeOfDay();
+      const todRows = timeOfDay.data?.data ?? [];
+
+      const todOption: EChartsOption = {
+            backgroundColor: 'transparent',
+            grid: { left: 64, right: 24, top: 24, bottom: 48 },
+            tooltip: {
+                  trigger: 'axis',
+                  axisPointer: { type: 'shadow' },
+                  valueFormatter: (value) => fmtCurrency(Number(value)),
+            },
+            xAxis: {
+                  type: 'category',
+                  data: todRows.map((row) => row.time_bucket),
+                  axisLabel: { color: '#8A8578' },
+                  axisLine: { lineStyle: { color: '#3A342A' } },
+            },
+            yAxis: {
+                  type: 'value',
+                  axisLabel: { color: '#8A8578', formatter: (value: number) => fmtCurrency(value) },
+                  splitLine: { lineStyle: { color: 'rgba(138,133,120,.18)', type: 'dashed' } },
+            },
+            series: [
+                  {
+                        type: 'bar',
+                        barMaxWidth: 40,
+                        data: todRows.map((row) => ({ value: Number(row.revenue), itemStyle: { color: CHART_COLORS.teal, borderRadius: [4, 4, 0, 0] } })),
+                  },
+            ],
+      };
 
       const option: EChartsOption = {
             backgroundColor: 'transparent',
@@ -71,6 +103,20 @@ export function TimingTab() {
                               <EChart option={option} height="280px" />
                         ) : (
                               <EmptyState message="No sales in this range." />
+                        )}
+                  </section>
+
+                  <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
+                        <CardHeader>
+                              <CardTitle>Revenue by Time of Day</CardTitle>
+                              <span className="text-[10px] text-ink-faint">All-time</span>
+                        </CardHeader>
+                        {timeOfDay.isLoading ? (
+                              <div className="h-64 animate-pulse rounded bg-bg-hover" />
+                        ) : todRows.length ? (
+                              <EChart option={todOption} height="240px" />
+                        ) : (
+                              <EmptyState message="No time-of-day data." />
                         )}
                   </section>
 

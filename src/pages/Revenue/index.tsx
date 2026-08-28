@@ -4,7 +4,7 @@ import type { EChartsOption } from 'echarts';
 import { TopBar } from '@/components/ui/TopBar';
 import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState, StatCard } from '@/components/ui/primitives';
-import { useRevenueDaily, useRevenueMonthly, useRevenueRange, usePayments } from '@/hooks/data';
+import { useRevenueDaily, useRevenueMonthly, useRevenueRange, usePayments, useRevenueSummary } from '@/hooks/data';
 import { fmt, fmtCurrency, fmtMonthLabel, nDaysAgo, today } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
 
@@ -58,6 +58,7 @@ export default function RevenuePage() {
       const monthly = useRevenueMonthly();
       const range = useRevenueRange(from, to);
       const payments = usePayments();
+      const revSummary = useRevenueSummary(30);
       const months = useMemo(() => [...(monthly.data?.data ?? [])].reverse(), [monthly.data]);
       const latest = months[months.length - 1];
       const previous = months[months.length - 2];
@@ -94,6 +95,14 @@ export default function RevenuePage() {
       }, [payments.data]);
       const paymentOption = useMemo(() => buildPaymentOption(paymentBreakdown), [paymentBreakdown]);
 
+      const returnsSummary = useMemo(() => {
+            const rows = revSummary.data?.data ?? [];
+            const itemsSold = rows.reduce((sum, row) => sum + Number(row.total_items_sold), 0);
+            const itemsReturned = rows.reduce((sum, row) => sum + Number(row.total_items_returned), 0);
+            const returnRate = itemsSold > 0 ? (itemsReturned / itemsSold) * 100 : 0;
+            return { itemsSold, itemsReturned, returnRate };
+      }, [revSummary.data]);
+
       return <div className="flex-1 flex flex-col min-h-screen">
             <TopBar title="Revenue" subtitle="Revenue performance across every sales period" />
             <main className="flex-1 p-6 space-y-6">
@@ -111,6 +120,30 @@ export default function RevenuePage() {
                               <EChart option={paymentOption} height="240px" />
                         ) : (
                               <EmptyState message="No payment records found." />
+                        )}
+                  </section>
+                  <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
+                        <CardHeader>
+                              <CardTitle>Returns</CardTitle>
+                              <span className="text-[10px] text-ink-faint">Last 30 days</span>
+                        </CardHeader>
+                        {revSummary.isLoading ? (
+                              <div className="h-16 animate-pulse rounded bg-bg-hover" />
+                        ) : (
+                              <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                          <p className="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Items Sold</p>
+                                          <p className="text-lg font-mono text-ink-primary">{fmt(returnsSummary.itemsSold)}</p>
+                                    </div>
+                                    <div>
+                                          <p className="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Items Returned</p>
+                                          <p className="text-lg font-mono text-accent-red">{fmt(returnsSummary.itemsReturned)}</p>
+                                    </div>
+                                    <div>
+                                          <p className="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Return Rate</p>
+                                          <p className="text-lg font-mono text-ink-primary">{returnsSummary.returnRate.toFixed(1)}%</p>
+                                    </div>
+                              </div>
                         )}
                   </section>
                   <Tabs.Root defaultValue="monthly">
