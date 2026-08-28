@@ -58,7 +58,7 @@ export default function ProductsPage() {
 
                         <Tabs.Root defaultValue="overview">
                               <div className="px-4 mb-2">
-                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1">
+                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
                                           <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
                                           <Tabs.Trigger value="seasonality" className={TAB_TRIGGER_CLASS}>Seasonality</Tabs.Trigger>
                                     </Tabs.List>

@@ -714,7 +714,7 @@ export default function ProductFormPage() {
                                                 />
                                           </Field>
 
-                                          <div className="grid grid-cols-3 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <Field
                                                       label="Item Number"
                                                       hint="Internal SKU"
@@ -753,7 +753,7 @@ export default function ProductFormPage() {
                                                 </Field>
                                           </div>
 
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field label="Category">
                                                       <select
                                                             value={
@@ -834,7 +834,7 @@ export default function ProductFormPage() {
                                                 </Field>
                                           </div>
 
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field
                                                       label="Variation"
                                                       hint="e.g. Size, Colour, Pattern"
@@ -862,7 +862,7 @@ export default function ProductFormPage() {
                                                 </Field>
                                           </div>
 
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field
                                                       label="Store Location"
                                                       hint="Where to find it in the shop"
@@ -968,7 +968,7 @@ export default function ProductFormPage() {
                                           value="pricing"
                                           className="space-y-5"
                                     >
-                                          <div className="grid grid-cols-3 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <Field
                                                       label="Cost Price (₦)"
                                                       hint="What you pay"
@@ -1030,7 +1030,7 @@ export default function ProductFormPage() {
                                           />
 
                                           <Divider label="promotional pricing" />
-                                          <div className="grid grid-cols-3 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <Field label="Promo Price (₦)">
                                                       <Input
                                                             value={
@@ -1081,7 +1081,7 @@ export default function ProductFormPage() {
                                           </div>
 
                                           <Divider label="tax" />
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field label="Tax Group">
                                                       <Input
                                                             value={
@@ -1145,7 +1145,7 @@ export default function ProductFormPage() {
                                           value="inventory"
                                           className="space-y-5"
                                     >
-                                          <div className="grid grid-cols-3 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <Field
                                                       label="Current Stock (qty)"
                                                       hint="Units in hand"
@@ -1260,7 +1260,7 @@ export default function ProductFormPage() {
                                                       </div>
                                                 )}
 
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field
                                                       label="Unit Quantity"
                                                       hint="e.g. 6 yards per piece"
@@ -1348,7 +1348,7 @@ export default function ProductFormPage() {
                                                 applicable.
                                           </p>
 
-                                          <div className="grid grid-cols-2 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <Field label="Weight">
                                                       <Input
                                                             value={form.weight}
@@ -1391,7 +1391,7 @@ export default function ProductFormPage() {
                                           </div>
 
                                           <Divider label="size (cm)" />
-                                          <div className="grid grid-cols-3 gap-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <Field label="Length (cm)">
                                                       <Input
                                                             value={form.length}
@@ -1469,7 +1469,7 @@ export default function ProductFormPage() {
                                           />
 
                                           {form.sold_in_a_series && (
-                                                <div className="grid grid-cols-2 gap-4 pl-1 border-l-2 border-accent-gold/20 ml-1">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-1 border-l-2 border-accent-gold/20 ml-1">
                                                       <Field
                                                             label="Series Quantity"
                                                             hint="Number of items / sessions in series"

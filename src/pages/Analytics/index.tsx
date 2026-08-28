@@ -151,17 +151,19 @@ export default function Insights(): JSX.Element {
                               </div>
                         )}
 
-                        <TabList
-                              selectedValue={activeTab}
-                              onTabSelect={(_, data) => setActiveTab(data.value as string)}
-                        >
-                              <Tab value="revenue">Revenue & Growth</Tab>
-                              <Tab value="discounts">Discounts</Tab>
-                              <Tab value="products">Products</Tab>
-                              <Tab value="customers">Customers</Tab>
-                              <Tab value="price_sensitivity">Price Sensitivity</Tab>
-                              <Tab value="quality">Data Quality & Risk</Tab>
-                        </TabList>
+                        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                              <TabList
+                                    selectedValue={activeTab}
+                                    onTabSelect={(_, data) => setActiveTab(data.value as string)}
+                              >
+                                    <Tab value="revenue">Revenue & Growth</Tab>
+                                    <Tab value="discounts">Discounts</Tab>
+                                    <Tab value="products">Products</Tab>
+                                    <Tab value="customers">Customers</Tab>
+                                    <Tab value="price_sensitivity">Price Sensitivity</Tab>
+                                    <Tab value="quality">Data Quality & Risk</Tab>
+                              </TabList>
+                        </div>
 
                         {activeTab === "revenue" && (
                               <section className="space-y-4">
@@ -183,10 +185,12 @@ export default function Insights(): JSX.Element {
 
 
                                     <div className="sticky top-[56px] left-0 w-full bg-black py-2 py-x border-b border-bg-border z-[1000]">
+                                          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                                           <TabList selectedValue={discountByActiveTab} onTabSelect={(_, data) => setDiscountByActiveTab(data.value as string)}>
                                                 <Tab value="discount_by_item">Discount By Item</Tab>
                                                 <Tab value="discount_by_customer">Discount By Customer</Tab>
                                           </TabList>
+                                          </div>
                                     </div>
 
                                     {
@@ -250,10 +254,12 @@ export default function Insights(): JSX.Element {
                                     </div>
 
                                     <div className="sticky top-[56px] left-0 w-full bg-black py-2 py-x border-b border-bg-border z-[1000]">
+                                          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                                           <TabList selectedValue={productsInnerActiveTab} onTabSelect={(_, data) => setProductsInnerActiveTab(data.value as string)}>
                                                 <Tab value="slow_dead_items">Dead / Slow-Moving Items</Tab>
                                                 <Tab value="revenue_by_abc_tier">Revenue By ABC Tier</Tab>
                                           </TabList>
+                                          </div>
                                     </div>
 
                                     {
