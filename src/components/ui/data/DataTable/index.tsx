@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import EmptyState from '@/components/ui/primitives/EmptyState';
 
 /**
@@ -7,6 +8,8 @@ import EmptyState from '@/components/ui/primitives/EmptyState';
  * - `render` lets you fully control cell markup (badges, avatars, progress bars, etc).
  * - `sortValue` lets you sort by something other than the raw field (e.g. lowercased name,
  *   a Date parsed from a string, a derived number).
+ * - The first column doubles as each row's card title below the `lg` breakpoint, so keep
+ *   it to the row's primary identifier (name, item, etc).
  */
 export interface ColumnDef<T> {
       key: string;
@@ -16,6 +19,8 @@ export interface ColumnDef<T> {
       width: string; // grid-template-columns fraction, e.g. '2.2fr'
       render?: (row: T, rowIndex: number) => React.ReactNode;
       sortValue?: (row: T) => string | number;
+      /** Omit this column from the stacked mobile/tablet card view (still shown in the desktop grid). */
+      hideOnCard?: boolean;
 }
 
 export interface DataTableProps<T> {
@@ -105,6 +110,8 @@ function DataTable<T>({
 
       const rows = maxRows ? sorted.slice(0, maxRows) : sorted;
 
+      const sortableColumns = useMemo(() => columns.filter((c) => c.sortable), [columns]);
+
       const toggleSort = (key: string) => {
             if (key === sortKey) {
                   setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -179,9 +186,95 @@ function DataTable<T>({
             );
       };
 
+      if (!rows.length) {
+            return (
+                  <div className={`px-4 sm:px-6 ${className}`}>
+                        <EmptyState message={emptyMessage} />
+                  </div>
+            );
+      }
+
+      const [titleCol, ...restCols] = columns;
+      const cardCols = restCols.filter((c) => !c.hideOnCard);
+
       return (
-            <div className={`px-6 ${className}`}>
-                  <div className="px-1 pb-1">
+            <div className={`px-4 sm:px-6 ${className}`}>
+                  {/* ── Mobile / tablet: stacked cards (below lg) ── */}
+                  <div className="lg:hidden space-y-2">
+                        {sortableColumns.length > 0 && (
+                              <div className="flex items-center gap-2 mb-3">
+                                    <label className="text-[10px] uppercase tracking-wide text-ink-faint shrink-0">
+                                          Sort
+                                    </label>
+                                    <select
+                                          value={sortKey ?? ''}
+                                          onChange={(e) => setSortKey(e.target.value || undefined)}
+                                          className="flex-1 min-w-0 rounded-md border border-bg-border bg-bg-hover px-2.5 py-1.5 text-xs font-body text-ink-primary focus:outline-none focus:ring-1 focus:ring-accent-gold"
+                                    >
+                                          {sortableColumns.map((col) => (
+                                                <option key={col.key} value={col.key}>{col.label}</option>
+                                          ))}
+                                    </select>
+                                    <button
+                                          type="button"
+                                          onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+                                          aria-label={sortDir === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                                          className="shrink-0 p-1.5 rounded-md border border-bg-border bg-bg-hover text-ink-muted hover:text-accent-gold transition-colors"
+                                    >
+                                          {sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    </button>
+                              </div>
+                        )}
+
+                        {rows.map((row, index) => {
+                              const rowId = getRowId(row, index);
+                              const clickable = !!onRowClick;
+                              return (
+                                    <div
+                                          key={rowId}
+                                          role={clickable ? 'button' : undefined}
+                                          tabIndex={clickable ? 0 : undefined}
+                                          onClick={() => onRowClick?.(row)}
+                                          onKeyDown={(e) => {
+                                                if (clickable && (e.key === 'Enter' || e.key === ' ')) {
+                                                      e.preventDefault();
+                                                      onRowClick?.(row);
+                                                }
+                                          }}
+                                          className={`rounded-lg border border-bg-border bg-bg-card p-3.5 space-y-2 ${
+                                                clickable ? 'cursor-pointer hover:border-accent-gold/40 active:bg-bg-hover transition-colors' : ''
+                                          }`}
+                                    >
+                                          <div className="text-sm font-body text-ink-primary font-medium">
+                                                {titleCol.render ? titleCol.render(row, index) : String((row as Record<string, unknown>)[titleCol.key] ?? '—')}
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                                                {cardCols.map((col) => (
+                                                      <div key={col.key} className="min-w-0">
+                                                            <p className="text-[10px] uppercase tracking-wide text-ink-faint">{col.label}</p>
+                                                            <div className="text-xs">
+                                                                  {col.render
+                                                                        ? col.render(row, index)
+                                                                        : String((row as Record<string, unknown>)[col.key] ?? '—')}
+                                                            </div>
+                                                      </div>
+                                                ))}
+                                          </div>
+                                          {actions && (
+                                                <div
+                                                      className="flex items-center gap-2 pt-1.5 border-t border-bg-border/60"
+                                                      onClick={(e) => e.stopPropagation()}
+                                                >
+                                                      {actions(row)}
+                                                </div>
+                                          )}
+                                    </div>
+                              );
+                        })}
+                  </div>
+
+                  {/* ── Desktop: full grid (lg and up) ── */}
+                  <div className="hidden lg:block px-1 pb-1">
                         {/* Accessible grid: div-based, semantics via role/aria */}
                         <div
                               role="grid"
@@ -292,8 +385,6 @@ function DataTable<T>({
                                     })}
                               </div>
                         </div>
-
-                        {!rows.length && <EmptyState message={emptyMessage} />}
                   </div>
             </div>
       );
