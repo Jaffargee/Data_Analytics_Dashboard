@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { EChartsOption } from 'echarts';
 import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState, Badge } from '@/components/ui/primitives';
+import SimpleTable from '@/components/ui/data/SimpleTable';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import { fmt, fmtCurrency, fmtDate } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
@@ -192,27 +193,28 @@ export function SegmentsTab() {
                   </section>
 
                   {!summary.isLoading && rows.length > 0 && (
-                        <section className="rounded-lg border border-bg-border bg-bg-panel p-5 overflow-x-auto">
-                              <table className="w-full">
-                                    <thead>
-                                          <tr className="border-b border-bg-border">
-                                                {['Segment', 'Customers', 'Avg Spent', 'Avg Orders', '% of Revenue'].map((h) => (
-                                                      <th key={h} className="text-left pb-3 pr-4 text-xs font-body uppercase tracking-wider text-ink-muted">{h}</th>
-                                                ))}
-                                          </tr>
-                                    </thead>
-                                    <tbody>
-                                          {rows.map((row) => (
-                                                <tr key={row.category} className="border-b border-bg-border/40 hover:bg-bg-hover transition-colors">
-                                                      <td className="py-3 pr-4 text-xs font-body text-ink-primary font-medium">{row.category}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">{fmt(row.customer_count)}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">{fmtCurrency(row.avg_spent)}</td>
-                                                      <td className="py-3 pr-4 text-xs font-mono text-ink-secondary">{Number(row.avg_orders).toFixed(1)}</td>
-                                                      <td className="py-3 text-xs font-mono text-accent-gold font-medium">{Number(row.pct_of_revenue).toFixed(1)}%</td>
-                                                </tr>
-                                          ))}
-                                    </tbody>
-                              </table>
+                        <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
+                              <SimpleTable
+                                    headers={['Segment', 'Customers', 'Avg Spent', 'Avg Orders', '% of Revenue']}
+                                    rows={rows}
+                                    getRowKey={(row) => row.category}
+                                    renderCell={(row, columnIndex) => {
+                                          switch (columnIndex) {
+                                                case 0:
+                                                      return <span className="text-xs font-body text-ink-primary font-medium">{row.category}</span>;
+                                                case 1:
+                                                      return <span className="text-xs font-mono text-ink-secondary">{fmt(row.customer_count)}</span>;
+                                                case 2:
+                                                      return <span className="text-xs font-mono text-ink-secondary">{fmtCurrency(row.avg_spent)}</span>;
+                                                case 3:
+                                                      return <span className="text-xs font-mono text-ink-secondary">{Number(row.avg_orders).toFixed(1)}</span>;
+                                                case 4:
+                                                      return <span className="text-xs font-mono text-accent-gold font-medium">{Number(row.pct_of_revenue).toFixed(1)}%</span>;
+                                                default:
+                                                      return null;
+                                          }
+                                    }}
+                              />
                         </section>
                   )}
             </div>

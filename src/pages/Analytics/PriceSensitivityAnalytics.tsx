@@ -298,7 +298,63 @@ export default function PriceSensitivityAnalytics({
                         {rows.length === 0 && !isLoading ? (
                               <EmptyState message="No price band data available" />
                         ) : (
-                              <div className="overflow-x-auto">
+                              <>
+                                    {/* ── Mobile / tablet: stacked cards (below lg) ── */}
+                                    <div className="lg:hidden space-y-2">
+                                          {rows.map((row: PriceBandRow) => {
+                                                const isOpen = expanded === row.priceRange;
+                                                return (
+                                                      <div
+                                                            key={row.priceRange}
+                                                            className={`rounded-lg border border-bg-border p-3.5 space-y-2 cursor-pointer ${
+                                                                  row.isSweetSpot ? 'bg-accent-gold/10' : 'bg-bg-card'
+                                                            }`}
+                                                            onClick={() => setExpanded(isOpen ? null : row.priceRange)}
+                                                      >
+                                                            <div className="flex items-center justify-between">
+                                                                  <div className="flex items-center gap-1.5">
+                                                                        {isOpen ? <ChevronDown20Regular /> : <ChevronRight20Regular />}
+                                                                        <span className={row.isSweetSpot ? 'text-accent-gold font-semibold text-sm' : 'text-ink-primary font-medium text-sm'}>
+                                                                              {row.priceRange}
+                                                                        </span>
+                                                                        {row.isSweetSpot && <span className="text-xs text-accent-gold/80">★</span>}
+                                                                  </div>
+                                                                  <span className="text-emerald-400 font-medium text-xs font-mono">{fmtCurrency(row.revenue)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                                                                  <div>
+                                                                        <p className="text-[10px] uppercase tracking-wide text-ink-faint">Line Items</p>
+                                                                        <p className="text-xs text-ink-secondary">{row.lineItems}</p>
+                                                                  </div>
+                                                                  <div>
+                                                                        <p className="text-[10px] uppercase tracking-wide text-ink-faint">Units Sold</p>
+                                                                        <p className="text-xs text-ink-secondary">{row.unitsSold}</p>
+                                                                  </div>
+                                                                  <div className="col-span-2">
+                                                                        <p className="text-[10px] uppercase tracking-wide text-ink-faint mb-1">% of Revenue</p>
+                                                                        <div className="flex items-center gap-2">
+                                                                              <ProgressBar className="flex-1" value={row.pctOfRevenue / 100} thickness="medium" />
+                                                                              <span className="text-ink-secondary text-xs tabular-nums">{row.pctOfRevenue.toFixed(1)}%</span>
+                                                                        </div>
+                                                                  </div>
+                                                            </div>
+                                                            {isOpen && (
+                                                                  <div className="pt-2 border-t border-bg-border/60" onClick={(e) => e.stopPropagation()}>
+                                                                        <BandDrilldown
+                                                                              priceRange={row.priceRange}
+                                                                              customerId={customerId}
+                                                                              dateFrom={dateFrom}
+                                                                              dateTo={dateTo}
+                                                                        />
+                                                                  </div>
+                                                            )}
+                                                      </div>
+                                                );
+                                          })}
+                                    </div>
+
+                                    {/* ── Desktop: full table (lg and up) ── */}
+                                    <div className="hidden lg:block overflow-x-auto">
                                     <table className="w-full text-sm">
                                           <thead>
                                                 <tr className="text-left text-ink-muted uppercase text-xs tracking-wide">
@@ -385,7 +441,8 @@ export default function PriceSensitivityAnalytics({
                                                 })}
                                           </tbody>
                                     </table>
-                              </div>
+                                    </div>
+                              </>
                         )}
 
                         {isError && (
