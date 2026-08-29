@@ -95,6 +95,7 @@ export default function RevenuePage() {
             return slices;
       }, [payments.data]);
       const paymentOption = useMemo(() => buildPaymentOption(paymentBreakdown), [paymentBreakdown]);
+      const paymentTotal = useMemo(() => paymentBreakdown.reduce((sum, slice) => sum + slice.value, 0), [paymentBreakdown]);
 
       const returnsSummary = useMemo(() => {
             const rows = revSummary.data?.data ?? [];
@@ -118,7 +119,16 @@ export default function RevenuePage() {
                         {payments.isLoading ? (
                               <div className="h-72 animate-pulse rounded bg-bg-hover" />
                         ) : paymentBreakdown.length ? (
-                              <EChart option={paymentOption} height="240px" />
+                              <div className="relative" style={{ width: '100%', height: 240 }}>
+                                    <EChart option={paymentOption} height="240px" />
+                                    <div
+                                          className="absolute pointer-events-none flex flex-col items-center justify-center"
+                                          style={{ left: '38%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                                    >
+                                          <p className="text-[10px] text-ink-muted">Total</p>
+                                          <p className="text-xs font-mono text-accent-gold font-medium">{fmtCurrency(paymentTotal)}</p>
+                                    </div>
+                              </div>
                         ) : (
                               <EmptyState message="No payment records found." />
                         )}
