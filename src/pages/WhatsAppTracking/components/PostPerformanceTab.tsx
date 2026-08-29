@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Stats, Badge, EmptyState } from '@/components/ui/primitives';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePaginatedRows } from '@/hooks/usePagination';
 import type { StatCardProps } from '@/components/ui/controls/primitives/types';
 import type { BadgeVariant } from '@/components/ui/controls/primitives/types';
 import { fmt, fmtCurrency, fmtDate } from '@/lib/utils';
@@ -18,6 +19,7 @@ function formatDuration(hours: number | null): string {
 export function PostPerformanceTab() {
       const navigate = useNavigate();
       const { correlations, summary, loading } = usePostCorrelation();
+      const correlationsPage = usePaginatedRows(correlations, 20);
 
       const kpis: StatCardProps[] = [
             {
@@ -140,7 +142,7 @@ export function PostPerformanceTab() {
                         <div className="px-4 sm:px-6"><div className="h-40 animate-pulse rounded-lg bg-bg-hover" /></div>
                   ) : (
                         <DataTable
-                              data={correlations}
+                              data={correlationsPage.rows}
                               columns={columns}
                               getRowId={(row) => row.id}
                               ariaLabel="WhatsApp post performance"
@@ -148,6 +150,13 @@ export function PostPerformanceTab() {
                               defaultSortKey="posted_at"
                               defaultSortDir="desc"
                               onRowClick={(row) => row.pos_item_id && navigate(`/products/${row.pos_item_id}`)}
+                              pagination={{
+                                    page: correlationsPage.pager.page,
+                                    totalPages: correlationsPage.totalPages,
+                                    totalCount: correlationsPage.totalCount,
+                                    pageSize: 20,
+                                    onPageChange: correlationsPage.pager.setPage,
+                              }}
                         />
                   )}
             </div>

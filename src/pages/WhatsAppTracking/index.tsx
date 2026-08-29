@@ -4,6 +4,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { TopBar } from '@/components/ui';
 import { Stats, Badge, CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePaginatedRows } from '@/hooks/usePagination';
 import { useWhatsappPosts, useItemsPicker } from '@/hooks/data';
 import type { WhatsappPostRow, ItemPickerRow } from '@/hooks/data';
 import type { StatCardProps } from '@/components/ui/controls/primitives/types';
@@ -40,6 +41,7 @@ function LogPostsTab() {
 
       const postRows = posts.data?.data ?? [];
       const itemRows = items.data?.data ?? [];
+      const postsPage = usePaginatedRows(postRows, 20);
 
       const itemById = useMemo(() => {
             const map = new Map<string, ItemPickerRow>();
@@ -169,13 +171,20 @@ function LogPostsTab() {
                               <div className="h-40 animate-pulse rounded-lg bg-bg-hover" />
                         ) : postRows.length ? (
                               <DataTable
-                                    data={postRows}
+                                    data={postsPage.rows}
                                     columns={columns}
                                     getRowId={(row) => row.id}
                                     ariaLabel="WhatsApp posts"
                                     emptyMessage="No posts logged yet."
                                     defaultSortKey="posted_at"
                                     defaultSortDir="desc"
+                                    pagination={{
+                                          page: postsPage.pager.page,
+                                          totalPages: postsPage.totalPages,
+                                          totalCount: postsPage.totalCount,
+                                          pageSize: 20,
+                                          onPageChange: postsPage.pager.setPage,
+                                    }}
                               />
                         ) : (
                               <EmptyState message="No posts logged yet — log your first one above." />
