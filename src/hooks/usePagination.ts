@@ -36,3 +36,27 @@ export function usePagination(pageSize = 20): UsePaginationResult {
             [page, pageSize]
       );
 }
+
+export interface PaginatedRows<T> {
+      rows: T[];
+      pager: UsePaginationResult;
+      totalCount: number;
+      totalPages: number;
+}
+
+/**
+ * For tables whose data is already fully fetched (e.g. because a KPI card on
+ * the same page needs the full list for a total/average) — paginates the
+ * array client-side instead of re-fetching from Supabase per page. Same
+ * Pagination footer UI either way; only the data source differs.
+ */
+export function usePaginatedRows<T>(data: T[], pageSize = 20): PaginatedRows<T> {
+      const pager = usePagination(pageSize);
+      const totalCount = data.length;
+      const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+      const rows = useMemo(
+            () => data.slice(pager.offset, pager.offset + pageSize),
+            [data, pager.offset, pageSize]
+      );
+      return { rows, pager, totalCount, totalPages };
+}
