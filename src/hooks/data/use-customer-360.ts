@@ -7,10 +7,11 @@ import type {
       CustomerIntelligenceRow,
 } from './types';
 
-export function useCustomerDirectory(limit = 500) {
+export function useCustomerDirectory(limit = 20, offset = 0) {
       return useViewQuery<CustomerDirectoryRow>('customer_directory', {
             limit,
-            order: { column: 'lifetime_value', ascending: false },
+            offset,
+            order: { column: 'total_spent', ascending: false },
       });
 }
 
@@ -24,16 +25,18 @@ export function useCustomerCategorySummary() {
       });
 }
 
-export function useCustomersAtRisk(limit = 200) {
+export function useCustomersAtRisk(limit = 20, offset = 0) {
       return useViewQuery<CustomerAtRiskRow>('customers_at_risk', {
             limit,
+            offset,
             order: { column: 'lifetime_value', ascending: false },
       });
 }
 
-export function useCustomerIntelligence(limit = 500) {
+export function useCustomerIntelligence(limit = 20, offset = 0) {
       return useViewQuery<CustomerIntelligenceRow>('v_customer_intelligence', {
             limit,
+            offset,
             order: { column: 'lifetime_value', ascending: false },
       });
 }

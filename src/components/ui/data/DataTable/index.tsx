@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import EmptyState from '@/components/ui/primitives/EmptyState';
+import Pagination from '@/components/ui/data/Pagination';
 
 /**
  * Column definition for DataTable.
@@ -23,6 +24,15 @@ export interface ColumnDef<T> {
       hideOnCard?: boolean;
 }
 
+export interface DataTablePaginationProps {
+      page: number;
+      totalPages: number;
+      totalCount: number;
+      pageSize: number;
+      onPageChange: (page: number) => void;
+      loading?: boolean;
+}
+
 export interface DataTableProps<T> {
       data: T[];
       columns: ColumnDef<T>[];
@@ -38,6 +48,15 @@ export interface DataTableProps<T> {
       defaultSortDir?: SortDir;
       maxRows?: number;
       className?: string;
+      /**
+       * When set, `data` is treated as a single already-fetched page (server-side
+       * pagination via the offset/limit already supported by useViewQuery/
+       * useTableQuery) and a Prev/Next footer is rendered. Sorting by clicking a
+       * column header still only reorders the current page's rows — pass an
+       * `order` matching the active sort into the underlying hook if you need
+       * the whole dataset sorted, not just the visible page.
+       */
+      pagination?: DataTablePaginationProps;
 }
 
 type SortDir = 'asc' | 'desc';
@@ -56,6 +75,7 @@ function DataTable<T>({
       defaultSortDir = 'desc',
       maxRows,
       className = '',
+      pagination,
 }: DataTableProps<T>) {
       const [sortKey, setSortKey] = useState<string | undefined>(defaultSortKey);
       const [sortDir, setSortDir] = useState<SortDir>(defaultSortDir);
@@ -190,6 +210,9 @@ function DataTable<T>({
             return (
                   <div className={`px-4 sm:px-6 ${className}`}>
                         <EmptyState message={emptyMessage} />
+                        {pagination && pagination.totalCount > 0 && (
+                              <Pagination {...pagination} />
+                        )}
                   </div>
             );
       }
@@ -386,6 +409,8 @@ function DataTable<T>({
                               </div>
                         </div>
                   </div>
+
+                  {pagination && <Pagination {...pagination} />}
             </div>
       );
 }

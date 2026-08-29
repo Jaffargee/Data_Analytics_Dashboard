@@ -5,6 +5,7 @@ import EChart from '@/components/charts/EChart';
 import { CardHeader, CardTitle, EmptyState, Badge } from '@/components/ui/primitives';
 import SimpleTable from '@/components/ui/data/SimpleTable';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePagination } from '@/hooks/usePagination';
 import { fmt, fmtCurrency, fmtDate } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
 import {
@@ -20,6 +21,8 @@ import type {
       CustomerIntelligenceRow,
 } from '@/hooks/data';
 import type { BadgeVariant } from '@/components/ui/controls/primitives/types';
+
+const PAGE_SIZE = 20;
 
 const STATUS_BADGE: Record<string, BadgeVariant> = {
       DIAMOND: 'purple',
@@ -37,8 +40,11 @@ type DirectoryRow = CustomerDirectoryRow & { profit: number | null };
 
 export function DirectoryTab() {
       const navigate = useNavigate();
-      const directory = useCustomerDirectory();
+      const pager = usePagination(PAGE_SIZE);
+      const directory = useCustomerDirectory(pager.limit, pager.offset);
       const profit = useCustomerProfit();
+      const totalCount = directory.data?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const profitById = useMemo(() => {
             const map = new Map<number, number>();
@@ -145,6 +151,14 @@ export function DirectoryTab() {
                               defaultSortKey="total_spent"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.display_name)}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                                    loading: directory.isFetching,
+                              }}
                         />
                   )}
             </div>
@@ -224,8 +238,11 @@ export function SegmentsTab() {
 // ── At Risk (customers_at_risk) ────────────────────────────────────
 export function AtRiskTab() {
       const navigate = useNavigate();
-      const atRisk = useCustomersAtRisk();
+      const pager = usePagination(PAGE_SIZE);
+      const atRisk = useCustomersAtRisk(pager.limit, pager.offset);
       const rows = atRisk.data?.data ?? [];
+      const totalCount = atRisk.data?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const columns: ColumnDef<CustomerAtRiskRow>[] = [
             {
@@ -288,6 +305,14 @@ export function AtRiskTab() {
                               defaultSortKey="lifetime_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.display_name)}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                                    loading: atRisk.isFetching,
+                              }}
                         />
                   )}
             </div>
@@ -297,8 +322,11 @@ export function AtRiskTab() {
 // ── Purchase Behavior (v_customer_intelligence) ────────────────────────────────────
 export function BehaviorTab() {
       const navigate = useNavigate();
-      const intelligence = useCustomerIntelligence();
+      const pager = usePagination(PAGE_SIZE);
+      const intelligence = useCustomerIntelligence(pager.limit, pager.offset);
       const rows = intelligence.data?.data ?? [];
+      const totalCount = intelligence.data?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const columns: ColumnDef<CustomerIntelligenceRow>[] = [
             {
@@ -369,6 +397,14 @@ export function BehaviorTab() {
                               defaultSortKey="lifetime_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.customer_name)}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                                    loading: intelligence.isFetching,
+                              }}
                         />
                   )}
             </div>
