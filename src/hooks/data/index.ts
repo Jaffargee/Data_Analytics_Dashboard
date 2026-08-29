@@ -80,6 +80,7 @@ export {
 
 export {
       useCustomerDirectory,
+      useCustomerDirectorySearch,
       useCustomerProfit,
       useCustomerCategorySummary,
       useCustomersAtRisk,
