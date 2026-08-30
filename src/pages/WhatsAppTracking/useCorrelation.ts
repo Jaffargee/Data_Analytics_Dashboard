@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useWhatsappPosts, useItemsPicker, useAllSaleItemLines, useAllSaleDates } from '@/hooks/data';
+import { useWhatsappPosts, useItemsPicker, useAllSaleItemLines, useAllSaleDates, useWhatsappPostsCorelation } from '@/hooks/data';
 
 const WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 7-day before/after window
 
@@ -25,92 +25,38 @@ interface DatedEvent {
 }
 
 export function usePostCorrelation() {
-      const posts = useWhatsappPosts();
-      const items = useItemsPicker();
-      const lines = useAllSaleItemLines();
-      const dates = useAllSaleDates();
 
-      const loading = posts.isLoading || items.isLoading || lines.isLoading || dates.isLoading;
+      const correlations_data = useWhatsappPostsCorelation();
 
-      const correlations: PostCorrelation[] = useMemo(() => {
-            const dateBySale = new Map<number, string>();
-            for (const row of dates.data?.data ?? []) {
-                  dateBySale.set(row.pos_sale_id, row.invoice_datetime);
-            }
-
-            const itemIdByUuid = new Map<string, number>();
-            for (const item of items.data?.data ?? []) {
-                  itemIdByUuid.set(item.id, item.pos_item_id);
-            }
-
-            const eventsByItem = new Map<number, DatedEvent[]>();
-            for (const line of lines.data?.data ?? []) {
-                  const iso = dateBySale.get(line.pos_sale_id);
-                  if (!iso) continue;
-                  const date = new Date(iso).getTime();
-                  const existing = eventsByItem.get(line.pos_item_id) ?? [];
-                  existing.push({ date, qty: Number(line.quantity), total: Number(line.total) });
-                  eventsByItem.set(line.pos_item_id, existing);
-            }
-
-            const now = Date.now();
-
-            return (posts.data?.data ?? []).map((post): PostCorrelation => {
-                  const posItemId = itemIdByUuid.get(post.items_id) ?? null;
-                  const postedAt = new Date(post.posted_at).getTime();
-                  const daysSincePosted = Math.floor((now - postedAt) / (24 * 60 * 60 * 1000));
-
-                  const events = posItemId !== null ? eventsByItem.get(posItemId) ?? [] : [];
-
-                  const before = events.filter((e) => e.date >= postedAt - WINDOW_MS && e.date < postedAt);
-                  const after = events.filter((e) => e.date >= postedAt && e.date <= postedAt + WINDOW_MS);
-
-                  const unitsBefore = before.reduce((sum, e) => sum + e.qty, 0);
-                  const unitsAfter = after.reduce((sum, e) => sum + e.qty, 0);
-                  const revenueAfter = after.reduce((sum, e) => sum + e.total, 0);
-
-                  const liftPct = unitsBefore > 0 ? ((unitsAfter - unitsBefore) / unitsBefore) * 100 : null;
-
-                  const afterPostSorted = events
-                        .filter((e) => e.date >= postedAt)
-                        .sort((a, b) => a.date - b.date);
-                  const firstSale = afterPostSorted[0];
-                  const hoursToFirstSale = firstSale ? (firstSale.date - postedAt) / (60 * 60 * 1000) : null;
-
-                  return {
-                        id: post.id,
-                        item_name: post.item_name,
-                        media_type: post.media_type,
-                        posted_at: post.posted_at,
-                        pos_item_id: posItemId,
-                        days_since_posted: daysSincePosted,
-                        units_before_7d: unitsBefore,
-                        units_after_7d: unitsAfter,
-                        revenue_after_7d: revenueAfter,
-                        lift_pct: liftPct,
-                        first_sale_after: firstSale ? new Date(firstSale.date).toISOString() : null,
-                        hours_to_first_sale: hoursToFirstSale,
-                  };
-            });
-      }, [posts.data, items.data, lines.data, dates.data]);
-
+      const loading = correlations_data.isLoading;
+      const correlations = correlations_data.data?.data ?? []
+      
       const summary = useMemo(() => {
-            const withSale = correlations.filter((c) => c.first_sale_after !== null);
-            const withLift = correlations.filter((c) => c.lift_pct !== null);
-            const avgHoursToSale =
+            const withSale = correlations.filter((c) => c.first_sale_at !== null && c.sales_count > 0);
+
+            const totalPosts = correlations.length;
+            const postsWithSale = withSale.length;
+            const conversionRate = totalPosts > 0 ? (postsWithSale / totalPosts) * 100 : 0;
+
+            const avgDaysToFirstSale =
                   withSale.length > 0
-                        ? withSale.reduce((sum, c) => sum + (c.hours_to_first_sale ?? 0), 0) / withSale.length
+                        ? withSale.reduce((sum, c) => sum + (c.days_to_first_sale ?? 0), 0) / withSale.length
                         : null;
-            const avgLift =
-                  withLift.length > 0
-                        ? withLift.reduce((sum, c) => sum + (c.lift_pct ?? 0), 0) / withLift.length
-                        : null;
+
+            const totalUnitsSold = correlations.reduce((sum, c) => sum + (c.units_sold ?? 0), 0);
+            const totalRevenue = correlations.reduce((sum, c) => sum + (c.sales_revenue ?? 0), 0);
+            const totalGrossProfit = correlations.reduce((sum, c) => sum + (c.gross_profit ?? 0), 0);
+            const totalSalesCount = correlations.reduce((sum, c) => sum + (c.sales_count ?? 0), 0);
+
             return {
-                  totalPosts: correlations.length,
-                  postsWithSale: withSale.length,
-                  conversionRate: correlations.length > 0 ? (withSale.length / correlations.length) * 100 : 0,
-                  avgHoursToSale,
-                  avgLift,
+                  totalPosts,
+                  postsWithSale,
+                  conversionRate,
+                  avgDaysToFirstSale,
+                  totalUnitsSold,
+                  totalRevenue,
+                  totalGrossProfit,
+                  totalSalesCount,
             };
       }, [correlations]);
 

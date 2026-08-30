@@ -39,6 +39,7 @@ export type {
       ProductPerformanceRow,
       RevenueSummaryRow,
       TimeOfDayRow,
+      WhatsappPostCorelationRow,
 } from "./types";
 
 export {
@@ -76,6 +77,7 @@ export {
 export {
       useWhatsappPosts,
       useItemsPicker,
+      useWhatsappPostsCorelation,
 } from "./use-whatsapp";
 
 export {

@@ -433,6 +433,23 @@ export interface WhatsappPostRow {
       posted_at: string;
       created_at: string;
 }
+export interface WhatsappPostCorelationRow {
+      tracking_id: string;
+      items_id: string;
+      item_name: string;
+      media_type: string;
+      time: string | null;
+      posted_at: string;
+      next_posted_at: string;
+      first_sale_at: string;
+      last_sale_at: string;
+      sales_count: number;
+      units_sold: number;
+      sales_revenue: number;
+      gross_profit: number;
+      days_to_last_sale: number;
+      days_to_first_sale: number;
+}
 
 export interface ItemPickerRow {
       id: string;
