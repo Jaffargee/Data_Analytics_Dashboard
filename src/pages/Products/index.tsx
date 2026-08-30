@@ -10,9 +10,7 @@ import { CategoryPerformance } from './components/CategoryPerformance';
 import { ProductsTable } from './components/ProductsTable';
 import { SeasonalityTab } from './components/SeasonalityTab';
 import TableSearch from "../../components/ui/TableSearch";
-
-const TAB_TRIGGER_CLASS =
-      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 
 export default function ProductsPage() {
       const { items, cats, allItems, totals, top10Chart, catDonut } = useProductsData();
@@ -57,8 +55,8 @@ export default function ProductsPage() {
                         </div>
 
                         <Tabs.Root defaultValue="overview">
-                              <div className="px-4 mb-2">
-                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
+                              <div className={`px-4 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
+                                    <Tabs.List className={TAB_LIST_CLASS}>
                                           <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
                                           <Tabs.Trigger value="seasonality" className={TAB_TRIGGER_CLASS}>Seasonality</Tabs.Trigger>
                                     </Tabs.List>

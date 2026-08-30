@@ -361,6 +361,18 @@ export interface SalePayment {
       amount: number;
 }
 
+export interface SaleItemLine {
+      pos_item_id: number;
+      quantity: number;
+      total: number;
+      pos_sale_id: number;
+}
+
+export interface SaleHeaderDate {
+      pos_sale_id: number;
+      invoice_datetime: string;
+}
+
 // ── Deliveries ────────────────────────────────────
 export type DeliveryStatus = 'PENDING' | 'DISPATCHED_TO_PARK' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED';
 export type TransitMode = 'MARKET_RUN' | 'PARK_TRANSIT';

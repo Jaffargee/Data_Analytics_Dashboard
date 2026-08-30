@@ -7,6 +7,7 @@ import { CardHeader, CardTitle, EmptyState, StatCard } from '@/components/ui/pri
 import { useRevenueDaily, useRevenueMonthly, useRevenueRange, usePayments, useRevenueSummary } from '@/hooks/data';
 import { fmt, fmtCurrency, fmtMonthLabel, nDaysAgo, today } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 
 const chartBase = {
       backgroundColor: 'transparent',
@@ -94,6 +95,7 @@ export default function RevenuePage() {
             return slices;
       }, [payments.data]);
       const paymentOption = useMemo(() => buildPaymentOption(paymentBreakdown), [paymentBreakdown]);
+      const paymentTotal = useMemo(() => paymentBreakdown.reduce((sum, slice) => sum + slice.value, 0), [paymentBreakdown]);
 
       const returnsSummary = useMemo(() => {
             const rows = revSummary.data?.data ?? [];
@@ -117,7 +119,16 @@ export default function RevenuePage() {
                         {payments.isLoading ? (
                               <div className="h-72 animate-pulse rounded bg-bg-hover" />
                         ) : paymentBreakdown.length ? (
-                              <EChart option={paymentOption} height="240px" />
+                              <div className="relative" style={{ width: '100%', height: 240 }}>
+                                    <EChart option={paymentOption} height="240px" />
+                                    <div
+                                          className="absolute pointer-events-none flex flex-col items-center justify-center"
+                                          style={{ left: '38%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                                    >
+                                          <p className="text-[10px] text-ink-muted">Total</p>
+                                          <p className="text-xs font-mono text-accent-gold font-medium">{fmtCurrency(paymentTotal)}</p>
+                                    </div>
+                              </div>
                         ) : (
                               <EmptyState message="No payment records found." />
                         )}
@@ -147,9 +158,11 @@ export default function RevenuePage() {
                         )}
                   </section>
                   <Tabs.Root defaultValue="monthly">
-                        <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 flex-wrap">
-                              {['monthly', 'daily', 'custom'].map((value) => <Tabs.Trigger key={value} value={value} className="rounded-md px-4 py-1.5 text-xs capitalize text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold">{value}</Tabs.Trigger>)}
+                        <div className={STICKY_TAB_WRAPPER_CLASS}>
+                        <Tabs.List className={TAB_LIST_CLASS}>
+                              {['monthly', 'daily', 'custom'].map((value) => <Tabs.Trigger key={value} value={value} className={TAB_TRIGGER_CLASS + ' capitalize'}>{value}</Tabs.Trigger>)}
                         </Tabs.List>
+                        </div>
                         <RevenuePanel value="monthly" title="Monthly Revenue Trend" rows={monthlyRows} option={makeOption(monthlyRows, 'bar', '#f5c842')} loading={monthly.isLoading} />
                         <RevenuePanel value="daily" title="Daily Revenue — last 30 days" rows={dailyRows} option={makeOption(dailyRows, 'line', '#2dd4bf')} loading={daily.isLoading} />
                         <Tabs.Content value="custom" className="mt-5 space-y-4">

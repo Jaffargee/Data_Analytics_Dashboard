@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { TopBar } from '@/components/ui';
 import { CardHeader, CardTitle, Stats, EmptyState } from '@/components/ui/controls/primitives';
 import { fmtCurrency, fmt, fmtMonthLabel, today } from '@/lib/utils';
@@ -141,6 +142,8 @@ export default function Overview () {
             ]
       };
 
+      const catTotal = useMemo(() => catData.reduce((sum: number, d: { value: number }) => sum + Number(d.value), 0), [catData]);
+
       const option3 = {
             title: {
                   text: "Category Revenue",
@@ -157,12 +160,15 @@ export default function Overview () {
             },
             legend: {
                   orient: "vertical",
-                  left: "left"
+                  right: 0,
+                  top: "middle",
+                  textStyle: { fontSize: 11 },
             },
             series: [
                   {
                         type: "pie",
-                        radius: ["40%", "70%"], // donut effect
+                        radius: ["45%", "70%"], // donut effect
+                        center: ["38%", "50%"],
                         avoidLabelOverlap: false,
                         label: {
                               show: false,
@@ -308,7 +314,16 @@ export default function Overview () {
                                     {cats.isLoading ? (
                                           <div className="h-48 bg-bg-hover animate-pulse rounded-lg" />
                                     ) : catData.length ? (
-                                          <ReactECharts option={option3} />
+                                          <div className="relative" style={{ width: '100%', height: 320 }}>
+                                                <ReactECharts option={option3} style={{ width: '100%', height: '100%' }} />
+                                                <div
+                                                      className="absolute pointer-events-none flex flex-col items-center justify-center"
+                                                      style={{ left: '38%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                                                >
+                                                      <p className="text-[10px] text-ink-muted">Total</p>
+                                                      <p className="text-xs font-mono text-accent-gold font-medium">{fmtCurrency(catTotal)}</p>
+                                                </div>
+                                          </div>
                                     ) : (
                                           <EmptyState />
                                     )}

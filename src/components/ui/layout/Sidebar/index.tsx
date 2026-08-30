@@ -112,7 +112,7 @@ function SidebarContent({ onClose }: SidebarContentProps) {
 
 export function Sidebar() {
       return (
-            <aside className="hidden lg:flex w-56 flex-shrink-0 h-screen sticky top-0">
+            <aside className="hidden lg:flex w-56 flex-shrink-0 h-screen sticky top-0 z-30">
                   <SidebarContent />
             </aside>
       );

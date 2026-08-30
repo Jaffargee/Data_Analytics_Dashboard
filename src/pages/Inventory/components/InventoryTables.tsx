@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/primitives';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePaginatedRows } from '@/hooks/usePagination';
 import { fmtCurrency, fmt, fmtDate } from '@/lib/utils';
 import type {
       DeadStockReportRow,
@@ -8,6 +9,8 @@ import type {
       LowStockItem,
       SupplierStockValue,
 } from '@/hooks/data';
+
+const PAGE_SIZE = 20;
 
 function LastSold({ isoDate }: { isoDate: string | null }) {
       if (!isoDate) {
@@ -28,6 +31,7 @@ interface DeadStockTableProps {
 
 export function DeadStockTable({ data, loading }: DeadStockTableProps) {
       const navigate = useNavigate();
+      const { rows, pager, totalCount, totalPages } = usePaginatedRows(data, PAGE_SIZE);
 
       const columns: ColumnDef<DeadStockReportRow>[] = [
             {
@@ -105,7 +109,7 @@ export function DeadStockTable({ data, loading }: DeadStockTableProps) {
                         <TableSkeleton />
                   ) : (
                         <DataTable
-                              data={data}
+                              data={rows}
                               columns={columns}
                               getRowId={(row) => row.pos_item_id}
                               ariaLabel="Dead stock"
@@ -113,6 +117,13 @@ export function DeadStockTable({ data, loading }: DeadStockTableProps) {
                               defaultSortKey="dead_stock_cost_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/products/${row.pos_item_id}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                              }}
                         />
                   )}
             </section>
@@ -127,6 +138,7 @@ interface SlowStockTableProps {
 
 export function SlowStockTable({ data, loading }: SlowStockTableProps) {
       const navigate = useNavigate();
+      const { rows, pager, totalCount, totalPages } = usePaginatedRows(data, PAGE_SIZE);
 
       const columns: ColumnDef<SlowMovingStockRow>[] = [
             {
@@ -183,7 +195,7 @@ export function SlowStockTable({ data, loading }: SlowStockTableProps) {
                         <TableSkeleton />
                   ) : (
                         <DataTable
-                              data={data}
+                              data={rows}
                               columns={columns}
                               getRowId={(row) => row.pos_item_id}
                               ariaLabel="Slow-moving stock"
@@ -191,6 +203,13 @@ export function SlowStockTable({ data, loading }: SlowStockTableProps) {
                               defaultSortKey="slow_stock_cost_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/products/${row.pos_item_id}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                              }}
                         />
                   )}
             </section>
@@ -205,6 +224,7 @@ interface ReorderAlertsTableProps {
 
 export function ReorderAlertsTable({ data, loading }: ReorderAlertsTableProps) {
       const navigate = useNavigate();
+      const { rows, pager, totalCount, totalPages } = usePaginatedRows(data, PAGE_SIZE);
 
       const columns: ColumnDef<LowStockItem>[] = [
             {
@@ -258,7 +278,7 @@ export function ReorderAlertsTable({ data, loading }: ReorderAlertsTableProps) {
                         <TableSkeleton />
                   ) : (
                         <DataTable
-                              data={data}
+                              data={rows}
                               columns={columns}
                               getRowId={(row) => row.pos_item_id}
                               ariaLabel="Reorder alerts"
@@ -266,6 +286,13 @@ export function ReorderAlertsTable({ data, loading }: ReorderAlertsTableProps) {
                               defaultSortKey="stock_qty"
                               defaultSortDir="asc"
                               onRowClick={(row) => navigate(`/products/${row.pos_item_id}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                              }}
                         />
                   )}
             </section>
@@ -279,6 +306,7 @@ interface SupplierExposureTableProps {
 }
 
 export function SupplierExposureTable({ data, loading }: SupplierExposureTableProps) {
+      const { rows, pager, totalCount, totalPages } = usePaginatedRows(data, PAGE_SIZE);
       const columns: ColumnDef<SupplierStockValue>[] = [
             {
                   key: 'supplier_name',
@@ -335,13 +363,20 @@ export function SupplierExposureTable({ data, loading }: SupplierExposureTablePr
                         <TableSkeleton />
                   ) : (
                         <DataTable
-                              data={data}
+                              data={rows}
                               columns={columns}
                               getRowId={(row) => row.pos_supplier_id}
                               ariaLabel="Supplier exposure"
                               emptyMessage="No supplier stock data available."
                               defaultSortKey="outstanding_balance"
                               defaultSortDir="desc"
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                              }}
                         />
                   )}
             </section>

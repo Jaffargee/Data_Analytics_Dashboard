@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CardHeader, CardTitle, Badge } from '@/components/ui/primitives';
 import { fmtCurrency, fmt, fmtPercent } from '@/lib/utils';
 import { Edit3, User } from 'lucide-react';
 import { useFilteredProducts } from '../hooks';
-import { MAX_TABLE_ROWS } from '../constants';
+import { usePagination } from '@/hooks/usePagination';
 import SearchInput from '@/components/ui/SearchInput';
 import { Card, ProgressBar } from '@fluentui/react-components';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
 import Button from "../../../components/ui/Button";
+
+const PAGE_SIZE = 20;
 
 interface ProductRow {
       pos_item_id: string | number;
@@ -29,10 +31,16 @@ interface ProductsTableProps {
 export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
       const navigate = useNavigate();
       const [search, setSearch] = useState('');
+      const pager = usePagination(PAGE_SIZE);
 
       // Sorting now lives in DataTable's column headers, so the hook only needs to filter.
       const filtered = useFilteredProducts(allItems, search, 'total_revenue', 'desc');
-      const rows = filtered.slice(0, MAX_TABLE_ROWS) as ProductRow[];
+
+      useEffect(() => { pager.reset(); }, [search]);
+
+      const totalCount = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+      const rows = filtered.slice(pager.offset, pager.offset + PAGE_SIZE) as ProductRow[];
 
       const columns: ColumnDef<ProductRow>[] = [
             {
@@ -160,6 +168,13 @@ export function ProductsTable({ allItems, maxRevenue }: ProductsTableProps) {
                   actionsLabel=""
                   actionsWidth="0.9fr"
                   onRowClick={(row) => navigate(`/products/${row.pos_item_id}`)}
+                  pagination={{
+                        page: pager.page,
+                        totalPages,
+                        totalCount,
+                        pageSize: PAGE_SIZE,
+                        onPageChange: pager.setPage,
+                  }}
             />
       );
 }

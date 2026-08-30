@@ -8,10 +8,8 @@ import { ComparisonTab } from './ComparisonTab';
 import { TimingTab } from './TimingTab';
 import { ProductsTab } from './ProductsTab';
 import { CustomersTab } from './CustomersTab';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 import type { ReportType } from '../constants';
-
-const TAB_TRIGGER_CLASS =
-      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
 
 export function ReportGenerator() {
       const [reportDate, setReportDate] = useState<string>(new Date().toJSON().split('T')[0]);
@@ -38,7 +36,7 @@ export function ReportGenerator() {
 
                   <main className="flex-1 p-6 space-y-6">
                         <Tabs.Root defaultValue="summary">
-                              <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 mb-5 flex-wrap">
+                              <Tabs.List className={TAB_LIST_CLASS + ' mb-5'}>
                                     <Tabs.Trigger value="summary" className={TAB_TRIGGER_CLASS}>Summary Reports</Tabs.Trigger>
                                     <Tabs.Trigger value="comparison" className={TAB_TRIGGER_CLASS}>Period Comparison</Tabs.Trigger>
                                     <Tabs.Trigger value="timing" className={TAB_TRIGGER_CLASS}>Timing</Tabs.Trigger>

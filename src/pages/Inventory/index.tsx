@@ -12,9 +12,7 @@ import {
       ReorderAlertsTable,
       SupplierExposureTable,
 } from './components/InventoryTables';
-
-const TAB_TRIGGER_CLASS =
-      'rounded-md px-4 py-1.5 text-xs text-ink-muted data-[state=active]:bg-accent-gold/15 data-[state=active]:text-accent-gold';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 
 export default function InventoryPage() {
       const {
@@ -90,15 +88,17 @@ export default function InventoryPage() {
                               />
                         </div>
 
-                        <div className="px-4">
+                        <div className="px-4 sm:px-6">
                               <Tabs.Root defaultValue="dead">
-                                    <Tabs.List className="flex w-fit gap-1 rounded-lg border border-bg-border bg-bg-panel p-1 mb-4 flex-wrap">
+                                    <div className={STICKY_TAB_WRAPPER_CLASS}>
+                                    <Tabs.List className={TAB_LIST_CLASS}>
                                           {tabs.map((tab) => (
                                                 <Tabs.Trigger key={tab.value} value={tab.value} className={TAB_TRIGGER_CLASS}>
                                                       {tab.label} <span className="text-ink-faint">({fmt(tab.count)})</span>
                                                 </Tabs.Trigger>
                                           ))}
                                     </Tabs.List>
+                                    </div>
 
                                     <Tabs.Content value="dead">
                                           <DeadStockTable data={deadRows} loading={deadStock.isLoading} />

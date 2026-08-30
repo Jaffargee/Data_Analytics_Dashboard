@@ -1,14 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { EChartsOption } from 'echarts';
 import EChart from '@/components/charts/EChart';
+import SearchInput from '@/components/ui/data/SearchInput';
 import { CardHeader, CardTitle, EmptyState, Badge } from '@/components/ui/primitives';
 import SimpleTable from '@/components/ui/data/SimpleTable';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePagination } from '@/hooks/usePagination';
 import { fmt, fmtCurrency, fmtDate } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants/colors';
 import {
       useCustomerDirectory,
+      useCustomerDirectorySearch,
       useCustomerProfit,
       useCustomerCategorySummary,
       useCustomersAtRisk,
@@ -20,6 +23,8 @@ import type {
       CustomerIntelligenceRow,
 } from '@/hooks/data';
 import type { BadgeVariant } from '@/components/ui/controls/primitives/types';
+
+const PAGE_SIZE = 20;
 
 const STATUS_BADGE: Record<string, BadgeVariant> = {
       DIAMOND: 'purple',
@@ -37,8 +42,22 @@ type DirectoryRow = CustomerDirectoryRow & { profit: number | null };
 
 export function DirectoryTab() {
       const navigate = useNavigate();
-      const directory = useCustomerDirectory();
+      const pager = usePagination(PAGE_SIZE);
+      const directory = useCustomerDirectory(pager.limit, pager.offset);
       const profit = useCustomerProfit();
+
+      const [search, setSearch] = useState('');
+      const localMatches = useMemo(() => {
+            if (!search.trim()) return null;
+            const q = search.trim().toLowerCase();
+            return (directory.data?.data ?? []).filter((row) => row.display_name.toLowerCase().includes(q));
+      }, [search, directory.data]);
+      const needsRemoteSearch = search.trim().length > 0 && (localMatches?.length ?? 0) === 0 && !directory.isLoading;
+      const remoteSearch = useCustomerDirectorySearch(search.trim(), needsRemoteSearch);
+
+      const searching = search.trim().length > 0;
+      const totalCount = searching ? (localMatches?.length ? localMatches.length : (remoteSearch.data?.count ?? 0)) : (directory.data?.count ?? 0);
+      const totalPages = searching ? 1 : Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const profitById = useMemo(() => {
             const map = new Map<number, number>();
@@ -48,12 +67,16 @@ export function DirectoryTab() {
             return map;
       }, [profit.data]);
 
+      const sourceRows = searching
+            ? (localMatches?.length ? localMatches : remoteSearch.data?.data ?? [])
+            : directory.data?.data ?? [];
+
       const rows: DirectoryRow[] = useMemo(() => {
-            return (directory.data?.data ?? []).map((row) => ({
+            return sourceRows.map((row) => ({
                   ...row,
                   profit: profitById.get(row.pos_customer_id) ?? null,
             }));
-      }, [directory.data, profitById]);
+      }, [sourceRows, profitById]);
 
       const columns: ColumnDef<DirectoryRow>[] = [
             {
@@ -130,7 +153,26 @@ export function DirectoryTab() {
 
       return (
             <div>
-                  <p className="px-6 text-xs text-ink-muted font-body mb-3">
+                  <div className="px-4 sm:px-6 mb-3">
+                        <SearchInput
+                              value={search}
+                              onChange={setSearch}
+                              placeholder="Search all customers by name…"
+                              className="max-w-sm"
+                        />
+                        {searching && (
+                              <p className="text-[11px] text-ink-faint font-body mt-1.5">
+                                    {localMatches?.length
+                                          ? `${localMatches.length} match${localMatches.length === 1 ? '' : 'es'} on this page`
+                                          : remoteSearch.isFetching
+                                          ? 'Nothing on this page — searching the full customer list…'
+                                          : (remoteSearch.data?.data?.length ?? 0) > 0
+                                          ? `Nothing on this page — found ${remoteSearch.data?.count ?? remoteSearch.data?.data?.length} match(es) elsewhere`
+                                          : 'No matches found.'}
+                              </p>
+                        )}
+                  </div>
+                  <p className="px-4 sm:px-6 text-xs text-ink-muted font-body mb-3">
                         Full contact + financial directory, with per-customer profit joined in
                   </p>
                   {directory.isLoading ? (
@@ -145,6 +187,18 @@ export function DirectoryTab() {
                               defaultSortKey="total_spent"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.display_name)}`)}
+                              pagination={
+                                    searching
+                                          ? undefined
+                                          : {
+                                                page: pager.page,
+                                                totalPages,
+                                                totalCount,
+                                                pageSize: PAGE_SIZE,
+                                                onPageChange: pager.setPage,
+                                                loading: directory.isFetching,
+                                          }
+                              }
                         />
                   )}
             </div>
@@ -224,8 +278,11 @@ export function SegmentsTab() {
 // ── At Risk (customers_at_risk) ────────────────────────────────────
 export function AtRiskTab() {
       const navigate = useNavigate();
-      const atRisk = useCustomersAtRisk();
+      const pager = usePagination(PAGE_SIZE);
+      const atRisk = useCustomersAtRisk(pager.limit, pager.offset);
       const rows = atRisk.data?.data ?? [];
+      const totalCount = atRisk.data?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const columns: ColumnDef<CustomerAtRiskRow>[] = [
             {
@@ -288,6 +345,14 @@ export function AtRiskTab() {
                               defaultSortKey="lifetime_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.display_name)}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                                    loading: atRisk.isFetching,
+                              }}
                         />
                   )}
             </div>
@@ -297,8 +362,11 @@ export function AtRiskTab() {
 // ── Purchase Behavior (v_customer_intelligence) ────────────────────────────────────
 export function BehaviorTab() {
       const navigate = useNavigate();
-      const intelligence = useCustomerIntelligence();
+      const pager = usePagination(PAGE_SIZE);
+      const intelligence = useCustomerIntelligence(pager.limit, pager.offset);
       const rows = intelligence.data?.data ?? [];
+      const totalCount = intelligence.data?.count ?? 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
       const columns: ColumnDef<CustomerIntelligenceRow>[] = [
             {
@@ -369,6 +437,14 @@ export function BehaviorTab() {
                               defaultSortKey="lifetime_value"
                               defaultSortDir="desc"
                               onRowClick={(row) => navigate(`/customers/customer/${row.pos_customer_id}?ctm_name=${encodeURIComponent(row.customer_name)}`)}
+                              pagination={{
+                                    page: pager.page,
+                                    totalPages,
+                                    totalCount,
+                                    pageSize: PAGE_SIZE,
+                                    onPageChange: pager.setPage,
+                                    loading: intelligence.isFetching,
+                              }}
                         />
                   )}
             </div>

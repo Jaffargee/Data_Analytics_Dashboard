@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { TopBar } from '@/components/ui';
 import { Stats, Badge, CardHeader, CardTitle, EmptyState } from '@/components/ui/primitives';
 import DataTable, { ColumnDef } from '@/components/ui/DataTable';
+import { usePaginatedRows } from '@/hooks/usePagination';
 import EChart from '@/components/charts/EChart';
 import type { EChartsOption } from 'echarts';
 import { useDeliveries, useDeliveryTrips } from '@/hooks/data';
@@ -38,6 +39,8 @@ export default function DeliveriesPage() {
 
       const rows = deliveries.data?.data ?? [];
       const tripRows = trips.data?.data ?? [];
+      const deliveriesPage = usePaginatedRows(rows, 20);
+      const tripsPage = usePaginatedRows(tripRows, 20);
 
       const totals = useMemo(() => {
             const byStatus = new Map<DeliveryStatus, number>();
@@ -265,13 +268,20 @@ export default function DeliveriesPage() {
                                     <div className="h-40 animate-pulse rounded-lg bg-bg-hover" />
                               ) : (
                                     <DataTable
-                                          data={rows}
+                                          data={deliveriesPage.rows}
                                           columns={deliveryColumns}
                                           getRowId={(row) => row.id}
                                           ariaLabel="Deliveries"
                                           emptyMessage="No deliveries recorded yet."
                                           defaultSortKey="created_at"
                                           defaultSortDir="desc"
+                                          pagination={{
+                                                page: deliveriesPage.pager.page,
+                                                totalPages: deliveriesPage.totalPages,
+                                                totalCount: deliveriesPage.totalCount,
+                                                pageSize: 20,
+                                                onPageChange: deliveriesPage.pager.setPage,
+                                          }}
                                     />
                               )}
                         </div>
@@ -282,13 +292,20 @@ export default function DeliveriesPage() {
                                     <div className="h-32 animate-pulse rounded-lg bg-bg-hover" />
                               ) : (
                                     <DataTable
-                                          data={tripRows}
+                                          data={tripsPage.rows}
                                           columns={tripColumns}
                                           getRowId={(row) => row.id}
                                           ariaLabel="Delivery trips"
                                           emptyMessage="No park trips recorded yet."
                                           defaultSortKey="loaded_at"
                                           defaultSortDir="desc"
+                                          pagination={{
+                                                page: tripsPage.pager.page,
+                                                totalPages: tripsPage.totalPages,
+                                                totalCount: tripsPage.totalCount,
+                                                pageSize: 20,
+                                                onPageChange: tripsPage.pager.setPage,
+                                          }}
                                     />
                               )}
                         </div>

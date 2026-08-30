@@ -16,6 +16,8 @@ export type {
       SaleDetail,
       SaleItemDetail,
       SalePayment,
+      SaleItemLine,
+      SaleHeaderDate,
       DeliveryRow,
       DeliveryTripRow,
       DeliveryStatus,
@@ -62,6 +64,8 @@ export {
       useSaleDetail,
       useSaleItemsDetail,
       useSalePayments,
+      useAllSaleItemLines,
+      useAllSaleDates,
 } from "./use-sales";
 
 export {
@@ -76,6 +80,7 @@ export {
 
 export {
       useCustomerDirectory,
+      useCustomerDirectorySearch,
       useCustomerProfit,
       useCustomerCategorySummary,
       useCustomersAtRisk,
