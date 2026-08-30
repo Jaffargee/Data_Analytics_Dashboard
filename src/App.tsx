@@ -35,7 +35,7 @@ export default function App() {
                   <FluentProvider theme={teamsDarkTheme}>
                         <div className="flex min-h-screen bg-bg-base">
                               <Sidebar />
-                              <div className="flex-1 flex flex-col min-w-0">
+                              <div className="flex-1 flex flex-col min-w-0 lg:ml-56">
                                     <Routes>
                                           <Route path="/" element={<Overview />} />
                                           <Route path="/analytics" element={<Analytics />} />

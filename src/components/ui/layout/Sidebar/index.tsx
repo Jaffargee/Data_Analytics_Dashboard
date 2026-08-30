@@ -112,7 +112,7 @@ function SidebarContent({ onClose }: SidebarContentProps) {
 
 export function Sidebar() {
       return (
-            <aside className="hidden lg:flex w-56 flex-shrink-0 h-screen sticky top-0 z-30">
+            <aside className="hidden lg:flex w-56 flex-shrink-0 h-screen fixed top-0">
                   <SidebarContent />
             </aside>
       );
@@ -130,8 +130,8 @@ export function MobileSideBar() {
                         </button>
                   </Dialog.Trigger>
                   <Dialog.Portal>
-                        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                        <Dialog.Content className="fixed inset-y-0 left-0 z-50 w-[300px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-300">
+                        <Dialog.Overlay className="fixed inset-0  bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+                        <Dialog.Content className="fixed inset-y-0 left-0 z-[9999] w-[300px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-300">
                               <SidebarContent />
                               <Dialog.Close className="absolute top-4 right-4 p-1 rounded-lg bg-bg-panel border border-bg-border hover:bg-bg-hover transition-colors">
                                     <X size={16} className="text-ink-primary" />
