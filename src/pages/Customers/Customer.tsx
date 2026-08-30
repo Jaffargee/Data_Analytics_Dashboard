@@ -420,7 +420,7 @@ export default function Customer() {
                                           </Card>
                                     </div>
 
-                                    <div className="px-4 sm:px-6">
+                                    <div className="px-3 sm:px-6">
                                           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                                           <TabList
                                                 selectedValue={selectedTab}

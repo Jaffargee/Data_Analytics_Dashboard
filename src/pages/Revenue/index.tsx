@@ -107,7 +107,7 @@ export default function RevenuePage() {
 
       return <div className="flex-1 flex flex-col min-h-screen">
             <TopBar title="Revenue" subtitle="Revenue performance across every sales period" />
-            <main className="flex-1 p-6 space-y-6">
+            <main className="flex-1 p-3 sm:p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                         <StatCard label="All-Time Revenue" value={fmtCurrency(totalRevenue)} accent="gold" delay={0} />
                         <StatCard label="Total Transactions" value={fmt(totalSales)} accent="teal" delay={100} />

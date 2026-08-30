@@ -111,7 +111,7 @@ export default function Customer() {
                         {/* <Charts customers={all} /> */}
 
                         <Tabs.Root defaultValue="overview">
-                              <div className={`px-4 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
+                              <div className={`px-3 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
                                     <Tabs.List className={TAB_LIST_CLASS}>
                                           <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
                                           <Tabs.Trigger value="directory" className={TAB_TRIGGER_CLASS}>Directory</Tabs.Trigger>
@@ -141,7 +141,7 @@ export default function Customer() {
                                     <DirectoryTab />
                               </Tabs.Content>
 
-                              <Tabs.Content value="segments" className="px-6">
+                              <Tabs.Content value="segments" className="px-3 sm:px-6">
                                     <SegmentsTab />
                               </Tabs.Content>
 

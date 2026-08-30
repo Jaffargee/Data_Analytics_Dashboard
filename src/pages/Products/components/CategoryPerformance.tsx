@@ -131,7 +131,7 @@ export function CategoryPerformance({ data }: CategoryPerfProps) {
       }, [sorted]);
 
       return (
-            <div className="px-4">
+            <div className="px-3 sm:px-6">
                   <Card appearance="outline">
                         <CardHeader>
                               <CardTitle>Category Performance</CardTitle>

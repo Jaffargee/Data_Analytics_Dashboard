@@ -208,7 +208,7 @@ function DataTable<T>({
 
       if (!rows.length) {
             return (
-                  <div className={`px-4 sm:px-6 ${className}`}>
+                  <div className={`px-3 sm:px-6 ${className}`}>
                         <EmptyState message={emptyMessage} />
                         {pagination && pagination.totalCount > 0 && (
                               <Pagination {...pagination} />
@@ -221,7 +221,7 @@ function DataTable<T>({
       const cardCols = restCols.filter((c) => !c.hideOnCard);
 
       return (
-            <div className={`px-4 sm:px-6 ${className}`}>
+            <div className={`px-3 sm:px-6 ${className}`}>
                   {/* ── Mobile / tablet: stacked cards (below lg) ── */}
                   <div className="lg:hidden space-y-2">
                         {sortableColumns.length > 0 && (
