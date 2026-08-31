@@ -1,8 +1,16 @@
 import { useTableQuery } from './use-supabase';
-import type { WhatsappPostRow, ItemPickerRow } from './types';
+import type { WhatsappPostRow, ItemPickerRow, WhatsappPostCorelationRow } from './types';
 
 export function useWhatsappPosts(limit = 500) {
       return useTableQuery<WhatsappPostRow>('whatsApp_tracking', {
+            limit,
+            order: { column: 'posted_at', ascending: false },
+      });
+}
+
+
+export function useWhatsappPostsCorelation(limit = 500) {
+      return useTableQuery<WhatsappPostCorelationRow>('whatsapp_tracking_correlation', {
             limit,
             order: { column: 'posted_at', ascending: false },
       });
