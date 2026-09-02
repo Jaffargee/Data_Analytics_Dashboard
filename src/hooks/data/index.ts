@@ -25,6 +25,8 @@ export type {
       TripStatus,
       WhatsappPostRow,
       ItemPickerRow,
+      PosItemRow,
+      PaymentAccountRow,
       PeriodComparisonRow,
       PeriodDowRow,
       PeriodTopProductRow,
@@ -79,6 +81,11 @@ export {
       useItemsPicker,
       useWhatsappPostsCorelation,
 } from "./use-whatsapp";
+
+export {
+      usePosItems,
+      usePaymentAccounts,
+} from "./use-pos";
 
 export {
       useCustomerDirectory,

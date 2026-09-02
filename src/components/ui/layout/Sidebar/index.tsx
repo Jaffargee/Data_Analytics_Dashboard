@@ -10,6 +10,7 @@ import {
       TrendingUp,
       Truck,
       MessageCircle,
+      ShoppingCart,
       Menu,
       X,
 } from 'lucide-react';
@@ -18,6 +19,12 @@ import { Avatar } from "@fluentui/react-components";
 import NavItem from './NavItem';
 
 const nav = [
+      {
+            group: 'Sales',
+            items: [
+                  { label: 'New Sale', icon: ShoppingCart, path: '/pos' },
+            ],
+      },
       {
             group: 'Analytics',
             items: [
