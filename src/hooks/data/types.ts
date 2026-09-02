@@ -458,6 +458,28 @@ export interface ItemPickerRow {
       category: string | null;
 }
 
+// ── POS (point of sale) ────────────────────────────────────
+export interface PosItemRow {
+      pos_item_id: number;
+      item_name: string;
+      category: string | null;
+      selling_price: number;
+      promo_price: number | null;
+      promo_start_date: string | null;
+      promo_end_date: string | null;
+      quantity: number;
+      inactive: boolean;
+      stock_lifecycle_status: 'ACTIVE' | 'SLOW' | 'DEAD' | null;
+}
+
+export interface PaymentAccountRow {
+      id: string;
+      bank_name: string | null;
+      name: string;
+      account_no: string | null;
+      balance: number;
+}
+
 // ── Period comparison (fn_period_comparison) ────────────────────────────────────
 export interface PeriodComparisonRow {
       metric: string;

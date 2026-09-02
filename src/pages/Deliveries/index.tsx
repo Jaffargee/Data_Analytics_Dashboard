@@ -263,7 +263,7 @@ export default function DeliveriesPage() {
                               </section>
                         </div>
 
-                        <div className="px-4">
+                        <div className="px-3 sm:px-6">
                               {deliveries.isLoading ? (
                                     <div className="h-40 animate-pulse rounded-lg bg-bg-hover" />
                               ) : (
@@ -286,7 +286,7 @@ export default function DeliveriesPage() {
                               )}
                         </div>
 
-                        <div className="px-4">
+                        <div className="px-3 sm:px-6">
                               <p className="text-xs text-ink-muted font-body mb-3">Park Trips — vehicles loaded for inter-state transit</p>
                               {trips.isLoading ? (
                                     <div className="h-32 animate-pulse rounded-lg bg-bg-hover" />

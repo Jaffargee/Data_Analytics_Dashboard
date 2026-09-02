@@ -237,7 +237,8 @@ import {
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
-import { Tab, TabList, TabValue } from '@fluentui/react-components';
+import * as Tabs from '@radix-ui/react-tabs';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 import CustomerSales from './components/CustomerSales';
 import CustomerProductIntelligence from './components/CustomerProductIntelligence';
 import CustomerBehavior from './components/CustomerBehavior';
@@ -246,13 +247,6 @@ import useCustomerSalesData from './ctmSalesData';
 export default function Customer() {
       const { id: customer_id } = useParams();
       const { chartData, loading, ctm_name, report, navigate } = useCustomerSalesData();
-      const [selectedTab, setSelectedTab] = useState<TabValue>('sales');
-
-      const tabs: Record<string, React.ReactNode> = {
-            sales: <CustomerSales />,
-            products: <CustomerProductIntelligence customerId={customer_id} />,
-            behavior: <CustomerBehavior sales={report?.sales ?? []} />,
-      };
 
       return (
             <div className="flex-1 flex flex-col min-h-screen">
@@ -420,20 +414,26 @@ export default function Customer() {
                                           </Card>
                                     </div>
 
-                                    <div className="px-4 sm:px-6">
-                                          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                                          <TabList
-                                                selectedValue={selectedTab}
-                                                onTabSelect={(_, data) => setSelectedTab(data.value)}
-                                                style={{ marginBottom: '24px' }}
-                                          >
-                                                <Tab value="sales">Sales</Tab>
-                                                <Tab value="products">Product Intelligence</Tab>
-                                                <Tab value="behavior">Behavior</Tab>
-                                          </TabList>
+                                    <div className="px-3 sm:px-6">
+                                          <Tabs.Root defaultValue="sales">
+                                          <div className={STICKY_TAB_WRAPPER_CLASS}>
+                                          <Tabs.List className={TAB_LIST_CLASS}>
+                                                <Tabs.Trigger value="sales" className={TAB_TRIGGER_CLASS}>Sales</Tabs.Trigger>
+                                                <Tabs.Trigger value="products" className={TAB_TRIGGER_CLASS}>Product Intelligence</Tabs.Trigger>
+                                                <Tabs.Trigger value="behavior" className={TAB_TRIGGER_CLASS}>Behavior</Tabs.Trigger>
+                                          </Tabs.List>
                                           </div>
 
-                                          {tabs[selectedTab as string]}
+                                          <Tabs.Content value="sales" className="mt-6">
+                                                <CustomerSales />
+                                          </Tabs.Content>
+                                          <Tabs.Content value="products" className="mt-6">
+                                                <CustomerProductIntelligence customerId={customer_id} />
+                                          </Tabs.Content>
+                                          <Tabs.Content value="behavior" className="mt-6">
+                                                <CustomerBehavior sales={report?.sales ?? []} />
+                                          </Tabs.Content>
+                                          </Tabs.Root>
                                     </div>
                               </div>
                         )}

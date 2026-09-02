@@ -153,7 +153,7 @@ export function DirectoryTab() {
 
       return (
             <div>
-                  <div className="px-4 sm:px-6 mb-3">
+                  <div className="px-3 sm:px-6 mb-3">
                         <SearchInput
                               value={search}
                               onChange={setSearch}
@@ -172,7 +172,7 @@ export function DirectoryTab() {
                               </p>
                         )}
                   </div>
-                  <p className="px-4 sm:px-6 text-xs text-ink-muted font-body mb-3">
+                  <p className="px-3 sm:px-6 text-xs text-ink-muted font-body mb-3">
                         Full contact + financial directory, with per-customer profit joined in
                   </p>
                   {directory.isLoading ? (

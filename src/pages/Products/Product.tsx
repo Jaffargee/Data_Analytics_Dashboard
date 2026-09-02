@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tab, TabList } from '@fluentui/react-components';
+import * as Tabs from '@radix-ui/react-tabs';
 import { DollarSign, Package, Percent, Users } from 'lucide-react';
 import EChart from '@/components/charts/EChart';
 import { TopBar } from '@/components/ui/TopBar';
 import { Badge, CardHeader, CardTitle, EmptyState, StatCard } from '@/components/ui/primitives';
 import { fmt, fmtCurrency, fmtPercent } from '@/lib/utils';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 import useProductAnalytics from './hooks';
 import { buildSalesTrendOption, buildTopCustomersOption } from './components/ProductDetailCharts';
 import type { ProductDeepDive, ProductTopCustomer, SalesTrend, TrendGranularity } from './types';
@@ -15,7 +16,6 @@ const granularities: TrendGranularity[] = ['daily', 'weekly', 'biweekly', 'month
 export default function ProductPage() {
       const { product_id } = useParams<{ product_id: string }>();
       const itemId = Number(product_id);
-      const [tab, setTab] = useState('overview');
       const analytics = useProductAnalytics(Number.isFinite(itemId) ? itemId : 0);
       const product = analytics.product as ProductDeepDive | null;
       const trend = analytics.salesTrend as SalesTrend[];
@@ -32,16 +32,18 @@ export default function ProductPage() {
 
       return <div className="flex-1 flex flex-col min-h-screen">
             <TopBar title={product?.item_name ?? 'Product'} subtitle="Product intelligence and sales history" shouldNavigateBack />
-            <main className="flex-1 space-y-6 p-6">
+            <main className="flex-1 space-y-6 p-3 sm:p-6">
                   {analytics.error && <p className="rounded border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">Unable to load product analytics: {analytics.error.message}</p>}
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">{analytics.loading ? Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 animate-pulse rounded-lg bg-bg-hover" />) : stats.map((stat, index) => <StatCard key={stat.label} {...stat} delay={index * 100} />)}</div>
                   {product && <div className="flex flex-wrap gap-3 text-xs text-ink-muted"><Badge variant={product.trend_status.includes('DECLINING') ? 'red' : 'teal'}>{product.trend_status}</Badge><span>{product.item_category ?? 'Uncategorised'}</span><span>Margin {fmtPercent(product.margin_pct)}</span><span>Discount impact {fmtCurrency(product.discount_impact)}</span></div>}
-                  <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                  <TabList selectedValue={tab} onTabSelect={(_, data) => setTab(String(data.value))}><Tab value="overview">Overview</Tab><Tab value="trend">Sales trend</Tab><Tab value="customers">Top customers</Tab></TabList>
-                  </div>
-                  {tab === 'overview' && product && <Overview product={product} />}
-                  {tab === 'trend' && <section className="rounded-lg border border-bg-border bg-bg-panel p-5 space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><CardHeader className="mb-0"><CardTitle>Revenue and units sold</CardTitle></CardHeader><div className="flex gap-2">{granularities.map((value) => <button key={value} type="button" onClick={() => analytics.setGranularity(value)} className={`rounded px-3 py-1.5 text-xs capitalize ${analytics.granularity === value ? 'bg-accent-gold/20 text-accent-gold' : 'text-ink-muted hover:bg-bg-hover'}`}>{value === 'biweekly' ? '2 weeks' : value}</button>)}</div></div>{trend.length ? <EChart option={buildSalesTrendOption(trend)} loading={analytics.trendLoading} height="340px" /> : <EmptyState message="No sales have been recorded for this product." />}</section>}
-                  {tab === 'customers' && <section className="rounded-lg border border-bg-border bg-bg-panel p-5"><CardHeader><CardTitle>Top customers</CardTitle></CardHeader>{customers.length ? <EChart option={buildTopCustomersOption(customers)} height="340px" /> : <EmptyState message="No customer purchases are attached to this product." />}</section>}
+                  <Tabs.Root defaultValue="overview">
+                        <div className={STICKY_TAB_WRAPPER_CLASS}>
+                        <Tabs.List className={TAB_LIST_CLASS}><Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger><Tabs.Trigger value="trend" className={TAB_TRIGGER_CLASS}>Sales trend</Tabs.Trigger><Tabs.Trigger value="customers" className={TAB_TRIGGER_CLASS}>Top customers</Tabs.Trigger></Tabs.List>
+                        </div>
+                        <Tabs.Content value="overview" className="mt-6">{product && <Overview product={product} />}</Tabs.Content>
+                        <Tabs.Content value="trend" className="mt-6"><section className="rounded-lg border border-bg-border bg-bg-panel p-5 space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><CardHeader className="mb-0"><CardTitle>Revenue and units sold</CardTitle></CardHeader><div className="flex gap-2">{granularities.map((value) => <button key={value} type="button" onClick={() => analytics.setGranularity(value)} className={`rounded px-3 py-1.5 text-xs capitalize ${analytics.granularity === value ? 'bg-accent-gold/20 text-accent-gold' : 'text-ink-muted hover:bg-bg-hover'}`}>{value === 'biweekly' ? '2 weeks' : value}</button>)}</div></div>{trend.length ? <EChart option={buildSalesTrendOption(trend)} loading={analytics.trendLoading} height="340px" /> : <EmptyState message="No sales have been recorded for this product." />}</section></Tabs.Content>
+                        <Tabs.Content value="customers" className="mt-6"><section className="rounded-lg border border-bg-border bg-bg-panel p-5"><CardHeader><CardTitle>Top customers</CardTitle></CardHeader>{customers.length ? <EChart option={buildTopCustomersOption(customers)} height="340px" /> : <EmptyState message="No customer purchases are attached to this product." />}</section></Tabs.Content>
+                  </Tabs.Root>
             </main>
       </div>;
 }

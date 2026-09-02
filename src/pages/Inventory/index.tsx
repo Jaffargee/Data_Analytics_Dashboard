@@ -79,7 +79,7 @@ export default function InventoryPage() {
                   <main className="flex-1 space-y-6 pb-8">
                         <Stats stats={kpis} />
 
-                        <div className="px-4">
+                        <div className="px-3 sm:px-6">
                               <StockValueChart
                                     title="Dead Stock Cost Value by Category"
                                     data={deadStockByCategory}
@@ -88,7 +88,7 @@ export default function InventoryPage() {
                               />
                         </div>
 
-                        <div className="px-4 sm:px-6">
+                        <div className="px-3 sm:px-6">
                               <Tabs.Root defaultValue="dead">
                                     <div className={STICKY_TAB_WRAPPER_CLASS}>
                                     <Tabs.List className={TAB_LIST_CLASS}>

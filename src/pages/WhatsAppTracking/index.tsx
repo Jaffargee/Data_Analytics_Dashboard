@@ -118,7 +118,7 @@ function LogPostsTab() {
             <div className="space-y-6">
                   <Stats stats={kpis} />
 
-                  <div className="px-4 sm:px-6">
+                  <div className="px-3 sm:px-6">
                         <section className="rounded-lg border border-bg-border bg-bg-panel p-5">
                               <CardHeader><CardTitle>Log a Post</CardTitle></CardHeader>
                               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
@@ -166,7 +166,7 @@ function LogPostsTab() {
                         </section>
                   </div>
 
-                  <div className="px-4 sm:px-6">
+                  <div className="px-3 sm:px-6">
                         {posts.isLoading ? (
                               <div className="h-40 animate-pulse rounded-lg bg-bg-hover" />
                         ) : postRows.length ? (
@@ -203,7 +203,7 @@ export default function WhatsAppTrackingPage() {
                   />
                   <main className="flex-1 pb-8">
                         <Tabs.Root defaultValue="log">
-                              <div className={`px-4 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
+                              <div className={`px-3 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
                                     <Tabs.List className={TAB_LIST_CLASS}>
                                           <Tabs.Trigger value="log" className={TAB_TRIGGER_CLASS}>Log Posts</Tabs.Trigger>
                                           <Tabs.Trigger value="performance" className={TAB_TRIGGER_CLASS}>Post Performance</Tabs.Trigger>

@@ -117,7 +117,7 @@ export function PostPerformanceTab() {
 
       if (correlations.length === 0) {
             return (
-                  <div className="px-4 sm:px-6">
+                  <div className="px-3 sm:px-6">
                         <EmptyState message="No posts logged yet. Log a post in the Log Posts tab, and its sales performance will show up here — including how long it took to sell and whether it beat the item's normal pace." />
                   </div>
             );
@@ -126,13 +126,13 @@ export function PostPerformanceTab() {
       return (
             <div className="space-y-6">
                   <Stats stats={kpis} />
-                  <div className="px-4 sm:px-6">
+                  <div className="px-3 sm:px-6">
                         <p className="text-xs text-ink-muted font-body mb-3">
                               "Lift" compares units sold in the 7 days after a post to the 7 days before it — a rough read on whether the post moved product faster than usual. Items with no sales in the prior 7 days show "No prior sales" instead of a lift number, since there's no baseline to compare against.
                         </p>
                   </div>
                   {loading ? (
-                        <div className="px-4 sm:px-6"><div className="h-40 animate-pulse rounded-lg bg-bg-hover" /></div>
+                        <div className="px-3 sm:px-6"><div className="h-40 animate-pulse rounded-lg bg-bg-hover" /></div>
                   ) : (
                         <DataTable
                               data={correlations}

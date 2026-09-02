@@ -10,6 +10,7 @@ import ProductForm from '@/pages/Products/Create';
 import Inventory from '@/pages/Inventory';
 import Deliveries from '@/pages/Deliveries';
 import WhatsAppTracking from '@/pages/WhatsAppTracking';
+import POS from '@/pages/POS';
 import Analytics from '@/pages/Analytics';
 import Reports from '@/pages/Reports';
 import RevIntelligence from '@/pages/RevIntelligence';
@@ -49,6 +50,7 @@ export default function App() {
                                           <Route path="/inventory" element={<Inventory />} />
                                           <Route path="/deliveries" element={<Deliveries />} />
                                           <Route path="/whatsapp" element={<WhatsAppTracking />} />
+                                          <Route path="/pos" element={<POS />} />
                                           <Route path="/products" element={<Products />} />
                                           <Route path="/products/new" element={<ProductForm />} />
                                           <Route path="/products/:product_id" element={<Product />} />

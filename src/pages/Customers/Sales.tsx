@@ -135,7 +135,7 @@ export default function CustomerSales() {
                         shouldNavigateBack
                   />
 
-                  <main className="flex-1 p-6 space-y-6">
+                  <main className="flex-1 p-3 sm:p-6 space-y-6">
                         {loading ? (
                               <div className="flex h-full w-full relative items-center justify-center gap-2">
                                     <Loader2

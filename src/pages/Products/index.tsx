@@ -55,7 +55,7 @@ export default function ProductsPage() {
                         </div>
 
                         <Tabs.Root defaultValue="overview">
-                              <div className={`px-4 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
+                              <div className={`px-3 sm:px-6 ${STICKY_TAB_WRAPPER_CLASS}`}>
                                     <Tabs.List className={TAB_LIST_CLASS}>
                                           <Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger>
                                           <Tabs.Trigger value="seasonality" className={TAB_TRIGGER_CLASS}>Seasonality</Tabs.Trigger>

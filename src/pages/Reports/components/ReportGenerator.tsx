@@ -34,7 +34,7 @@ export function ReportGenerator() {
                         subtitle="Generate analytics reports for any time period"
                   />
 
-                  <main className="flex-1 p-6 space-y-6">
+                  <main className="flex-1 p-3 sm:p-6 space-y-6">
                         <Tabs.Root defaultValue="summary">
                               <Tabs.List className={TAB_LIST_CLASS + ' mb-5'}>
                                     <Tabs.Trigger value="summary" className={TAB_TRIGGER_CLASS}>Summary Reports</Tabs.Trigger>
