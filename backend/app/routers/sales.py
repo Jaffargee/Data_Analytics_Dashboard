@@ -5,7 +5,7 @@ import httpx
 from fastapi import APIRouter, HTTPException
 
 from app.models.sale import CreateSaleRequest, SaleResponse
-from app.services.pos4africa_client import create_sale as send_to_pos4africa
+from app.services.pos4africa_client import Pos4AfricaError, create_sale as send_to_pos4africa
 
 logger = logging.getLogger("sales_router")
 
@@ -35,6 +35,9 @@ async def create_sale(sale: CreateSaleRequest) -> SaleResponse:
 
     try:
         result = await send_to_pos4africa(sale)
+    except Pos4AfricaError as exc:
+        logger.error("pos4africa flow could not complete: %s", exc)
+        raise HTTPException(status_code=501, detail=str(exc)) from exc
     except httpx.HTTPError as exc:
         logger.exception("Failed to forward sale to pos4africa")
         raise HTTPException(
