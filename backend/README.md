@@ -13,7 +13,7 @@ JS works by POSTing HTML forms and swapping in the HTML fragment that
 comes back. This backend does the same thing server-side instead of
 calling a clean API, because there isn't one.
 
-## Status: stub mode by default, and login isn't implemented yet
+## Status: stub mode by default
 
 Confirmed directly from the real sales-register page HTML:
 - `POST /index.php/sales/add` — add an item (`item=<name>|FORCE_ITEM_ID|`)
@@ -24,20 +24,16 @@ Confirmed directly from the real sales-register page HTML:
 - `POST /index.php/sales/receipt_validate` — the one confirmed JSON
   endpoint, `{success, sale_id}`
 
-Still missing, blocking a real end-to-end run:
-1. **The login flow.** Everything above needs an authenticated session
-   (PHPSESSID cookie), and the login page/form wasn't captured. `login()`
-   in `app/services/pos4africa_client.py` raises until this is filled in.
-2. **`#add_payment_form`'s exact endpoint** — inferred as `sales/add_payment`
+Still missing, blocking a fully confirmed end-to-end run:
+1. **`#add_payment_form`'s exact endpoint** — inferred as `sales/add_payment`
    by pattern-matching the other endpoints, not confirmed.
 3. **What a successful finish-sale response looks like** — needed to pull
    the resulting sale ID back out and confirm the sale actually went
    through.
 
-To unblock all three: capture the login page (view source, same as you
-did for the sales page), and if possible watch your browser's Network tab
-while completing one real cash sale — the `add_payment` request and the
-final response after clicking "Finish Sale" are exactly what's needed.
+If possible, watch your browser's Network tab while completing one real cash
+sale — the `add_payment` request and the final response after clicking
+"Finish Sale" are exactly what's needed.
 
 In stub mode (nothing configured in `.env`), the API still validates
 sales exactly like it would for real — rejects underpayment, missing

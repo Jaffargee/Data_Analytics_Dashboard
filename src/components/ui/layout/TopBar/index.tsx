@@ -20,7 +20,8 @@ function TopBar({
       const navigate = useNavigate();
 
       return (
-            <header className="h-14 border-b border-bg-border bg-bg-panel/80 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between sticky top-0 z-[1000] gap-2">
+            <>
+            <header className="fixed inset-x-0 top-0 lg:left-56 border-b border-bg-border bg-bg-panel/80 backdrop-blur-md px-4 py-2 sm:px-4 flex items-center justify-between h-14 z-[1000] gap-2">
                   <div className="flex flex-row items-center gap-2 sm:gap-4 min-w-0">
                         {shouldNavigateBack && (
                               <button
@@ -64,6 +65,8 @@ function TopBar({
                         <Avatar active='active' activeAppearance='shadow' color='neutral' name='Tahir General' shape='circular' size={36} className="hidden sm:flex" />
                   </div>
             </header>
+            <div aria-hidden="true" className="h-14 shrink-0" />
+            </>
       );
 }
 

@@ -228,13 +228,13 @@ export default function Overview () {
       };
 
       return (
-            <div className='flex-1 flex flex-col min-h-screen'>
+            <div className='flex-1 flex flex-col h-[100vh] overflow-y-auto overflow-x-hidden relative'>
                   <TopBar
                         title="Overview"
                         subtitle="All-time performance snapshot"
                   />
                   
-                  <main className="flex-1 space-y-6">
+                  <main className="flex-1 space-y-6 px-4 py-4 ">
 
                         {/* KPI Row */}
                         <Stats stats={kpis} />
@@ -242,7 +242,7 @@ export default function Overview () {
                         {/* Revenue charts row */}
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                               <Card
-                                    appearance='outline'   
+                                    appearance='subtle'   
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '150ms',
@@ -269,7 +269,7 @@ export default function Overview () {
                               </Card>
 
                               <Card
-                                    appearance='outline'
+                                    appearance='subtle'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '250ms',
@@ -297,7 +297,7 @@ export default function Overview () {
                         {/* Bottom row */}
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                               <Card
-                                    appearance='outline'
+                                    appearance='subtle'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '300ms',
@@ -330,7 +330,7 @@ export default function Overview () {
                               </Card>
 
                               <Card
-                                    appearance='outline'
+                                    appearance='subtle'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '400ms',
@@ -358,7 +358,7 @@ export default function Overview () {
                         {/* Team row */}
                         <div className="grid grid-cols-1 gap-4">
                               <Card
-                                    appearance='outline'
+                                    appearance='subtle'
                                     className="animate-fade-up opacity-0-init"
                                     style={{
                                           animationDelay: '500ms',

@@ -17,8 +17,10 @@ class Settings(BaseSettings):
 
     # CORS — the Vite dev server and, in production, the deployed dashboard origin.
     allowed_origins: list[str] = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "tahirgeneral.netlify.app",
+        "http://192.168.1.44:3000",
     ]
 
     # pos4africa.com is a legacy server-rendered PHP app (PHP Point of Sale,
@@ -26,6 +28,7 @@ class Settings(BaseSettings):
     # for what this means for the integration. Auth is a session cookie from a
     # login form, not an API key, hence username/password rather than a token.
     pos4africa_base_url: str | None = None  # e.g. https://fahadtahir.pos4africa.com
+    pos4africa_login_path: str = "https://fahadtahir.pos4africa.com/index.php/login"
     pos4africa_username: str | None = None
     pos4africa_password: str | None = None
 

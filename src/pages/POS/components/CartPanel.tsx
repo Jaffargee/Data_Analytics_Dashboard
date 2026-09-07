@@ -129,7 +129,7 @@ export function CartPanel({ cart }: CartPanelProps) {
       }
 
       return (
-            <div className="flex flex-col h-full min-h-0">
+            <div className="flex flex-col h-full min-h-0 w-full">
                   {/* Customer */}
                   <div className="p-3 sm:p-4 border-b border-bg-border shrink-0 relative">
                         <label className="block text-[10px] uppercase tracking-wide text-ink-faint mb-1.5">Customer</label>
