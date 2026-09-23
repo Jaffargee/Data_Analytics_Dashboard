@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Minus, Plus, Trash2, User, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Minus, Plus, Trash2, User, X, Loader2, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useCustomers, usePaymentAccounts } from '@/hooks/data';
 import type { Customer } from '@/hooks/data';
 import { fmtCurrency } from '@/lib/utils';
@@ -30,6 +30,7 @@ export function CartPanel({ cart }: CartPanelProps) {
       const [submitting, setSubmitting] = useState(false);
       const [result, setResult] = useState<SaleResponse | null>(null);
       const [error, setError] = useState<string | null>(null);
+      const [stubAcknowledged, setStubAcknowledged] = useState(false);
 
       const accountRows = accounts.data?.data ?? [];
       const amountTendered = useMemo(() => payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0), [payments]);
@@ -91,22 +92,54 @@ export function CartPanel({ cart }: CartPanelProps) {
             setSalesperson('');
             setResult(null);
             setError(null);
+            setStubAcknowledged(false);
       };
 
       if (result) {
+            if (result.is_stub) {
+                  return (
+                        <div className="flex flex-col items-center justify-center h-full p-5 text-center gap-4">
+                              <div className="w-14 h-14 rounded-full bg-accent-red/15 text-accent-red flex items-center justify-center">
+                                    <AlertTriangle size={28} />
+                              </div>
+                              <div className="rounded-lg border border-accent-red/40 bg-accent-red/10 p-4 w-full">
+                                    <p className="text-sm font-body text-accent-red font-semibold">NOT sent to pos4africa</p>
+                                    <p className="text-xs text-ink-primary mt-1.5">
+                                          This sale was only validated on this server — it has not been recorded
+                                          anywhere. No money or stock has actually moved. Write this sale down
+                                          manually until the real pos4africa connection is finished.
+                                    </p>
+                                    {result.message && (
+                                          <p className="text-[11px] text-ink-faint mt-2 border-t border-accent-red/20 pt-2">{result.message}</p>
+                                    )}
+                              </div>
+                              <div className="w-full max-w-xs space-y-1.5 text-sm font-mono opacity-70">
+                                    <div className="flex justify-between"><span className="text-ink-muted">Total</span><span className="text-ink-primary">{fmtCurrency(result.invoice_total)}</span></div>
+                                    <div className="flex justify-between"><span className="text-ink-muted">Tendered</span><span className="text-ink-primary">{fmtCurrency(result.amount_tendered)}</span></div>
+                                    <div className="flex justify-between"><span className="text-ink-muted">Change</span><span className="text-ink-primary">{fmtCurrency(result.change_due)}</span></div>
+                              </div>
+                              <label className="flex items-center gap-2 text-[11px] text-ink-secondary">
+                                    <input type="checkbox" checked={stubAcknowledged} onChange={(e) => setStubAcknowledged(e.target.checked)} />
+                                    I understand this sale was not actually recorded
+                              </label>
+                              <button
+                                    type="button"
+                                    disabled={!stubAcknowledged}
+                                    onClick={startNewSale}
+                                    className="rounded-lg bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-sm font-body px-5 py-2.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                    Start New Sale
+                              </button>
+                        </div>
+                  );
+            }
             return (
                   <div className="flex flex-col items-center justify-center h-full p-6 text-center gap-4">
-                        <div
-                              className={`w-14 h-14 rounded-full flex items-center justify-center ${
-                                    result.is_stub ? 'bg-accent-gold/15 text-accent-gold' : 'bg-accent-teal/15 text-accent-teal'
-                              }`}
-                        >
+                        <div className="w-14 h-14 rounded-full bg-accent-teal/15 text-accent-teal flex items-center justify-center">
                               <CheckCircle2 size={28} />
                         </div>
                         <div>
-                              <p className="text-base font-body text-ink-primary font-medium">
-                                    {result.is_stub ? 'Sale validated (stub mode)' : 'Sale completed'}
-                              </p>
+                              <p className="text-base font-body text-ink-primary font-medium">Sale completed</p>
                               <p className="text-xs text-ink-muted font-mono mt-1">#{result.pos_sale_id}</p>
                         </div>
                         <div className="w-full max-w-xs space-y-1.5 text-sm font-mono">
@@ -114,9 +147,6 @@ export function CartPanel({ cart }: CartPanelProps) {
                               <div className="flex justify-between"><span className="text-ink-muted">Tendered</span><span className="text-ink-primary">{fmtCurrency(result.amount_tendered)}</span></div>
                               <div className="flex justify-between"><span className="text-ink-muted">Change</span><span className="text-accent-gold">{fmtCurrency(result.change_due)}</span></div>
                         </div>
-                        {result.is_stub && result.message && (
-                              <p className="text-[11px] text-ink-faint max-w-xs">{result.message}</p>
-                        )}
                         <button
                               type="button"
                               onClick={startNewSale}
