@@ -9,6 +9,7 @@ import { fmt, fmtCurrency, fmtPercent } from '@/lib/utils';
 import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/lib/constants/tabs';
 import useProductAnalytics from './hooks';
 import { buildSalesTrendOption, buildTopCustomersOption } from './components/ProductDetailCharts';
+import PriceAnalysisTab from './components/PriceAnalysisTab';
 import type { ProductDeepDive, ProductTopCustomer, SalesTrend, TrendGranularity } from './types';
 
 const granularities: TrendGranularity[] = ['daily', 'weekly', 'biweekly', 'monthly'];
@@ -28,7 +29,10 @@ export default function ProductPage() {
       ] : [], [product]);
 
       if (!Number.isFinite(itemId)) return <ProductEmpty message="The product ID in this URL is invalid." />;
-      if (!analytics.loading && !product) return <ProductEmpty message="No product was found for this ID." />;
+      if (!analytics.loading && !product) {
+            // Surface the real failure (missing view, permissions, network) instead of a misleading "not found".
+            return <ProductEmpty message={analytics.error ? `Unable to load this product: ${analytics.error.message}` : 'No product was found for this ID.'} />;
+      }
 
       return <div className="flex-1 flex flex-col min-h-screen">
             <TopBar title={product?.item_name ?? 'Product'} subtitle="Product intelligence and sales history" shouldNavigateBack />
@@ -38,10 +42,11 @@ export default function ProductPage() {
                   {product && <div className="flex flex-wrap gap-3 text-xs text-ink-muted"><Badge variant={product.trend_status.includes('DECLINING') ? 'red' : 'teal'}>{product.trend_status}</Badge><span>{product.item_category ?? 'Uncategorised'}</span><span>Margin {fmtPercent(product.margin_pct)}</span><span>Discount impact {fmtCurrency(product.discount_impact)}</span></div>}
                   <Tabs.Root defaultValue="overview">
                         <div className={STICKY_TAB_WRAPPER_CLASS}>
-                        <Tabs.List className={TAB_LIST_CLASS}><Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger><Tabs.Trigger value="trend" className={TAB_TRIGGER_CLASS}>Sales trend</Tabs.Trigger><Tabs.Trigger value="customers" className={TAB_TRIGGER_CLASS}>Top customers</Tabs.Trigger></Tabs.List>
+                        <Tabs.List className={TAB_LIST_CLASS}><Tabs.Trigger value="overview" className={TAB_TRIGGER_CLASS}>Overview</Tabs.Trigger><Tabs.Trigger value="trend" className={TAB_TRIGGER_CLASS}>Sales trend</Tabs.Trigger><Tabs.Trigger value="price" className={TAB_TRIGGER_CLASS}>Price analysis</Tabs.Trigger><Tabs.Trigger value="customers" className={TAB_TRIGGER_CLASS}>Top customers</Tabs.Trigger></Tabs.List>
                         </div>
                         <Tabs.Content value="overview" className="mt-6">{product && <Overview product={product} />}</Tabs.Content>
                         <Tabs.Content value="trend" className="mt-6"><section className="rounded-lg border border-bg-border bg-bg-panel p-5 space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><CardHeader className="mb-0"><CardTitle>Revenue and units sold</CardTitle></CardHeader><div className="flex gap-2">{granularities.map((value) => <button key={value} type="button" onClick={() => analytics.setGranularity(value)} className={`rounded px-3 py-1.5 text-xs capitalize ${analytics.granularity === value ? 'bg-accent-gold/20 text-accent-gold' : 'text-ink-muted hover:bg-bg-hover'}`}>{value === 'biweekly' ? '2 weeks' : value}</button>)}</div></div>{trend.length ? <EChart option={buildSalesTrendOption(trend)} loading={analytics.trendLoading} height="340px" /> : <EmptyState message="No sales have been recorded for this product." />}</section></Tabs.Content>
+                        <Tabs.Content value="price" className="mt-6">{product && <PriceAnalysisTab posItemId={itemId} />}</Tabs.Content>
                         <Tabs.Content value="customers" className="mt-6"><section className="rounded-lg border border-bg-border bg-bg-panel p-5"><CardHeader><CardTitle>Top customers</CardTitle></CardHeader>{customers.length ? <EChart option={buildTopCustomersOption(customers)} height="340px" /> : <EmptyState message="No customer purchases are attached to this product." />}</section></Tabs.Content>
                   </Tabs.Root>
             </main>
