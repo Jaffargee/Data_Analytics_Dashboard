@@ -1,13 +1,10 @@
 import type { Option } from './types/ui/index';
 
+// Must match the Postgres enum public.customer_category
 export const ctm_category: Option[] = [
-      { value: 'RGL', label: 'REGULAR' },
-      { value: 'WHSL1', label: 'WHOLESALE 1' },
-      { value: 'WHSL2', label: 'WHOLESALE 2' },
-      { value: 'RIWC', label: 'WALK-IN INDOOR CUSTOMER' },
-      { value: 'SEASONAL', label: 'SEASONAL' },
-      { value: 'VIP', label: 'VIP' },
-      { value: 'STANDARD', label: 'STANDARD' },
+      { value: 'RESELLER', label: 'RESELLER' },
+      { value: 'RETAILER', label: 'RETAILER' },
+      { value: 'END_USER', label: 'END USER' },
 ];
 
 export const ctm_status_lvl: Option[] = [

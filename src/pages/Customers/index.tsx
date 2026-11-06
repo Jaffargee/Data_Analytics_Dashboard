@@ -127,6 +127,7 @@ export default function Customer() {
                                           filterValue={filterQuery}
                                           title="New Customer"
                                           buttonIcon={Plus}
+                                          onClick={() => navigate('/customers/new')}
                                           setFilter={setFilterQuery}
                                           setSearch={setSearchQuery}
                                           filterOption={ctm_category}

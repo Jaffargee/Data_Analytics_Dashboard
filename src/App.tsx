@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from '@/components/ui/layout/Sidebar';
 import Overview from '@/pages/Overview';
 import Customers from '@/pages/Customers';
+import CustomerCreate from '@/pages/Customers/Create';
 import CustomerProfile from '@/pages/Customers/Customer';
 import CustomerSales from '@/pages/Customers/Sales';
 import Products from '@/pages/Products';
@@ -44,6 +45,7 @@ export default function App() {
                                           <Route path="/rev_intel" element={<RevIntelligence />} />
                                           <Route path="/revenue" element={<Revenue />} />
                                           <Route path="/customers" element={<Customers />} />
+                                          <Route path="/customers/new" element={<CustomerCreate />} />
                                           <Route path="/customers/customer/:id" element={<CustomerProfile />} />
                                           <Route path="/customers/customer/:id/sales" element={<CustomerSales />} />
                                           <Route path="/customers/customer/:id/sales/:sales_id" element={<CustomerSales />} />

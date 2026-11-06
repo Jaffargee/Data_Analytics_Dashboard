@@ -20,7 +20,8 @@ const Table = ({ customers }: CustomerTableProps) => {
       );
 
       const goToProfile = (c: TopCustomer) => {
-            navigate(`/customers/customer/${c.pos_customer_id}?ctm_name=${encodeURIComponent(c.customer_name)}`);
+            // dashboard-created customers have no POS number yet, so open them by uuid
+            navigate(`/customers/customer/${c.pos_customer_id ?? c.id}?ctm_name=${encodeURIComponent(c.customer_name)}`);
       };
 
       const status_color = {
@@ -55,7 +56,7 @@ const Table = ({ customers }: CustomerTableProps) => {
                                           {c.customer_name}
                                     </p>
                                     <p className="text-[14px] text-ink-muted font-mono">
-                                          #{c.pos_customer_id}
+                                          {c.pos_customer_id != null ? `#${c.pos_customer_id}` : 'New'}
                                     </p>
                               </div>
                         </div>
