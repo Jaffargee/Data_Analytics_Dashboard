@@ -242,9 +242,11 @@ import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, STICKY_TAB_WRAPPER_CLASS } from '@/l
 import CustomerSales from './components/CustomerSales';
 import CustomerProductIntelligence from './components/CustomerProductIntelligence';
 import CustomerBehavior from './components/CustomerBehavior';
+import CustomerProfileTab from './components/CustomerProfileTab';
 import useCustomerSalesData from './ctmSalesData';
+import { useCustomerProfile } from '@/hooks/data/use-customer-profile';
 
-export default function Customer() {
+function CustomerAnalytics() {
       const { id: customer_id } = useParams();
       const { chartData, loading, ctm_name, report, navigate } = useCustomerSalesData();
 
@@ -421,6 +423,7 @@ export default function Customer() {
                                                 <Tabs.Trigger value="sales" className={TAB_TRIGGER_CLASS}>Sales</Tabs.Trigger>
                                                 <Tabs.Trigger value="products" className={TAB_TRIGGER_CLASS}>Product Intelligence</Tabs.Trigger>
                                                 <Tabs.Trigger value="behavior" className={TAB_TRIGGER_CLASS}>Behavior</Tabs.Trigger>
+                                                <Tabs.Trigger value="profile" className={TAB_TRIGGER_CLASS}>Profile</Tabs.Trigger>
                                           </Tabs.List>
                                           </div>
 
@@ -433,6 +436,9 @@ export default function Customer() {
                                           <Tabs.Content value="behavior" className="mt-6">
                                                 <CustomerBehavior sales={report?.sales ?? []} />
                                           </Tabs.Content>
+                                          <Tabs.Content value="profile" className="mt-6">
+                                                <CustomerProfileTab posId={Number(customer_id)} />
+                                          </Tabs.Content>
                                           </Tabs.Root>
                                     </div>
                               </div>
@@ -440,4 +446,32 @@ export default function Customer() {
                   </main>
             </div>
       );
+}
+
+// ── Routing ───────────────────────────────────────────────────────────────────
+// Customers synced from the POS are opened by their POS number (sales analytics + profile).
+// Customers created in the dashboard have no POS number yet, so they are opened by uuid and
+// only get the editable profile — there is no sales history to analyse.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function CustomerProfileOnly({ id }: { id: string }) {
+      const profile = useCustomerProfile({ id });
+
+      return (
+            <div className="flex-1 flex flex-col min-h-screen">
+                  <TopBar
+                        title={profile.data?.customer_name ?? 'Customer'}
+                        subtitle="Customer profile"
+                        shouldNavigateBack
+                  />
+                  <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-4">
+                        <CustomerProfileTab uuid={id} />
+                  </main>
+            </div>
+      );
+}
+
+export default function Customer() {
+      const { id } = useParams();
+      return id && UUID_RE.test(id) ? <CustomerProfileOnly id={id} /> : <CustomerAnalytics />;
 }
