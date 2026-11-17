@@ -9,8 +9,6 @@ import Products from '@/pages/Products';
 import Product from '@/pages/Products/Product';
 import ProductForm from '@/pages/Products/Create';
 import Inventory from '@/pages/Inventory';
-import Deliveries from '@/pages/Deliveries';
-import WhatsAppTracking from '@/pages/WhatsAppTracking';
 import POS from '@/pages/POS';
 import Analytics from '@/pages/Analytics';
 import Reports from '@/pages/Reports';
