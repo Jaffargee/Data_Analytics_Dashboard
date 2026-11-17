@@ -50,8 +50,6 @@ export default function App() {
                                           <Route path="/customers/customer/:id/sales" element={<CustomerSales />} />
                                           <Route path="/customers/customer/:id/sales/:sales_id" element={<CustomerSales />} />
                                           <Route path="/inventory" element={<Inventory />} />
-                                          <Route path="/deliveries" element={<Deliveries />} />
-                                          <Route path="/whatsapp" element={<WhatsAppTracking />} />
                                           <Route path="/pos" element={<POS />} />
                                           <Route path="/products" element={<Products />} />
                                           <Route path="/products/new" element={<ProductForm />} />
